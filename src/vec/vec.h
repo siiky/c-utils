@@ -77,9 +77,9 @@
 /*
  * Magic from `sort.h`
  */
-#define VEC_CONCAT(A, B) A ## B
+#define VEC_CONCAT(A, B)    A ## B
 #define VEC_MAKE_STR1(A, B) VEC_CONCAT(A, B)
-#define VEC_MAKE_STR(A) VEC_MAKE_STR1(VEC_PREFIX, A)
+#define VEC_MAKE_STR(A)     VEC_MAKE_STR1(VEC_PREFIX, A)
 
 #define VEC_VEC VEC_MAKE_STR(Vec)
 /**=========================================================
