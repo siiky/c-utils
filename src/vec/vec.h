@@ -21,7 +21,7 @@
  * // Probably will raise `unused-function` warnings
  * #defined VEC_STATIC
  *
- * #include "vec.h"
+ * #include <vec.h>
  *
  * int main (void)
  * {
@@ -41,24 +41,17 @@
  * }
  * ```
  *
- * # Limitations
- *
- * Can only be included once.
- *
  * # TODO
  *
- * - [ ] Allow more than one implementation for different types
+ * - [X] Allow more than one implementation for different types
  * - [ ] More options
  */
 
-#ifndef _VEC_H
-#define _VEC_H
-
-#include <assert.h>  /* assert */
+#include <assert.h>  /* assert() */
 #include <stdbool.h> /* bool */
 #include <stddef.h>  /* size_t */
-#include <stdlib.h>  /* calloc, realloc */
-#include <string.h>  /* memcpy */
+#include <stdlib.h>  /* calloc(), realloc() */
+#include <string.h>  /* memcpy() */
 
 /*
  * Type of data for the Vec to hold
@@ -556,8 +549,6 @@ VEC_STATIC void VEC_SET_NTH (struct VEC_VEC * self, size_t nth, VEC_DATA_TYPE el
 #undef VEC_PREFIX
 #undef VEC_STATIC
 #undef VEC_VEC
-
-#endif /* _VEC_H */
 
 /*==========================================================
  * License

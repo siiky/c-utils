@@ -4,15 +4,11 @@
 #include <stdlib.h>
 #include <time.h>
 
-/*
- * Only one at a time for now
- */
-
 /* Example with a Vec of type char */
 #define CHAR
 
 /* Example with a Vec of type int */
-//#define INT
+#define INT
 
 # ifdef CHAR
 #define VEC_DATA_TYPE char
@@ -73,12 +69,14 @@ int main (void)
     srand(time(NULL));
 
 # ifdef INT
+    puts("INT");
     struct int_Vec ivec = int_Vec_init(10);
     int_Vec_print(&ivec);
     int_free(&ivec);
 # endif /* INT */
 
 # ifdef CHAR
+    puts("CHAR");
     struct char_Vec cvec = char_Vec_init(10);
     char_Vec_print(&cvec);
     char_free(&cvec);
