@@ -11,13 +11,17 @@
  *
  * #define VEC_DATA_TYPE size_t
  *
- * // Optionally define a prefix (defaults to vec_)
+ * // Optionally, define an equality function
+ * // (Not optional for compound types, like structs)
+ * #define VEC_DATA_TYPE_EQ(L, R) ((L) == (R))
+ *
+ * // Optionally, define a prefix (defaults to vec_)
  * #define VEC_PREFIX your_prefix_
  *
- * // Optionally define NDEBUG to disable asserts inside vec.h
+ * // Optionally, define NDEBUG to disable asserts inside vec.h
  * #define NDEBUG
  *
- * // Optionally define VEC_STATIC to mark definitions as static
+ * // Optionally, define VEC_STATIC to mark definitions as static
  * // Probably will raise `unused-function` warnings
  * #defined VEC_STATIC
  *
@@ -87,6 +91,10 @@ struct VEC_VEC {
     size_t capacity;
 };
 
+# ifndef VEC_DATA_TYPE_EQ
+#  define VEC_DATA_TYPE_EQ(L, R) ((L) == (R))
+# endif /* VEC_DATA_TYPE_EQ */
+
 # ifdef VEC_STATIC
 #  undef VEC_STATIC
 #  define VEC_STATIC static
@@ -102,6 +110,8 @@ struct VEC_VEC {
 #define VEC_AS_MUT_SLICE       VEC_MAKE_STR(as_mut_slice)
 #define VEC_AS_SLICE           VEC_MAKE_STR(as_slice)
 #define VEC_CAPACITY           VEC_MAKE_STR(capacity)
+#define VEC_ELEM               VEC_MAKE_STR(elem)
+#define VEC_FIND               VEC_MAKE_STR(find)
 #define VEC_FREE               VEC_MAKE_STR(free)
 #define VEC_FROM_RAW_PARTS     VEC_MAKE_STR(from_raw_parts)
 #define VEC_GET_NTH            VEC_MAKE_STR(get_nth)
@@ -131,9 +141,11 @@ VEC_STATIC VEC_DATA_TYPE VEC_GET_NTH (const struct VEC_VEC * self, size_t nth);
 VEC_STATIC VEC_DATA_TYPE VEC_POP (struct VEC_VEC * self);
 VEC_STATIC VEC_DATA_TYPE VEC_REMOVE (struct VEC_VEC * self, size_t index);
 VEC_STATIC VEC_DATA_TYPE VEC_SWAP_REMOVE (struct VEC_VEC * self, size_t index);
+VEC_STATIC bool VEC_ELEM (const struct VEC_VEC * self, VEC_DATA_TYPE element);
 VEC_STATIC bool VEC_IS_EMPTY (const struct VEC_VEC * self);
 VEC_STATIC const VEC_DATA_TYPE * VEC_AS_SLICE (const struct VEC_VEC * self);
 VEC_STATIC size_t VEC_CAPACITY (const struct VEC_VEC * self);
+VEC_STATIC size_t VEC_FIND (const struct VEC_VEC * self, VEC_DATA_TYPE element);
 VEC_STATIC size_t VEC_LEN (const struct VEC_VEC * self);
 VEC_STATIC struct VEC_VEC VEC_FROM_RAW_PARTS (VEC_DATA_TYPE * ptr, size_t length, size_t capacity);
 VEC_STATIC struct VEC_VEC VEC_NEW (void);
@@ -142,7 +154,7 @@ VEC_STATIC struct VEC_VEC VEC_WITH_CAPACITY (size_t capacity);
 VEC_STATIC void VEC_APPEND (struct VEC_VEC * self, struct VEC_VEC * other);
 VEC_STATIC void VEC_FREE (struct VEC_VEC * self);
 VEC_STATIC void VEC_INSERT (struct VEC_VEC * self, size_t index, VEC_DATA_TYPE element);
-VEC_STATIC void VEC_PUSH (struct VEC_VEC * self, VEC_DATA_TYPE value);
+VEC_STATIC void VEC_PUSH (struct VEC_VEC * self, VEC_DATA_TYPE element);
 VEC_STATIC void VEC_RESERVE (struct VEC_VEC * self, size_t additional);
 VEC_STATIC void VEC_RETAIN (struct VEC_VEC * self, bool (* f) (VEC_DATA_TYPE *));
 VEC_STATIC void VEC_SET_LEN (struct VEC_VEC * self, size_t len);
@@ -155,8 +167,8 @@ VEC_STATIC void VEC_TRUNCATE (struct VEC_VEC * self, size_t len);
 ==========================================================*/
 
 /**=========================================================
- * @brief Checks if self needs more memory
- * @param self The vec to check
+ * @brief Checks if @a self needs more memory and tries to increase it
+ * @param self The vec
  */
 VEC_STATIC void _VEC_INCREASE_CAPACITY (struct VEC_VEC * self)
 {
@@ -192,7 +204,7 @@ VEC_STATIC struct VEC_VEC VEC_NEW (void)
 }
 
 /**=========================================================
- * @brief Creates a new vec and allocates memory
+ * @brief Creates a new vec with @a capacity free slots
  * @param capacity Number of elements to allocate
  * @returns The new vec
  */
@@ -206,9 +218,9 @@ VEC_STATIC struct VEC_VEC VEC_WITH_CAPACITY (size_t capacity)
 /**=========================================================
  * @brief Creates a vec from seperate components
  * @param ptr A pointer to allocd memory
- * @param length Number of elements in ptr
- * @param capacity Number of elements vec can hold
- * @returns A new vec pointing to ptr, with length and capacity
+ * @param length Number of elements in @a ptr
+ * @param capacity Total number of elements @a ptr can hold
+ * @returns A new vec pointing to @a ptr, with @a length and @a capacity
  */
 VEC_STATIC struct VEC_VEC VEC_FROM_RAW_PARTS (VEC_DATA_TYPE * ptr, size_t length, size_t capacity)
 {
@@ -220,8 +232,8 @@ VEC_STATIC struct VEC_VEC VEC_FROM_RAW_PARTS (VEC_DATA_TYPE * ptr, size_t length
 }
 
 /**=========================================================
- * @brief Calculates the capacity of a vec
- * @param self The vec to calculate capacity
+ * @brief Calculates the capacity of @a self
+ * @param self The vec
  * @returns Capacity of self
  */
 VEC_STATIC size_t VEC_CAPACITY (const struct VEC_VEC * self)
@@ -231,7 +243,7 @@ VEC_STATIC size_t VEC_CAPACITY (const struct VEC_VEC * self)
 }
 
 /**=========================================================
- * @brief Reserve memory for at least additional elements
+ * @brief Reserve memory for at least @a additional elements
  * @param self The vec
  * @param additional Number of additional elements
  */
@@ -249,7 +261,7 @@ VEC_STATIC void VEC_RESERVE (struct VEC_VEC * self, size_t additional)
 }
 
 /**=========================================================
- * @brief Shrink the capacity of the vec to length
+ * @brief Shrink the capacity of the vec to its length
  * @param self The vec
  */
 VEC_STATIC void VEC_SHRINK_TO_FIT (struct VEC_VEC * self)
@@ -260,7 +272,7 @@ VEC_STATIC void VEC_SHRINK_TO_FIT (struct VEC_VEC * self)
 }
 
 /**=========================================================
- * @brief Shorten the vector, keeping the first len elements
+ * @brief Shorten @a self, keeping the first @a len elements
  * @param self The vec
  * @param len New length
  */
@@ -294,7 +306,7 @@ VEC_STATIC VEC_DATA_TYPE * VEC_AS_MUT_SLICE (struct VEC_VEC * self)
 }
 
 /**=========================================================
- * @brief Sets the length of a vec, without checks
+ * @brief Sets the length of @a self, without checks
  * @param self The vec
  * @param len The new length
  */
@@ -305,7 +317,7 @@ VEC_STATIC void VEC_SET_LEN (struct VEC_VEC * self, size_t len)
 }
 
 /**=========================================================
- * @brief Removes an element, replacing it with the last element
+ * @brief Removes the element at @a index, replacing it with the last element
  * @param self The vec
  * @param index Index of the element to be removed
  * @returns The removed element
@@ -323,7 +335,7 @@ VEC_STATIC VEC_DATA_TYPE VEC_SWAP_REMOVE (struct VEC_VEC * self, size_t index)
 }
 
 /**=========================================================
- * @brief Inserts an element at index, shifting every element after it to the right
+ * @brief Inserts an @a element at @a index, shifting every element after it to the right
  * @param self The vec
  * @param index Where the element will be inserted
  * @param element Element to be inserted
@@ -345,7 +357,7 @@ VEC_STATIC void VEC_INSERT (struct VEC_VEC * self, size_t index, VEC_DATA_TYPE e
 }
 
 /**=========================================================
- * @brief Removes an element, shifting every element after it to the left
+ * @brief Removes the @a element at @a index, shifting every element after it to the left
  * @param self The vec
  * @param index Index of the element to remove
  * @returns Removed element
@@ -366,7 +378,7 @@ VEC_STATIC VEC_DATA_TYPE VEC_REMOVE (struct VEC_VEC * self, size_t index)
 }
 
 /**=========================================================
- * @brief Keep every element that satisfies a predicate
+ * @brief Keep every element of @a self that satisfies a predicate @a f
  * @param self The vec
  * @param f Predicate
  */
@@ -388,11 +400,11 @@ VEC_STATIC void VEC_RETAIN (struct VEC_VEC * self, bool (* f) (VEC_DATA_TYPE *))
 }
 
 /**=========================================================
- * @brief Insert an element at the end
+ * @brief Insert an @a element at the end
  * @param self The vec
- * @param value Element to be pushed
+ * @param element Element to be pushed
  */
-VEC_STATIC void VEC_PUSH (struct VEC_VEC * self, VEC_DATA_TYPE value)
+VEC_STATIC void VEC_PUSH (struct VEC_VEC * self, VEC_DATA_TYPE element)
 {
     assert(self != NULL);
 
@@ -400,12 +412,12 @@ VEC_STATIC void VEC_PUSH (struct VEC_VEC * self, VEC_DATA_TYPE value)
     if (self->length == self->capacity)
         return;
 
-    self->ptr[self->length] = value;
+    self->ptr[self->length] = element;
     self->length++;
 }
 
 /**=========================================================
- * @brief Remove the last element
+ * @brief Remove the last element of @a self
  * @param self The vec
  * @returns The removed element
  */
@@ -418,7 +430,7 @@ VEC_STATIC VEC_DATA_TYPE VEC_POP (struct VEC_VEC * self)
 }
 
 /**=========================================================
- * @brief Appends a vec to self vec and sets the length of other to 0
+ * @brief Appends @a other to @a self and sets the length of @a other to 0
  * @param self The vec
  * @param other The other vec
  */
@@ -442,9 +454,9 @@ VEC_STATIC void VEC_APPEND (struct VEC_VEC * self, struct VEC_VEC * other)
 }
 
 /**=========================================================
- * @brief Calculates the length of a vec
+ * @brief Calculates the length of @a self
  * @param self The vec
- * @returns The length of self
+ * @returns The length of @a self
  */
 VEC_STATIC size_t VEC_LEN (const struct VEC_VEC * self)
 {
@@ -453,7 +465,7 @@ VEC_STATIC size_t VEC_LEN (const struct VEC_VEC * self)
 }
 
 /**=========================================================
- * @brief Checks if a vec is empty
+ * @brief Checks if @a self is empty
  * @param self The vec
  * @returns `true` if `length == 0`, and `false` otherwise
  */
@@ -464,7 +476,7 @@ VEC_STATIC bool VEC_IS_EMPTY (const struct VEC_VEC * self)
 }
 
 /**=========================================================
- * @brief Splits a vec in two, keeping the first `at - 1` in self, and the rest in the other
+ * @brief Splits @a self in two, keeping the first `at - 1` elements in @a self, and the rest in the other
  * @param self The vec
  * @param at Where to split
  * @returns The new vec
@@ -485,10 +497,10 @@ VEC_STATIC struct VEC_VEC VEC_SPLIT_OFF (struct VEC_VEC * self, size_t at)
 }
 
 /**=========================================================
- * @brief Get the element at the nth index
+ * @brief Get the element at the @a nth index
  * @param self The vec
  * @param nth The index
- * @returns The element in index nth
+ * @returns The element at index @a nth
  */
 VEC_STATIC VEC_DATA_TYPE VEC_GET_NTH (const struct VEC_VEC * self, size_t nth)
 {
@@ -498,7 +510,7 @@ VEC_STATIC VEC_DATA_TYPE VEC_GET_NTH (const struct VEC_VEC * self, size_t nth)
 }
 
 /**=========================================================
- * @brief Set the element at the nth index to element
+ * @brief Set the element at the @a nth index to @a element
  * @param self The vec
  * @param nth The index
  * @param element The new element
@@ -508,6 +520,38 @@ VEC_STATIC void VEC_SET_NTH (struct VEC_VEC * self, size_t nth, VEC_DATA_TYPE el
     assert(self != NULL);
     assert(nth < self->length);
     self->ptr[nth] = element;
+}
+
+/**=========================================================
+ * @brief Get the index of the first occurrence (if any) of @a element
+ * @param self The vec
+ * @param element The element to look for
+ * @returns The index of the first occurrence of @a element,
+ *          or the length of @a self if @a element does not exist
+ */
+VEC_STATIC size_t VEC_FIND (const struct VEC_VEC * self, VEC_DATA_TYPE element)
+{
+    assert(self != NULL);
+    size_t ret = 0;
+
+    for (ret = 0;
+         ret < self->length
+         && !(VEC_DATA_TYPE_EQ(self->ptr[ret], element));
+         ret++);
+
+    return ret;
+}
+
+/**=========================================================
+ * @brief Check if @a self contains an @a element
+ * @param self The vec
+ * @param element The element to look for
+ * @returns `true` if it @a self contains @a element, `false` otherwise
+ */
+VEC_STATIC bool VEC_ELEM (const struct VEC_VEC * self, VEC_DATA_TYPE element)
+{
+    assert(self != NULL);
+    return VEC_FIND(self, element) < self->length;
 }
 
 /*==========================================================
@@ -521,6 +565,8 @@ VEC_STATIC void VEC_SET_NTH (struct VEC_VEC * self, size_t nth, VEC_DATA_TYPE el
 #undef VEC_AS_MUT_SLICE
 #undef VEC_AS_SLICE
 #undef VEC_CAPACITY
+#undef VEC_ELEM
+#undef VEC_FIND
 #undef VEC_FREE
 #undef VEC_FROM_RAW_PARTS
 #undef VEC_GET_NTH
@@ -546,6 +592,7 @@ VEC_STATIC void VEC_SET_NTH (struct VEC_VEC * self, size_t nth, VEC_DATA_TYPE el
  * Other
  */
 #undef VEC_DATA_TYPE
+#undef VEC_DATA_TYPE_EQ
 #undef VEC_PREFIX
 #undef VEC_STATIC
 #undef VEC_VEC
