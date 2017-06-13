@@ -14,7 +14,7 @@
 #define VEC_DATA_TYPE char
 #define VEC_IMPLEMENTATION
 #define VEC_PREFIX char_
-#include "vec.h"
+#include <vec.h>
 
 struct char_Vec char_Vec_init (size_t capacity)
 {
@@ -39,11 +39,10 @@ void char_Vec_print (struct char_Vec * vec)
 # endif /* CHAR */
 
 # ifdef INT
-#define VEC_STATIC
 #define VEC_DATA_TYPE int
 #define VEC_IMPLEMENTATION
 #define VEC_PREFIX int_
-#include "vec.h"
+#include <vec.h>
 
 struct int_Vec int_Vec_init (size_t capacity)
 {
