@@ -4,7 +4,7 @@ EXEC=cvec
 
 DEST=~/bin
 
-FLAGS=-static -Wall -Wextra -pedantic -I../../include/
+FLAGS=-static -Wall -Wextra -pedantic -flto -I../../include/
 DFLAGS=$(FLAGS) -g
 CFLAGS=$(FLAGS) -O3
 
