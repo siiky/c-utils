@@ -54,7 +54,10 @@
 #include <assert.h>  /* assert() */
 #include <stdbool.h> /* bool */
 #include <stddef.h>  /* size_t */
-#include <stdlib.h>  /* calloc(), realloc() */
+#include <stdlib.h>  /* bsearch(),
+                        calloc(),
+                        qsort(),
+                        realloc() */
 #include <string.h>  /* memcpy() */
 
 /*
@@ -109,6 +112,7 @@ struct VEC_VEC {
 #define VEC_APPEND             VEC_MAKE_STR(append)
 #define VEC_AS_MUT_SLICE       VEC_MAKE_STR(as_mut_slice)
 #define VEC_AS_SLICE           VEC_MAKE_STR(as_slice)
+#define VEC_BSEARCH            VEC_MAKE_STR(bsearch)
 #define VEC_CAPACITY           VEC_MAKE_STR(capacity)
 #define VEC_ELEM               VEC_MAKE_STR(elem)
 #define VEC_FIND               VEC_MAKE_STR(find)
@@ -121,6 +125,7 @@ struct VEC_VEC {
 #define VEC_NEW                VEC_MAKE_STR(new)
 #define VEC_POP                VEC_MAKE_STR(pop)
 #define VEC_PUSH               VEC_MAKE_STR(push)
+#define VEC_QSORT              VEC_MAKE_STR(qsort)
 #define VEC_REMOVE             VEC_MAKE_STR(remove)
 #define VEC_RESERVE            VEC_MAKE_STR(reserve)
 #define VEC_FILTER             VEC_MAKE_STR(filter)
@@ -137,6 +142,7 @@ struct VEC_VEC {
  * Function prototypes
 ==========================================================*/
 VEC_STATIC VEC_DATA_TYPE * VEC_AS_MUT_SLICE (struct VEC_VEC * self);
+VEC_STATIC VEC_DATA_TYPE * VEC_BSEARCH (const struct VEC_VEC * self, VEC_DATA_TYPE key, int (*compar) (const void * key, const void * elem));
 VEC_STATIC VEC_DATA_TYPE VEC_GET_NTH (const struct VEC_VEC * self, size_t nth);
 VEC_STATIC VEC_DATA_TYPE VEC_POP (struct VEC_VEC * self);
 VEC_STATIC VEC_DATA_TYPE VEC_REMOVE (struct VEC_VEC * self, size_t index);
@@ -155,6 +161,7 @@ VEC_STATIC void VEC_APPEND (struct VEC_VEC * restrict self, struct VEC_VEC * res
 VEC_STATIC void VEC_FREE (struct VEC_VEC * self);
 VEC_STATIC void VEC_INSERT (struct VEC_VEC * self, size_t index, VEC_DATA_TYPE element);
 VEC_STATIC void VEC_PUSH (struct VEC_VEC * self, VEC_DATA_TYPE element);
+VEC_STATIC void VEC_QSORT (struct VEC_VEC * self, int (*compar) (const void * key, const void * elem));
 VEC_STATIC void VEC_RESERVE (struct VEC_VEC * self, size_t additional);
 VEC_STATIC void VEC_FILTER (struct VEC_VEC * self, bool (* pred) (VEC_DATA_TYPE *));
 VEC_STATIC void VEC_SET_LEN (struct VEC_VEC * self, size_t len);
@@ -570,6 +577,39 @@ VEC_STATIC bool VEC_ELEM (const struct VEC_VEC * self, VEC_DATA_TYPE element)
     return VEC_FIND(self, element) < self->length;
 }
 
+/**=========================================================
+ * @brief Wraper around `stdlib.h`'s `bsearch()` function
+ * @param self The vec
+ * @param key The key to look for
+ * @param compar The function to compare elements
+ * @returns A pointer to the found element, or `NULL` otherwise
+ */
+VEC_STATIC VEC_DATA_TYPE * VEC_BSEARCH (const struct VEC_VEC * self, VEC_DATA_TYPE key, int (*compar) (const void * key, const void * elem))
+{
+    assert(self != NULL);
+    assert(self->ptr != NULL);
+    assert(compar != NULL);
+
+    const void * base = self->ptr;
+    size_t nmemb = self->length;
+    size_t size = sizeof(VEC_DATA_TYPE);
+
+    return bsearch(&key, base, nmemb, size, compar);
+}
+
+/**=========================================================
+ * @brief Wraper around `stdlib.h`'s `qsort()` function
+ * @param self The vec
+ * @param compar The function to compare elements
+ */
+VEC_STATIC void VEC_QSORT (struct VEC_VEC * self, int (*compar) (const void * key, const void * elem))
+{
+    assert(self != NULL);
+    assert(self->ptr != NULL);
+    assert(compar != NULL);
+    qsort(self->ptr, self->length, sizeof(VEC_DATA_TYPE), compar);
+}
+
 /*==========================================================
  * Clean up
 ==========================================================*/
@@ -580,6 +620,7 @@ VEC_STATIC bool VEC_ELEM (const struct VEC_VEC * self, VEC_DATA_TYPE element)
 #undef VEC_APPEND
 #undef VEC_AS_MUT_SLICE
 #undef VEC_AS_SLICE
+#undef VEC_BSEARCH
 #undef VEC_CAPACITY
 #undef VEC_ELEM
 #undef VEC_FIND
@@ -592,6 +633,7 @@ VEC_STATIC bool VEC_ELEM (const struct VEC_VEC * self, VEC_DATA_TYPE element)
 #undef VEC_NEW
 #undef VEC_POP
 #undef VEC_PUSH
+#undef VEC_QSORT
 #undef VEC_REMOVE
 #undef VEC_RESERVE
 #undef VEC_FILTER
