@@ -35,7 +35,7 @@
  *
  *     your_prefix_free(&list);
  *
- *     assert(list.length == NULL);
+ *     assert(list.length == 0);
  *     assert(list.head == NULL);
  *     assert(list.last == NULL);
  *
