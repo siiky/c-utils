@@ -117,6 +117,7 @@ struct VEC_VEC {
 #define VEC_BSEARCH            VEC_MAKE_STR(bsearch)
 #define VEC_CAPACITY           VEC_MAKE_STR(capacity)
 #define VEC_ELEM               VEC_MAKE_STR(elem)
+#define VEC_FILTER             VEC_MAKE_STR(filter)
 #define VEC_FIND               VEC_MAKE_STR(find)
 #define VEC_FREE               VEC_MAKE_STR(free)
 #define VEC_FROM_RAW_PARTS     VEC_MAKE_STR(from_raw_parts)
@@ -130,7 +131,6 @@ struct VEC_VEC {
 #define VEC_QSORT              VEC_MAKE_STR(qsort)
 #define VEC_REMOVE             VEC_MAKE_STR(remove)
 #define VEC_RESERVE            VEC_MAKE_STR(reserve)
-#define VEC_FILTER             VEC_MAKE_STR(filter)
 #define VEC_SET_LEN            VEC_MAKE_STR(set_len)
 #define VEC_SET_NTH            VEC_MAKE_STR(set_nth)
 #define VEC_SHRINK_TO_FIT      VEC_MAKE_STR(shrink_to_fit)
@@ -142,34 +142,35 @@ struct VEC_VEC {
 
 /*==========================================================
  * Function prototypes
+ *         RETURN TYPE           FUNCTION NAME      ARGUMENT LIST
 ==========================================================*/
-VEC_STATIC VEC_DATA_TYPE * VEC_AS_MUT_SLICE (struct VEC_VEC * self);
-VEC_STATIC VEC_DATA_TYPE * VEC_BSEARCH (const struct VEC_VEC * self, VEC_DATA_TYPE key, int (*compar) (const void * key, const void * elem));
-VEC_STATIC VEC_DATA_TYPE VEC_GET_NTH (const struct VEC_VEC * self, size_t nth);
-VEC_STATIC VEC_DATA_TYPE VEC_POP (struct VEC_VEC * self);
-VEC_STATIC VEC_DATA_TYPE VEC_REMOVE (struct VEC_VEC * self, size_t index);
-VEC_STATIC VEC_DATA_TYPE VEC_SWAP_REMOVE (struct VEC_VEC * self, size_t index);
-VEC_STATIC bool VEC_ELEM (const struct VEC_VEC * self, VEC_DATA_TYPE element);
-VEC_STATIC bool VEC_IS_EMPTY (const struct VEC_VEC * self);
-VEC_STATIC const VEC_DATA_TYPE * VEC_AS_SLICE (const struct VEC_VEC * self);
-VEC_STATIC size_t VEC_CAPACITY (const struct VEC_VEC * self);
-VEC_STATIC size_t VEC_FIND (const struct VEC_VEC * self, VEC_DATA_TYPE element);
-VEC_STATIC size_t VEC_LEN (const struct VEC_VEC * self);
-VEC_STATIC struct VEC_VEC VEC_FROM_RAW_PARTS (VEC_DATA_TYPE * ptr, size_t length, size_t capacity);
-VEC_STATIC struct VEC_VEC VEC_NEW (void);
-VEC_STATIC struct VEC_VEC VEC_SPLIT_OFF (struct VEC_VEC * self, size_t at);
-VEC_STATIC struct VEC_VEC VEC_WITH_CAPACITY (size_t capacity);
-VEC_STATIC void VEC_APPEND (struct VEC_VEC * restrict self, struct VEC_VEC * restrict other);
-VEC_STATIC void VEC_FREE (struct VEC_VEC * self);
-VEC_STATIC void VEC_INSERT (struct VEC_VEC * self, size_t index, VEC_DATA_TYPE element);
-VEC_STATIC void VEC_PUSH (struct VEC_VEC * self, VEC_DATA_TYPE element);
-VEC_STATIC void VEC_QSORT (struct VEC_VEC * self, int (*compar) (const void * key, const void * elem));
-VEC_STATIC void VEC_RESERVE (struct VEC_VEC * self, size_t additional);
-VEC_STATIC void VEC_FILTER (struct VEC_VEC * self, bool (* pred) (VEC_DATA_TYPE *));
-VEC_STATIC void VEC_SET_LEN (struct VEC_VEC * self, size_t len);
-VEC_STATIC void VEC_SET_NTH (struct VEC_VEC * self, size_t nth, VEC_DATA_TYPE element);
-VEC_STATIC void VEC_SHRINK_TO_FIT (struct VEC_VEC * self);
-VEC_STATIC void VEC_TRUNCATE (struct VEC_VEC * self, size_t len);
+VEC_STATIC VEC_DATA_TYPE         VEC_GET_NTH        (const struct VEC_VEC * self, size_t nth);
+VEC_STATIC VEC_DATA_TYPE         VEC_POP            (struct VEC_VEC * self);
+VEC_STATIC VEC_DATA_TYPE         VEC_REMOVE         (struct VEC_VEC * self, size_t index);
+VEC_STATIC VEC_DATA_TYPE         VEC_SWAP_REMOVE    (struct VEC_VEC * self, size_t index);
+VEC_STATIC VEC_DATA_TYPE *       VEC_AS_MUT_SLICE   (struct VEC_VEC * self);
+VEC_STATIC VEC_DATA_TYPE *       VEC_BSEARCH        (const struct VEC_VEC * self, VEC_DATA_TYPE key, int (*compar) (const void * key, const void * elem));
+VEC_STATIC bool                  VEC_ELEM           (const struct VEC_VEC * self, VEC_DATA_TYPE element);
+VEC_STATIC bool                  VEC_IS_EMPTY       (const struct VEC_VEC * self);
+VEC_STATIC const VEC_DATA_TYPE * VEC_AS_SLICE       (const struct VEC_VEC * self);
+VEC_STATIC size_t                VEC_CAPACITY       (const struct VEC_VEC * self);
+VEC_STATIC size_t                VEC_FIND           (const struct VEC_VEC * self, VEC_DATA_TYPE element);
+VEC_STATIC size_t                VEC_LEN            (const struct VEC_VEC * self);
+VEC_STATIC struct VEC_VEC        VEC_FROM_RAW_PARTS (VEC_DATA_TYPE * ptr, size_t length, size_t capacity);
+VEC_STATIC struct VEC_VEC        VEC_NEW            (void);
+VEC_STATIC struct VEC_VEC        VEC_SPLIT_OFF      (struct VEC_VEC * self, size_t at);
+VEC_STATIC struct VEC_VEC        VEC_WITH_CAPACITY  (size_t capacity);
+VEC_STATIC void                  VEC_APPEND         (struct VEC_VEC * restrict self, struct VEC_VEC * restrict other);
+VEC_STATIC void                  VEC_FILTER         (struct VEC_VEC * self, bool (* pred) (VEC_DATA_TYPE *));
+VEC_STATIC void                  VEC_FREE           (struct VEC_VEC * self);
+VEC_STATIC void                  VEC_INSERT         (struct VEC_VEC * self, size_t index, VEC_DATA_TYPE element);
+VEC_STATIC void                  VEC_PUSH           (struct VEC_VEC * self, VEC_DATA_TYPE element);
+VEC_STATIC void                  VEC_QSORT          (struct VEC_VEC * self, int (*compar) (const void * key, const void * elem));
+VEC_STATIC void                  VEC_RESERVE        (struct VEC_VEC * self, size_t additional);
+VEC_STATIC void                  VEC_SET_LEN        (struct VEC_VEC * self, size_t len);
+VEC_STATIC void                  VEC_SET_NTH        (struct VEC_VEC * self, size_t nth, VEC_DATA_TYPE element);
+VEC_STATIC void                  VEC_SHRINK_TO_FIT  (struct VEC_VEC * self);
+VEC_STATIC void                  VEC_TRUNCATE       (struct VEC_VEC * self, size_t len);
 
 /*==========================================================
  * Function definitions
