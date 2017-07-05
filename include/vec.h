@@ -15,7 +15,7 @@
  * // (Not optional for compound types, like structs)
  * #define VEC_DATA_TYPE_EQ(L, R) ((L) == (R))
  *
- * // Optionally, define a prefix (defaults to vec_)
+ * // Optionally, define a prefix (defaults to `vec_`)
  * #define VEC_PREFIX your_prefix_
  *
  * // Optionally, define NDEBUG to disable asserts inside vec.h
@@ -23,7 +23,7 @@
  *
  * // Optionally, define VEC_STATIC to mark definitions as static
  * // Probably will raise `unused-function` warnings
- * #defined VEC_STATIC
+ * #define VEC_STATIC
  *
  * #include <vec.h>
  *
@@ -40,6 +40,8 @@
  *     your_prefix_free(&vec);
  *
  *     assert(vec.ptr == NULL);
+ *     assert(vec.length == 0);
+ *     assert(vec.capacity == 0);
  *
  *     return 0;
  * }
