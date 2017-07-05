@@ -9,7 +9,7 @@
 
 size_t print_shit (size_t ret)
 {
-    printf("%zu\t", ret);
+    printf("%zu ", ret);
     return ret;
 }
 
@@ -17,18 +17,15 @@ int main (void)
 {
     struct llist_LList list = llist_new();
 
-    for (size_t i = 0; i < 10; i++)
+    for (size_t i = 0; i < 151; i++)
         llist_append(&list, i);
 
     llist_map(&list, print_shit);
     putchar('\n');
 
     size_t len = llist_len(&list);
-    for (size_t i = 0; i < len; i++) {
-        printf("%u\t", llist_nth(&list, i));
-        //assert(llist_nth(&list, i) == i);
-    }
-    putchar('\n');
+    for (size_t i = 0; i < len; i++)
+        assert(llist_nth(&list, i) == i);
 
     llist_free(&list);
 

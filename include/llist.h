@@ -156,7 +156,7 @@ LLIST_STATIC struct LLIST_LLIST LLIST_NEW (void)
 
 /**
  * @brief Free @a self
- * @param self The List to free
+ * @param self The List
  */
 LLIST_STATIC void LLIST_FREE (struct LLIST_LLIST * self)
 {
@@ -220,35 +220,32 @@ LLIST_STATIC LLIST_DATA_TYPE LLIST_NTH (const struct LLIST_LLIST * self, size_t 
     assert(self->head != NULL);
     assert(self->last != NULL);
 
-#if 0
-    /* Is `nth` closer to the last node? */
-    bool cond = nth > (self->length / 2);
+    /*
+     * Get the `nth` element of `self` following the shortest path.
+     * If nth is in the first half of the list, start at the head,
+     * otherwise, start at the last node in the list
+     */
+    bool cond = nth > (self->length >> 1);
 
     size_t idx = (cond) ?
-        self->length - 1 - nth :
-        nth;
+        self->length - nth - 1 :
+        nth ;
 
-    struct LLIST_NODE * node = (cond) ?
+    const struct LLIST_NODE * node = (cond) ?
         self->last :
         self->head ;
-    for (idx++; idx > 0; idx--)
+
+    for (; idx > 0; idx--)
         node = (cond) ?
-            /* Move forward */
-            node->next :
-            /* Move backwards */
-            node->prev;
-#else
-    struct LLIST_NODE * node = self->head;
-    for (nth++; nth > 0; nth--)
-        node = node->next;
-#endif
+            node->prev : /* Move backwards */
+            node->next ; /* Move forward */
 
     return node->val;
 }
 
 /**
  * @brief Create a new Node
- * @param val The value
+ * @param val The value for the new Node to hold
  * @param prev The previous Node in the List
  * @param next The next Node in the List
  * @returns The new Node
@@ -273,7 +270,7 @@ LLIST_STATIC struct LLIST_NODE * LLIST_NODE_NEW (LLIST_DATA_TYPE val, struct LLI
 }
 
 /**
- * @brief Add an element to an empty List
+ * @brief Add @a val to @a self (@a self must be empty)
  * @param self The List
  * @param val The val to add
  */
@@ -285,11 +282,13 @@ LLIST_STATIC void LLIST_EMPTY_ADD (struct LLIST_LLIST * self, LLIST_DATA_TYPE va
     assert(self->last == NULL);
 
     self->head = self->last = LLIST_NODE_NEW(val, NULL, NULL);
-    self->length = (self->head != NULL) ? 1 : 0;
+    self->length = (self->head != NULL) ?
+        1 :
+        0 ;
 }
 
 /**
- * @brief Add an element to a non-empty List
+ * @brief Add @a val to @a self (@a self must be non-empty)
  * @param self The List
  * @param val The val to add
  * @returns A pointer to the new Node
@@ -311,45 +310,73 @@ LLIST_STATIC struct LLIST_NODE * LLIST_NON_EMPTY_ADD (struct LLIST_LLIST * self,
     return ret;
 }
 
+#define _LLIST_TMP_MACRO_(SELF, TARGET, VAL)                            \
+    do {                                                                \
+        struct LLIST_NODE * tmp = LLIST_NON_EMPTY_ADD((SELF), (VAL));   \
+        SELF->TARGET = (tmp == NULL) ?                                  \
+            SELF->TARGET :                                              \
+            tmp ;                                                       \
+    } while (0)
+
+/**
+ * @brief Add @a val to the head of @a self
+ * @param self The List
+ * @param val The val to add
+ */
 LLIST_STATIC void LLIST_CONS (struct LLIST_LLIST * self, LLIST_DATA_TYPE val)
 {
     assert(self != NULL);
     if (self->length == 0) {
         LLIST_EMPTY_ADD(self, val);
     } else {
-        struct LLIST_NODE * new = LLIST_NON_EMPTY_ADD(self, val);
-        self->head = (new == NULL) ?
-            self->head :
-            new;
+        _LLIST_TMP_MACRO_(self, head, val);
     }
 }
 
+/**
+ * @brief Add @a val to the end of @a self
+ * @param self The List
+ * @param val The val to add
+ */
 LLIST_STATIC void LLIST_APPEND (struct LLIST_LLIST * self, LLIST_DATA_TYPE val)
 {
     assert(self != NULL);
     if (self->length == 0) {
         LLIST_EMPTY_ADD(self, val);
     } else {
-        struct LLIST_NODE * new = LLIST_NON_EMPTY_ADD(self, val);
-        self->last = (new == NULL) ?
-            self->last :
-            new;
+        _LLIST_TMP_MACRO_(self, last, val);
     }
 }
+#undef _LLIST_TMP_MACRO_
 
+/**
+ * @brief Map @a f to every element of @a self
+ * @param self The List
+ * @param f The function to execute on every element
+ * */
 LLIST_STATIC void LLIST_MAP (struct LLIST_LLIST * self, LLIST_DATA_TYPE (* f) (LLIST_DATA_TYPE val))
 {
+#define _LLIST_TMP_MACRO_(NODE, TARGET, F)      \
+    do {                                        \
+        NODE->val = F(NODE->val);               \
+        NODE = NODE->TARGET;                    \
+    } while (0)
+
     assert(self != NULL);
     assert(f != NULL);
 
-    if (self->length > 0) {
-        struct LLIST_NODE * node = self->head;
+    struct LLIST_NODE * l = self->head;
+    struct LLIST_NODE * r = self->last;
 
-        do {
-            node->val = f(node->val);
-            node = node->next;
-        } while (node != self->last);
+    if ((self->length & 1) != 0)
+        _LLIST_TMP_MACRO_(l, next, f);
+
+    size_t mid = self->length >> 1 ;
+    for (size_t i = 0; i < mid; i++) {
+        _LLIST_TMP_MACRO_(l, next, f);
+        _LLIST_TMP_MACRO_(r, prev, f);
     }
+#undef _LLIST_TMP_MACRO_
 }
 
 /*==========================================================
