@@ -75,6 +75,7 @@
 
 #define LLIST_NODE LLIST_MAKE_STR(Node)
 /**=========================================================
+ * @brief The Node type
  */
 struct LLIST_NODE {
     /** Value of this node. */
@@ -87,6 +88,7 @@ struct LLIST_NODE {
 
 #define LLIST_LLIST LLIST_MAKE_STR(LList)
 /**=========================================================
+ * @brief The List type
  */
 struct LLIST_LLIST {
     /** Length of the List. */
@@ -112,30 +114,31 @@ struct LLIST_LLIST {
 /*==========================================================
  * Function names
 ==========================================================*/
-#define LLIST_NEW               LLIST_MAKE_STR(new)
+#define LLIST_APPEND            LLIST_MAKE_STR(append)
+#define LLIST_CONS              LLIST_MAKE_STR(cons)
 #define LLIST_FREE              LLIST_MAKE_STR(free)
 #define LLIST_LEN               LLIST_MAKE_STR(len)
-#define LLIST_NTH               LLIST_MAKE_STR(nth)
-#define LLIST_NODE_NEW          LLIST_MAKE_STR(node_new)
-#define LLIST_EMPTY_ADD         LLIST_MAKE_STR(empty_add)
-#define LLIST_NON_EMPTY_ADD     LLIST_MAKE_STR(non_empty_add)
-#define LLIST_CONS              LLIST_MAKE_STR(cons)
-#define LLIST_APPEND            LLIST_MAKE_STR(append)
 #define LLIST_MAP               LLIST_MAKE_STR(map)
+#define LLIST_NEW               LLIST_MAKE_STR(new)
+#define LLIST_NTH               LLIST_MAKE_STR(nth)
+#define _LLIST_EMPTY_ADD        LLIST_MAKE_STR(_empty_add)
+#define _LLIST_NODE_NEW         LLIST_MAKE_STR(_node_new)
+#define _LLIST_NON_EMPTY_ADD    LLIST_MAKE_STR(_non_empty_add)
 
 /*==========================================================
  * Function prototypes
+ *           RETURN TYPE         FUNCTION NAME        ARGUMENT LIST
 ==========================================================*/
-LLIST_STATIC struct LLIST_LLIST LLIST_NEW (void);
-LLIST_STATIC void LLIST_FREE (struct LLIST_LLIST * self);
-LLIST_STATIC size_t LLIST_LEN (const struct LLIST_LLIST * self);
-LLIST_STATIC LLIST_DATA_TYPE LLIST_NTH (const struct LLIST_LLIST * self, size_t nth);
-LLIST_STATIC struct LLIST_NODE * LLIST_NODE_NEW (LLIST_DATA_TYPE val, struct LLIST_NODE * prev, struct LLIST_NODE * next);
-LLIST_STATIC void LLIST_EMPTY_ADD (struct LLIST_LLIST * self, LLIST_DATA_TYPE val);
-LLIST_STATIC struct LLIST_NODE * LLIST_NON_EMPTY_ADD (struct LLIST_LLIST * self, LLIST_DATA_TYPE val);
-LLIST_STATIC void LLIST_CONS (struct LLIST_LLIST * self, LLIST_DATA_TYPE val);
-LLIST_STATIC void LLIST_APPEND (struct LLIST_LLIST * self, LLIST_DATA_TYPE val);
-LLIST_STATIC void LLIST_MAP (struct LLIST_LLIST * self, LLIST_DATA_TYPE (* f) (LLIST_DATA_TYPE val));
+LLIST_STATIC LLIST_DATA_TYPE     LLIST_NTH            (const struct LLIST_LLIST * self, size_t nth);
+LLIST_STATIC size_t              LLIST_LEN            (const struct LLIST_LLIST * self);
+LLIST_STATIC struct LLIST_LLIST  LLIST_NEW            (void);
+LLIST_STATIC struct LLIST_NODE * _LLIST_NODE_NEW      (LLIST_DATA_TYPE val, struct LLIST_NODE * prev, struct LLIST_NODE * next);
+LLIST_STATIC struct LLIST_NODE * _LLIST_NON_EMPTY_ADD (struct LLIST_LLIST * self, LLIST_DATA_TYPE val);
+LLIST_STATIC void                LLIST_APPEND         (struct LLIST_LLIST * self, LLIST_DATA_TYPE val);
+LLIST_STATIC void                LLIST_CONS           (struct LLIST_LLIST * self, LLIST_DATA_TYPE val);
+LLIST_STATIC void                LLIST_FREE           (struct LLIST_LLIST * self);
+LLIST_STATIC void                LLIST_MAP            (struct LLIST_LLIST * self, LLIST_DATA_TYPE (* f) (LLIST_DATA_TYPE val));
+LLIST_STATIC void                _LLIST_EMPTY_ADD     (struct LLIST_LLIST * self, LLIST_DATA_TYPE val);
 
 /*==========================================================
  * Function definitions
@@ -163,6 +166,7 @@ LLIST_STATIC void LLIST_FREE (struct LLIST_LLIST * self)
     /*
      * Do nothing if `self == NULL` or
      * `length == 0` and `head == NULL` and `last == NULL`
+     * (the list is empty)
      */
     if (self == NULL ||
         (self->length == 0 && self->head == NULL && self->last == NULL))
@@ -178,6 +182,8 @@ LLIST_STATIC void LLIST_FREE (struct LLIST_LLIST * self)
     assert(self->last != NULL);
 
     /*
+     * TODO: Use an algorithm similar to LLIST_MAP
+     *
      * Simple linear free
      *
      * 1. Save head;
@@ -250,10 +256,11 @@ LLIST_STATIC LLIST_DATA_TYPE LLIST_NTH (const struct LLIST_LLIST * self, size_t 
  * @param next The next Node in the List
  * @returns The new Node
  */
-LLIST_STATIC struct LLIST_NODE * LLIST_NODE_NEW (LLIST_DATA_TYPE val, struct LLIST_NODE * prev, struct LLIST_NODE * next)
+LLIST_STATIC struct LLIST_NODE * _LLIST_NODE_NEW (LLIST_DATA_TYPE val, struct LLIST_NODE * prev, struct LLIST_NODE * next)
 {
     struct LLIST_NODE * ret = malloc(sizeof(struct LLIST_NODE));
 
+    /* If `prev` or `next` are `NULL`, `ret` points to itself */
     if (ret != NULL) {
         *ret = (struct LLIST_NODE) {
             .val = val,
@@ -274,14 +281,14 @@ LLIST_STATIC struct LLIST_NODE * LLIST_NODE_NEW (LLIST_DATA_TYPE val, struct LLI
  * @param self The List
  * @param val The val to add
  */
-LLIST_STATIC void LLIST_EMPTY_ADD (struct LLIST_LLIST * self, LLIST_DATA_TYPE val)
+LLIST_STATIC void _LLIST_EMPTY_ADD (struct LLIST_LLIST * self, LLIST_DATA_TYPE val)
 {
     assert(self != NULL);
     assert(self->length == 0);
     assert(self->head == NULL);
     assert(self->last == NULL);
 
-    self->head = self->last = LLIST_NODE_NEW(val, NULL, NULL);
+    self->head = self->last = _LLIST_NODE_NEW(val, NULL, NULL);
     self->length = (self->head != NULL) ?
         1 :
         0 ;
@@ -293,14 +300,14 @@ LLIST_STATIC void LLIST_EMPTY_ADD (struct LLIST_LLIST * self, LLIST_DATA_TYPE va
  * @param val The val to add
  * @returns A pointer to the new Node
  */
-LLIST_STATIC struct LLIST_NODE * LLIST_NON_EMPTY_ADD (struct LLIST_LLIST * self, LLIST_DATA_TYPE val)
+LLIST_STATIC struct LLIST_NODE * _LLIST_NON_EMPTY_ADD (struct LLIST_LLIST * self, LLIST_DATA_TYPE val)
 {
     assert(self != NULL);
     assert(self->length > 0);
     assert(self->head != NULL);
     assert(self->last != NULL);
 
-    struct LLIST_NODE * ret = LLIST_NODE_NEW(val, self->last, self->head);
+    struct LLIST_NODE * ret = _LLIST_NODE_NEW(val, self->last, self->head);
 
     if (ret != NULL) {
         self->length++;
@@ -312,7 +319,7 @@ LLIST_STATIC struct LLIST_NODE * LLIST_NON_EMPTY_ADD (struct LLIST_LLIST * self,
 
 #define _LLIST_TMP_MACRO_(SELF, TARGET, VAL)                            \
     do {                                                                \
-        struct LLIST_NODE * tmp = LLIST_NON_EMPTY_ADD((SELF), (VAL));   \
+        struct LLIST_NODE * tmp = _LLIST_NON_EMPTY_ADD(SELF, VAL);      \
         SELF->TARGET = (tmp == NULL) ?                                  \
             SELF->TARGET :                                              \
             tmp ;                                                       \
@@ -327,7 +334,7 @@ LLIST_STATIC void LLIST_CONS (struct LLIST_LLIST * self, LLIST_DATA_TYPE val)
 {
     assert(self != NULL);
     if (self->length == 0) {
-        LLIST_EMPTY_ADD(self, val);
+        _LLIST_EMPTY_ADD(self, val);
     } else {
         _LLIST_TMP_MACRO_(self, head, val);
     }
@@ -342,7 +349,7 @@ LLIST_STATIC void LLIST_APPEND (struct LLIST_LLIST * self, LLIST_DATA_TYPE val)
 {
     assert(self != NULL);
     if (self->length == 0) {
-        LLIST_EMPTY_ADD(self, val);
+        _LLIST_EMPTY_ADD(self, val);
     } else {
         _LLIST_TMP_MACRO_(self, last, val);
     }
@@ -353,7 +360,7 @@ LLIST_STATIC void LLIST_APPEND (struct LLIST_LLIST * self, LLIST_DATA_TYPE val)
  * @brief Map @a f to every element of @a self
  * @param self The List
  * @param f The function to execute on every element
- * */
+ */
 LLIST_STATIC void LLIST_MAP (struct LLIST_LLIST * self, LLIST_DATA_TYPE (* f) (LLIST_DATA_TYPE val))
 {
 #define _LLIST_TMP_MACRO_(NODE, TARGET, F)      \
@@ -390,9 +397,9 @@ LLIST_STATIC void LLIST_MAP (struct LLIST_LLIST * self, LLIST_DATA_TYPE (* f) (L
 #undef LLIST_FREE
 #undef LLIST_LEN
 #undef LLIST_NTH
-#undef LLIST_NODE_NEW
-#undef LLIST_EMPTY_ADD
-#undef LLIST_NON_EMPTY_ADD
+#undef _LLIST_NODE_NEW
+#undef _LLIST_EMPTY_ADD
+#undef _LLIST_NON_EMPTY_ADD
 #undef LLIST_CONS
 #undef LLIST_APPEND
 
