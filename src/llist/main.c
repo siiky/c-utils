@@ -40,7 +40,7 @@ void test_append (struct llist_LList * list, size_t n)
 void test_cons (struct llist_LList * list, size_t n)
 {
     for (size_t i = 0; i < n; i++)
-        llist_append(list, i);
+        llist_cons(list, i);
 
     llist_map(list, print_shit);
     putchar('\n');
