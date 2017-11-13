@@ -125,6 +125,7 @@ struct VEC_VEC {
 #define VEC_INSERT             VEC_MAKE_STR(insert)
 #define VEC_IS_EMPTY           VEC_MAKE_STR(is_empty)
 #define VEC_LEN                VEC_MAKE_STR(len)
+#define VEC_MAP                VEC_MAKE_STR(map)
 #define VEC_NEW                VEC_MAKE_STR(new)
 #define VEC_POP                VEC_MAKE_STR(pop)
 #define VEC_PUSH               VEC_MAKE_STR(push)
@@ -149,7 +150,7 @@ VEC_STATIC VEC_DATA_TYPE         VEC_POP            (struct VEC_VEC * self);
 VEC_STATIC VEC_DATA_TYPE         VEC_REMOVE         (struct VEC_VEC * self, size_t index);
 VEC_STATIC VEC_DATA_TYPE         VEC_SWAP_REMOVE    (struct VEC_VEC * self, size_t index);
 VEC_STATIC VEC_DATA_TYPE *       VEC_AS_MUT_SLICE   (struct VEC_VEC * self);
-VEC_STATIC VEC_DATA_TYPE *       VEC_BSEARCH        (const struct VEC_VEC * self, VEC_DATA_TYPE key, int (*compar) (const void * key, const void * elem));
+VEC_STATIC VEC_DATA_TYPE *       VEC_BSEARCH        (const struct VEC_VEC * self, VEC_DATA_TYPE key, int compar (const void *, const void *));
 VEC_STATIC bool                  VEC_ELEM           (const struct VEC_VEC * self, VEC_DATA_TYPE element);
 VEC_STATIC bool                  VEC_IS_EMPTY       (const struct VEC_VEC * self);
 VEC_STATIC const VEC_DATA_TYPE * VEC_AS_SLICE       (const struct VEC_VEC * self);
@@ -161,11 +162,12 @@ VEC_STATIC struct VEC_VEC        VEC_NEW            (void);
 VEC_STATIC struct VEC_VEC        VEC_SPLIT_OFF      (struct VEC_VEC * self, size_t at);
 VEC_STATIC struct VEC_VEC        VEC_WITH_CAPACITY  (size_t capacity);
 VEC_STATIC void                  VEC_APPEND         (struct VEC_VEC * restrict self, struct VEC_VEC * restrict other);
-VEC_STATIC void                  VEC_FILTER         (struct VEC_VEC * self, bool (* pred) (VEC_DATA_TYPE *));
-VEC_STATIC void                  VEC_FREE           (struct VEC_VEC * self);
+VEC_STATIC void                  VEC_FILTER         (struct VEC_VEC * self, bool pred (VEC_DATA_TYPE *));
+VEC_STATIC void                  VEC_FREE           (struct VEC_VEC * self, VEC_DATA_TYPE dtor (VEC_DATA_TYPE));
 VEC_STATIC void                  VEC_INSERT         (struct VEC_VEC * self, size_t index, VEC_DATA_TYPE element);
+VEC_STATIC void                  VEC_MAP            (struct VEC_VEC * self, VEC_DATA_TYPE f (VEC_DATA_TYPE));
 VEC_STATIC void                  VEC_PUSH           (struct VEC_VEC * self, VEC_DATA_TYPE element);
-VEC_STATIC void                  VEC_QSORT          (struct VEC_VEC * self, int (*compar) (const void * key, const void * elem));
+VEC_STATIC void                  VEC_QSORT          (struct VEC_VEC * self, int compar (const void *, const void *));
 VEC_STATIC void                  VEC_RESERVE        (struct VEC_VEC * self, size_t additional);
 VEC_STATIC void                  VEC_SET_LEN        (struct VEC_VEC * self, size_t len);
 VEC_STATIC void                  VEC_SET_NTH        (struct VEC_VEC * self, size_t nth, VEC_DATA_TYPE element);
@@ -191,9 +193,12 @@ VEC_STATIC void _VEC_INCREASE_CAPACITY (struct VEC_VEC * self)
  * @brief Free a vec type
  * @param self The vec to free
  */
-VEC_STATIC void VEC_FREE (struct VEC_VEC * self)
+VEC_STATIC void VEC_FREE (struct VEC_VEC * self, VEC_DATA_TYPE dtor (VEC_DATA_TYPE))
 {
     assert(self != NULL);
+
+    if (dtor != NULL)
+        VEC_MAP(self, dtor);
 
     if (self->ptr != NULL) {
         free(self->ptr);
@@ -261,13 +266,16 @@ VEC_STATIC void VEC_RESERVE (struct VEC_VEC * self, size_t additional)
 {
     assert(self != NULL);
 
-    size_t sum = self->length + additional;
+    size_t ncap = self->length + additional;
 
-    if (self->capacity >= sum)
+    if (self->capacity >= ncap)
         return;
 
-    self->capacity = sum;
-    self->ptr = realloc(self->ptr, sum * sizeof(VEC_DATA_TYPE));
+    VEC_DATA_TYPE * new = realloc(self->ptr, ncap * sizeof(VEC_DATA_TYPE));
+    if (new != NULL) {
+        self->capacity = ncap;
+        self->ptr = new;
+    }
 }
 
 /**=========================================================
@@ -399,7 +407,7 @@ VEC_STATIC VEC_DATA_TYPE VEC_REMOVE (struct VEC_VEC * self, size_t index)
  * @param self The vec
  * @param pred The predicate
  */
-VEC_STATIC void VEC_FILTER (struct VEC_VEC * self, bool (* pred) (VEC_DATA_TYPE *))
+VEC_STATIC void VEC_FILTER (struct VEC_VEC * self, bool pred (VEC_DATA_TYPE *))
 {
     assert(self != NULL);
     assert(self->ptr != NULL);
@@ -587,7 +595,7 @@ VEC_STATIC bool VEC_ELEM (const struct VEC_VEC * self, VEC_DATA_TYPE element)
  * @param compar The function to compare elements
  * @returns A pointer to the found element, or `NULL` otherwise
  */
-VEC_STATIC VEC_DATA_TYPE * VEC_BSEARCH (const struct VEC_VEC * self, VEC_DATA_TYPE key, int (*compar) (const void * key, const void * elem))
+VEC_STATIC VEC_DATA_TYPE * VEC_BSEARCH (const struct VEC_VEC * self, VEC_DATA_TYPE key, int compar (const void *, const void *))
 {
     assert(self != NULL);
     assert(self->ptr != NULL);
@@ -605,12 +613,27 @@ VEC_STATIC VEC_DATA_TYPE * VEC_BSEARCH (const struct VEC_VEC * self, VEC_DATA_TY
  * @param self The vec
  * @param compar The function to compare elements
  */
-VEC_STATIC void VEC_QSORT (struct VEC_VEC * self, int (*compar) (const void * key, const void * elem))
+VEC_STATIC void VEC_QSORT (struct VEC_VEC * self, int compar (const void *, const void *))
 {
     assert(self != NULL);
     assert(self->ptr != NULL);
     assert(compar != NULL);
     qsort(self->ptr, self->length, sizeof(VEC_DATA_TYPE), compar);
+}
+
+/**=========================================================
+ * @brief Apply @a f to every element of @a self.
+ * @param self The vec
+ * @param f The function to apply on every element
+ */
+VEC_STATIC void VEC_MAP (struct VEC_VEC * self, VEC_DATA_TYPE f (VEC_DATA_TYPE))
+{
+    assert(self != NULL);
+    assert(self->ptr != NULL);
+    assert(f != NULL);
+    size_t len = VEC_LEN(self);
+    for (size_t i = 0; i < len; i++)
+        self->ptr[i] = f(self->ptr[i]);
 }
 
 /*==========================================================
@@ -626,6 +649,7 @@ VEC_STATIC void VEC_QSORT (struct VEC_VEC * self, int (*compar) (const void * ke
 #undef VEC_BSEARCH
 #undef VEC_CAPACITY
 #undef VEC_ELEM
+#undef VEC_FILTER
 #undef VEC_FIND
 #undef VEC_FREE
 #undef VEC_FROM_RAW_PARTS
@@ -633,13 +657,13 @@ VEC_STATIC void VEC_QSORT (struct VEC_VEC * self, int (*compar) (const void * ke
 #undef VEC_INSERT
 #undef VEC_IS_EMPTY
 #undef VEC_LEN
+#undef VEC_MAP
 #undef VEC_NEW
 #undef VEC_POP
 #undef VEC_PUSH
 #undef VEC_QSORT
 #undef VEC_REMOVE
 #undef VEC_RESERVE
-#undef VEC_FILTER
 #undef VEC_SET_LEN
 #undef VEC_SET_NTH
 #undef VEC_SHRINK_TO_FIT
