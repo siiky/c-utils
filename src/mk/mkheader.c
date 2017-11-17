@@ -14,21 +14,21 @@ const char * TXTFMT =
 "\n"
 "#endif /* _%s_H */\n";
 
-int main (int argc, char ** argv)
+int mkheader (char * name)
 {
     int ret = 0;
     FILE * f = NULL;
     char * tmp = NULL;
 
-    ABORT(ko, argc != 2, "%s [HEADER_NAME]\n", argv[0]);
+    ifjmp(name == NULL, ko);
 
-    size_t len = strlen(argv[1]) + 1;
+    size_t len = strlen(name) + 1;
     tmp = calloc(len + 2, sizeof(char));
 
     ABORT(ko, tmp == NULL,
           "Could not allocate memory, aborting!\n");
 
-    sprintf(tmp, "%s.h", argv[1]);
+    sprintf(tmp, "%s.h", name);
 
     ABORT(ko, file_exists(tmp),
           "File already exists, aborting!\n");
@@ -42,13 +42,23 @@ int main (int argc, char ** argv)
     tmp[len - 1] = '\0';
 
     ABORT(ko, fprintf(f, TXTFMT, tmp, tmp, tmp) < 0,
-        "An error occurred while writing to file!\n");
+          "An error occurred while writing to file!\n");
 
-ret:
+out:
     ifnotnull(f, fclose);
     ifnotnull(tmp, free);
     return ret;
 ko:
     ret = 1;
-    goto ret;
+    goto out;
+}
+
+int main (int argc, char ** argv)
+{
+    int ret = 0;
+
+    for (int i = 1; i < argc; i++)
+        ret += mkheader(argv[i]);
+
+    return ret;
 }

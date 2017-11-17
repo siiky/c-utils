@@ -2,6 +2,7 @@
 #define _MKUTILS_H
 
 #include "ifnotnull.h"
+#include "ifjmp.h"
 
 #define ABORT(L, C, ...)              \
     if (C) {                          \
