@@ -53,6 +53,8 @@
  * - [ ] More options
  */
 
+#ifndef _VEC_H
+
 #include <assert.h>  /* assert() */
 #include <stdbool.h> /* bool */
 #include <stddef.h>  /* size_t */
@@ -174,9 +176,13 @@ VEC_STATIC void                  VEC_SET_NTH        (struct VEC_VEC * self, size
 VEC_STATIC void                  VEC_SHRINK_TO_FIT  (struct VEC_VEC * self);
 VEC_STATIC void                  VEC_TRUNCATE       (struct VEC_VEC * self, size_t len);
 
+#endif /* _VEC_H */
+
 /*==========================================================
  * Function definitions
 ==========================================================*/
+
+#ifdef VEC_IMPLEMENTATION
 
 /**=========================================================
  * @brief Checks if @a self needs more memory and tries to increase it
@@ -636,9 +642,14 @@ VEC_STATIC void VEC_MAP (struct VEC_VEC * self, VEC_DATA_TYPE f (VEC_DATA_TYPE))
         self->ptr[i] = f(self->ptr[i]);
 }
 
+#endif /* VEC_IMPLEMENTATION */
+
 /*==========================================================
  * Clean up
 ==========================================================*/
+
+#ifndef _VEC_H
+#define _VEC_H
 
 /*
  * Functions
@@ -681,6 +692,8 @@ VEC_STATIC void VEC_MAP (struct VEC_VEC * self, VEC_DATA_TYPE f (VEC_DATA_TYPE))
 #undef VEC_PREFIX
 #undef VEC_STATIC
 #undef VEC_VEC
+
+#endif /* _VEC_H */
 
 /*==========================================================
  * License
