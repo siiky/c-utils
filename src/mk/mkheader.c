@@ -26,23 +26,27 @@ int mkheader (char * name)
     tmp = calloc(len + 2, sizeof(char));
 
     ABORT(ko, tmp == NULL,
-          "Could not allocate memory, aborting!\n");
+          "`%s`:Could not allocate memory, do nothing!\n",
+          name);
 
     sprintf(tmp, "%s.h", name);
 
     ABORT(ko, file_exists(tmp),
-          "File already exists, aborting!\n");
+          "`%s.h`:File already exists, do nothing!\n",
+          name);
 
     f = fopen(tmp, "w");
     ABORT(ko, f == NULL,
-          "Could not open file for writing, aborting!\n");
+          "`%s.h`:Could not open file for writing, do nothing!\n",
+          name);
 
     for (size_t i = 0; i < len; i++)
         tmp[i] = toupper(tmp[i]);
     tmp[len - 1] = '\0';
 
     ABORT(ko, fprintf(f, TXTFMT, tmp, tmp, tmp) < 0,
-          "An error occurred while writing to file!\n");
+          "`%s.h`:An error occurred while writing to file!\n",
+          name);
 
 out:
     ifnotnull(f, fclose);
