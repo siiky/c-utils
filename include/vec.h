@@ -153,8 +153,13 @@ VEC_STATIC VEC_DATA_TYPE         VEC_REMOVE         (struct VEC_VEC * self, size
 VEC_STATIC VEC_DATA_TYPE         VEC_SWAP_REMOVE    (struct VEC_VEC * self, size_t index);
 VEC_STATIC VEC_DATA_TYPE *       VEC_AS_MUT_SLICE   (struct VEC_VEC * self);
 VEC_STATIC VEC_DATA_TYPE *       VEC_BSEARCH        (const struct VEC_VEC * self, VEC_DATA_TYPE key, int compar (const void *, const void *));
+VEC_STATIC bool                  VEC_APPEND         (struct VEC_VEC * restrict self, struct VEC_VEC * restrict other);
 VEC_STATIC bool                  VEC_ELEM           (const struct VEC_VEC * self, VEC_DATA_TYPE element);
+VEC_STATIC bool                  VEC_INSERT         (struct VEC_VEC * self, size_t index, VEC_DATA_TYPE element);
 VEC_STATIC bool                  VEC_IS_EMPTY       (const struct VEC_VEC * self);
+VEC_STATIC bool                  VEC_PUSH           (struct VEC_VEC * self, VEC_DATA_TYPE element);
+VEC_STATIC bool                  VEC_RESERVE        (struct VEC_VEC * self, size_t additional);
+VEC_STATIC bool                  VEC_SHRINK_TO_FIT  (struct VEC_VEC * self);
 VEC_STATIC const VEC_DATA_TYPE * VEC_AS_SLICE       (const struct VEC_VEC * self);
 VEC_STATIC size_t                VEC_CAPACITY       (const struct VEC_VEC * self);
 VEC_STATIC size_t                VEC_FIND           (const struct VEC_VEC * self, VEC_DATA_TYPE element);
@@ -163,26 +168,21 @@ VEC_STATIC struct VEC_VEC        VEC_FROM_RAW_PARTS (VEC_DATA_TYPE * ptr, size_t
 VEC_STATIC struct VEC_VEC        VEC_NEW            (void);
 VEC_STATIC struct VEC_VEC        VEC_SPLIT_OFF      (struct VEC_VEC * self, size_t at);
 VEC_STATIC struct VEC_VEC        VEC_WITH_CAPACITY  (size_t capacity);
-VEC_STATIC void                  VEC_APPEND         (struct VEC_VEC * restrict self, struct VEC_VEC * restrict other);
 VEC_STATIC void                  VEC_FILTER         (struct VEC_VEC * self, bool pred (VEC_DATA_TYPE *));
 VEC_STATIC void                  VEC_FREE           (struct VEC_VEC * self, VEC_DATA_TYPE dtor (VEC_DATA_TYPE));
-VEC_STATIC void                  VEC_INSERT         (struct VEC_VEC * self, size_t index, VEC_DATA_TYPE element);
 VEC_STATIC void                  VEC_MAP            (struct VEC_VEC * self, VEC_DATA_TYPE f (VEC_DATA_TYPE));
-VEC_STATIC void                  VEC_PUSH           (struct VEC_VEC * self, VEC_DATA_TYPE element);
 VEC_STATIC void                  VEC_QSORT          (struct VEC_VEC * self, int compar (const void *, const void *));
-VEC_STATIC void                  VEC_RESERVE        (struct VEC_VEC * self, size_t additional);
 VEC_STATIC void                  VEC_SET_LEN        (struct VEC_VEC * self, size_t len);
 VEC_STATIC void                  VEC_SET_NTH        (struct VEC_VEC * self, size_t nth, VEC_DATA_TYPE element);
-VEC_STATIC void                  VEC_SHRINK_TO_FIT  (struct VEC_VEC * self);
 VEC_STATIC void                  VEC_TRUNCATE       (struct VEC_VEC * self, size_t len);
 
 #endif /* _VEC_H */
 
+#ifdef VEC_IMPLEMENTATION
+
 /*==========================================================
  * Function definitions
 ==========================================================*/
-
-#ifdef VEC_IMPLEMENTATION
 
 /**=========================================================
  * @brief Checks if @a self needs more memory and tries to increase it
@@ -267,28 +267,32 @@ VEC_STATIC size_t VEC_CAPACITY (const struct VEC_VEC * self)
  * @brief Reserve memory for at least @a additional elements
  * @param self The vec
  * @param additional Number of additional elements
+ * @returns `true` if everything went well, `false` otherwise
  */
-VEC_STATIC void VEC_RESERVE (struct VEC_VEC * self, size_t additional)
+VEC_STATIC bool VEC_RESERVE (struct VEC_VEC * self, size_t additional)
 {
     assert(self != NULL);
 
     size_t ncap = self->length + additional;
 
     if (self->capacity >= ncap)
-        return;
+        return false;
 
     VEC_DATA_TYPE * new = realloc(self->ptr, ncap * sizeof(VEC_DATA_TYPE));
     if (new != NULL) {
         self->capacity = ncap;
         self->ptr = new;
     }
+
+    return (new != NULL) ? true : false;
 }
 
 /**=========================================================
  * @brief Shrink the capacity of @a self to its length
  * @param self The vec
+ * @returns `true` if everything went well, `false` otherwise
  */
-VEC_STATIC void VEC_SHRINK_TO_FIT (struct VEC_VEC * self)
+VEC_STATIC bool VEC_SHRINK_TO_FIT (struct VEC_VEC * self)
 {
     assert(self != NULL);
     VEC_DATA_TYPE * ptr = realloc(self->ptr, self->length * sizeof(VEC_DATA_TYPE));
@@ -297,6 +301,8 @@ VEC_STATIC void VEC_SHRINK_TO_FIT (struct VEC_VEC * self)
         self->ptr = ptr;
         self->capacity = self->length;
     }
+
+    return (ptr != NULL) ? true : false;
 }
 
 /**=========================================================
@@ -368,8 +374,9 @@ VEC_STATIC VEC_DATA_TYPE VEC_SWAP_REMOVE (struct VEC_VEC * self, size_t index)
  * @param self The vec
  * @param index Where the element will be inserted
  * @param element Element to be inserted
+ * @returns `true` if everything went well, `false` otherwise
  */
-VEC_STATIC void VEC_INSERT (struct VEC_VEC * self, size_t index, VEC_DATA_TYPE element)
+VEC_STATIC bool VEC_INSERT (struct VEC_VEC * self, size_t index, VEC_DATA_TYPE element)
 {
     assert(self != NULL);
     assert(self->ptr != NULL);
@@ -377,13 +384,15 @@ VEC_STATIC void VEC_INSERT (struct VEC_VEC * self, size_t index, VEC_DATA_TYPE e
 
     _VEC_INCREASE_CAPACITY(self);
     if (self->length >= self->capacity)
-        return;
+        return false;
 
     for (size_t i = self->length; i >= index; i--)
         self->ptr[i] = self->ptr[i - 1];
 
     self->length++;
     self->ptr[index] = element;
+
+    return true;
 }
 
 /**=========================================================
@@ -432,18 +441,21 @@ VEC_STATIC void VEC_FILTER (struct VEC_VEC * self, bool pred (VEC_DATA_TYPE *))
  * @brief Insert an @a element at the end
  * @param self The vec
  * @param element Element to be pushed
+ * @returns `true` if everything went well, `false` otherwise
  */
-VEC_STATIC void VEC_PUSH (struct VEC_VEC * self, VEC_DATA_TYPE element)
+VEC_STATIC bool VEC_PUSH (struct VEC_VEC * self, VEC_DATA_TYPE element)
 {
     assert(self != NULL);
     assert(self->ptr != NULL);
 
     _VEC_INCREASE_CAPACITY(self);
     if (self->length >= self->capacity)
-        return;
+        return false;
 
     self->ptr[self->length] = element;
     self->length++;
+
+    return true;
 }
 
 /**=========================================================
@@ -464,8 +476,9 @@ VEC_STATIC VEC_DATA_TYPE VEC_POP (struct VEC_VEC * self)
  * @brief Appends @a other to @a self and sets the length of @a other to 0
  * @param self The vec
  * @param other The other vec
+ * @returns `true` if everything went well, `false` otherwise
  */
-VEC_STATIC void VEC_APPEND (struct VEC_VEC * restrict self, struct VEC_VEC * restrict other)
+VEC_STATIC bool VEC_APPEND (struct VEC_VEC * restrict self, struct VEC_VEC * restrict other)
 {
     assert(self != NULL);
     assert(other != NULL);
@@ -478,7 +491,7 @@ VEC_STATIC void VEC_APPEND (struct VEC_VEC * restrict self, struct VEC_VEC * res
     VEC_RESERVE(self, sum);
 
     if (self->capacity < sum)
-        return;
+        return false;
 
     VEC_DATA_TYPE * dest = self->ptr + self->length;
     VEC_DATA_TYPE * src = other->ptr;
@@ -486,6 +499,8 @@ VEC_STATIC void VEC_APPEND (struct VEC_VEC * restrict self, struct VEC_VEC * res
     memcpy(dest, src, n);
 
     other->length = 0;
+
+    return true;
 }
 
 /**=========================================================
@@ -644,12 +659,12 @@ VEC_STATIC void VEC_MAP (struct VEC_VEC * self, VEC_DATA_TYPE f (VEC_DATA_TYPE))
 
 #endif /* VEC_IMPLEMENTATION */
 
+#ifndef _VEC_H
+#define _VEC_H
+
 /*==========================================================
  * Clean up
 ==========================================================*/
-
-#ifndef _VEC_H
-#define _VEC_H
 
 /*
  * Functions
