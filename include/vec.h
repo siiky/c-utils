@@ -157,6 +157,7 @@ VEC_STATIC bool                  VEC_APPEND         (struct VEC_VEC * restrict s
 VEC_STATIC bool                  VEC_ELEM           (const struct VEC_VEC * self, VEC_DATA_TYPE element);
 VEC_STATIC bool                  VEC_INSERT         (struct VEC_VEC * self, size_t index, VEC_DATA_TYPE element);
 VEC_STATIC bool                  VEC_IS_EMPTY       (const struct VEC_VEC * self);
+VEC_STATIC bool                  VEC_MAP            (struct VEC_VEC * self, VEC_DATA_TYPE f (VEC_DATA_TYPE));
 VEC_STATIC bool                  VEC_PUSH           (struct VEC_VEC * self, VEC_DATA_TYPE element);
 VEC_STATIC bool                  VEC_RESERVE        (struct VEC_VEC * self, size_t additional);
 VEC_STATIC bool                  VEC_SHRINK_TO_FIT  (struct VEC_VEC * self);
@@ -170,7 +171,6 @@ VEC_STATIC struct VEC_VEC        VEC_SPLIT_OFF      (struct VEC_VEC * self, size
 VEC_STATIC struct VEC_VEC        VEC_WITH_CAPACITY  (size_t capacity);
 VEC_STATIC void                  VEC_FILTER         (struct VEC_VEC * self, bool pred (VEC_DATA_TYPE *));
 VEC_STATIC void                  VEC_FREE           (struct VEC_VEC * self, VEC_DATA_TYPE dtor (VEC_DATA_TYPE));
-VEC_STATIC void                  VEC_MAP            (struct VEC_VEC * self, VEC_DATA_TYPE f (VEC_DATA_TYPE));
 VEC_STATIC void                  VEC_QSORT          (struct VEC_VEC * self, int compar (const void *, const void *));
 VEC_STATIC void                  VEC_SET_LEN        (struct VEC_VEC * self, size_t len);
 VEC_STATIC void                  VEC_SET_NTH        (struct VEC_VEC * self, size_t nth, VEC_DATA_TYPE element);
@@ -646,8 +646,9 @@ VEC_STATIC void VEC_QSORT (struct VEC_VEC * self, int compar (const void *, cons
  * @brief Apply @a f to every element of @a self.
  * @param self The vec
  * @param f The function to apply on every element
+ * @returns `true`
  */
-VEC_STATIC void VEC_MAP (struct VEC_VEC * self, VEC_DATA_TYPE f (VEC_DATA_TYPE))
+VEC_STATIC bool VEC_MAP (struct VEC_VEC * self, VEC_DATA_TYPE f (VEC_DATA_TYPE))
 {
     assert(self != NULL);
     assert(self->ptr != NULL);
@@ -655,6 +656,7 @@ VEC_STATIC void VEC_MAP (struct VEC_VEC * self, VEC_DATA_TYPE f (VEC_DATA_TYPE))
     size_t len = VEC_LEN(self);
     for (size_t i = 0; i < len; i++)
         self->ptr[i] = f(self->ptr[i]);
+    return true;
 }
 
 #endif /* VEC_IMPLEMENTATION */
