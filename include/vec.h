@@ -16,7 +16,7 @@
  * #define VEC_DATA_TYPE_EQ(L, R) ((L) == (R))
  *
  * // Optionally, define a prefix (defaults to `vec_`)
- * #define VEC_PREFIX your_prefix_
+ * #define VEC_PREFIX my_
  *
  * // Optionally, define NDEBUG to disable asserts inside vec.h
  * #define NDEBUG
@@ -29,19 +29,28 @@
  *
  * int main (void)
  * {
- *     struct your_prefix_Vec vec = your_prefix_new();
+ *     struct my_vec vec = my_new();
  *
- *     for (size_t i = 0; i < 10; i++)
- *         your_prefix_push(&vec, i);
+ *     size_t used = 0;
+ *     for (size_t i = 0; i < 100; i++)
+ *         if (my_push(&vec, i)) used++;
  *
- *     for (size_t i = 0; i < 10; i++)
- *         assert(vec.ptr[i] == i);
+ *     size_t len = my_len(&vec);
+ *     assert(used == len);
+ *     assert(len >= my_capacity(&vec));
+ *     for (size_t i = 0; i < len; i++) {
+ *         size_t r = my_get_nth(&vec, i);
+ *         assert(r == i);
+ *     }
  *
- *     your_prefix_free(&vec);
+ *     // You can give a destructor function to `my_free()`
+ *     // to apply to every element of the vector. If NULL,
+ *     // only `free()` is called.
+ *     my_free(&vec, NULL);
  *
- *     assert(vec.ptr == NULL);
- *     assert(vec.length == 0);
- *     assert(vec.capacity == 0);
+ *     assert(my_as_slice(&vec) == NULL);
+ *     assert(my_len(&vec) == 0);
+ *     assert(my_capacity(&vec) == 0);
  *
  *     return 0;
  * }
@@ -85,7 +94,7 @@
 #define VEC_MAKE_STR1(A, B) VEC_CONCAT(A, B)
 #define VEC_MAKE_STR(A)     VEC_MAKE_STR1(VEC_PREFIX, A)
 
-#define VEC_VEC VEC_MAKE_STR(Vec)
+#define VEC_VEC VEC_MAKE_STR(vec)
 /**=========================================================
  * @brief The vector type.
  */
