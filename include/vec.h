@@ -455,7 +455,6 @@ VEC_STATIC void VEC_FILTER (struct VEC_VEC * self, bool pred (VEC_DATA_TYPE *))
 VEC_STATIC bool VEC_PUSH (struct VEC_VEC * self, VEC_DATA_TYPE element)
 {
     assert(self != NULL);
-    assert(self->ptr != NULL);
 
     _VEC_INCREASE_CAPACITY(self);
     if (self->length >= self->capacity)
