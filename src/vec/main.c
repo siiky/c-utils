@@ -5,7 +5,7 @@
 #include <time.h>
 
 /* Example with a Vec of type char */
-#define CHAR
+//#define CHAR
 
 /* Example with a Vec of type int */
 #define INT
@@ -31,9 +31,8 @@ struct char_Vec char_Vec_init (size_t capacity)
 
 void char_Vec_print (struct char_Vec * vec)
 {
-    size_t len = char_len(vec);
-    for (size_t i = 0; i < len; i++)
-        printf("%c ", char_get_nth(vec, i));
+    for (char_iter(vec); char_itering(vec); char_iter_next(vec))
+        printf("%c ", char_get_nth(vec, char_iter_idx(vec)));
     putchar('\n');
 }
 # endif /* CHAR */
@@ -44,9 +43,9 @@ void char_Vec_print (struct char_Vec * vec)
 #define VEC_PREFIX int_
 #include <vec.h>
 
-struct int_Vec int_Vec_init (size_t capacity)
+struct int_vec int_vec_init (size_t capacity)
 {
-    struct int_Vec ret = int_with_capacity(capacity);
+    struct int_vec ret = int_with_capacity(capacity);
     for (size_t i = 1; i <= capacity; i++) {
         int x = rand() % i; /* `Floating point exception` if `i` starts at 0 */
         int_push(&ret, x);
@@ -54,11 +53,10 @@ struct int_Vec int_Vec_init (size_t capacity)
     return ret;
 }
 
-void int_Vec_print (struct int_Vec * vec)
+void int_vec_print (struct int_vec * vec)
 {
-    size_t len = int_len(vec);
-    for (size_t i = 0; i < len; i++)
-        printf("%d ", int_get_nth(vec, i));
+    for (int_iter(vec); int_itering(vec); int_iter_next(vec))
+        printf("%d ", int_get_nth(vec, int_iter_idx(vec)));
     putchar('\n');
 }
 # endif /* INT */
@@ -69,14 +67,14 @@ int main (void)
 
 # ifdef INT
     puts("INT");
-    struct int_Vec ivec = int_Vec_init(10);
-    int_Vec_print(&ivec);
-    int_free(&ivec);
+    struct int_vec ivec = int_vec_init(100000);
+    int_vec_print(&ivec);
+    int_free(&ivec, NULL);
 # endif /* INT */
 
 # ifdef CHAR
     puts("CHAR");
-    struct char_Vec cvec = char_Vec_init(10);
+    struct char_Vec cvec = char_Vec_init(100000);
     char_Vec_print(&cvec);
     char_free(&cvec);
 # endif /* CHAR */
