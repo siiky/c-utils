@@ -794,6 +794,7 @@ out:
 VEC_STATIC bool VEC_ITER_REV (struct VEC_VEC * self, bool rev)
 {
     assert(self != NULL);
+    assert(!self->iterating);
     bool ret = self->reverse;
     self->reverse = rev;
     return ret;
