@@ -701,22 +701,18 @@ VEC_STATIC bool VEC_ITER (struct VEC_VEC * self)
     assert(self != NULL);
     assert(!self->iterating);
 
-    bool ret = false;
-
-    if (self->iterating)
-        goto out;
-
-    if (self->ptr == NULL || self->length == 0)
-        goto out;
+    if (self->iterating
+        || self->ptr == NULL
+        || self->length == 0)
+        return false;
 
     self->idx = (self->reverse) ?
         self->length - 1 :
         0;
 
-    self->iterating = ret = true;
+    self->iterating = true;
 
-out:
-    return ret;
+    return true;
 }
 
 /**=========================================================
@@ -771,15 +767,13 @@ VEC_STATIC bool VEC_ITER_NEXT (struct VEC_VEC * self)
                               self->length - 1 :
                               0);
 
-    if (over) {
+    if (over)
         VEC_ITER_END(self);
-        goto out;
-    }
-
-    if (self->reverse)
-        self->idx--;
     else
-        self->idx++;
+        if (self->reverse)
+            self->idx--;
+        else
+            self->idx++;
 
 out:
     return self->iterating;
