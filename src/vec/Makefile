@@ -8,8 +8,8 @@ FLAGS=-static -Wall -Wextra -pedantic -flto -I../../include/
 DFLAGS=$(FLAGS) -g
 CFLAGS=$(FLAGS) -O3
 
-INCLUDE=
-INPUT=main.c
+INCLUDE=char_vec.h int_vec.h gen_vec.h
+INPUT=main.c char_vec.c int_vec.c
 OBJS=$(INPUT:.c=.o)
 
 DEPS=$(INPUT) $(INCLUDE)
