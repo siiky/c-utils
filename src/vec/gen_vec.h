@@ -4,11 +4,6 @@
 #include "char_vec.h"
 #include "int_vec.h"
 
-#define vec_push(vec, elem) _Generic((vec), \
-                                     struct char_vec * : char_push, \
-                                     struct int_vec *  : int_push   \
-                                     )((vec), (elem))
-
 #define vec_free(vec, dtor) _Generic((vec), \
                                      struct char_vec * : char_free, \
                                      struct int_vec *  : int_free   \
