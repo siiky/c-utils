@@ -1,11 +1,12 @@
 DEST=/usr/local/include/utils
 
-HEADERS= \
-	 ifjmp.h \
-	 ifnotnull.h \
-	 unused.h \
-	 utils.h \
-	 vec.h \
+HEADERS=\
+	common.h    \
+	ifjmp.h     \
+	ifnotnull.h \
+	unused.h    \
+	utils.h     \
+	vec.h       \
 
 all: $(HEADERS)
 	@echo "run 'make install' to install"
