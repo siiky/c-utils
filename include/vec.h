@@ -205,7 +205,7 @@ bool                  VEC_ITER_REV       (struct VEC_VEC * self, bool rev);
 bool                  VEC_MAP            (struct VEC_VEC * self, VEC_DATA_TYPE f (VEC_DATA_TYPE));
 bool                  VEC_PUSH           (struct VEC_VEC * self, VEC_DATA_TYPE element);
 bool                  VEC_QSORT          (struct VEC_VEC * self, int compar (const void *, const void *));
-bool                  VEC_RESERVE        (struct VEC_VEC * self, size_t additional);
+bool                  VEC_RESERVE        (struct VEC_VEC * self, size_t total);
 bool                  VEC_SET_LEN        (struct VEC_VEC * self, size_t len);
 bool                  VEC_SET_NTH        (struct VEC_VEC * self, size_t nth, VEC_DATA_TYPE element);
 bool                  VEC_SHRINK_TO_FIT  (struct VEC_VEC * self);
@@ -242,6 +242,8 @@ static inline bool _VEC_INCREASE_CAPACITY (struct VEC_VEC * self)
 /**=========================================================
  * @brief Free a vec type
  * @param self The vector
+ * @param dtor A function to apply on every element of @a self
+ * @returns `true`
  */
 VEC_STATIC bool VEC_FREE (struct VEC_VEC * self, VEC_DATA_TYPE dtor (VEC_DATA_TYPE))
 {
@@ -311,27 +313,25 @@ VEC_STATIC inline size_t VEC_CAPACITY (const struct VEC_VEC * self)
 }
 
 /**=========================================================
- * @brief Reserve memory for at least @a additional elements
+ * @brief Reserve memory for a total of @a total elements
  * @param self The vector
- * @param additional Number of additional elements
+ * @param total Number of total elements
  * @returns `true` if everything went well, `false` otherwise
  */
-VEC_STATIC bool VEC_RESERVE (struct VEC_VEC * self, size_t additional)
+VEC_STATIC bool VEC_RESERVE (struct VEC_VEC * self, size_t total)
 {
     assert(self != NULL);
 
-    size_t ncap = self->length + additional;
-
-    if (self->capacity >= ncap)
+    if (self->capacity >= total)
         return false;
 
-    VEC_DATA_TYPE * new = realloc(self->ptr, ncap * sizeof(VEC_DATA_TYPE));
+    VEC_DATA_TYPE * new = realloc(self->ptr, total * sizeof(VEC_DATA_TYPE));
     if (new != NULL) {
-        self->capacity = ncap;
+        self->capacity = total;
         self->ptr = new;
     }
 
-    return (new != NULL) ? true : false;
+    return new != NULL;
 }
 
 /**=========================================================
@@ -537,10 +537,7 @@ VEC_STATIC bool VEC_APPEND (struct VEC_VEC * restrict self, struct VEC_VEC * res
     /* `self->ptr != other->ptr` => `self != other` */
     assert(self->ptr != other->ptr);
 
-    size_t sum = self->length + other->length;
-    VEC_RESERVE(self, sum);
-
-    if (self->capacity < sum)
+    if (!VEC_RESERVE(self, self->length + other->length))
         return false;
 
     VEC_DATA_TYPE * dest = self->ptr + self->length;
