@@ -59,10 +59,13 @@ ko:
 
 int main (int argc, char ** argv)
 {
+   ABORT(ko, argc < 2, "%s [HEADER]...\n", argv[0]);
     int ret = 0;
 
     for (int i = 1; i < argc; i++)
         ret += mkheader(argv[i]);
 
     return ret;
+ko:
+    return EXIT_FAILURE;
 }
