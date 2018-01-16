@@ -112,6 +112,6 @@
  * @param COND The condition to test
  * @param LBL The label to jump to
  */
-#define ifjmp(COND, LBL) if (COND) goto LBL;
+#define ifjmp(COND, LBL) if (COND) goto LBL
 
 #endif /* _IFJMP_H */
