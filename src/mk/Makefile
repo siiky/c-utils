@@ -1,6 +1,6 @@
 CC=musl-gcc
 #CC=cc
-CFLAGS=-static -Wall -Wextra -Werror -pedantic -O3 -I../../include/
+CFLAGS=-std=c11 -static -Wall -Wextra -Wconversion -pedantic -O3 -I../../include/
 EXECS=mkheader mkmakefile
 DEST=~/bin/
 

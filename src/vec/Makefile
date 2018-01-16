@@ -2,32 +2,24 @@ CC=musl-gcc
 #CC=cc
 EXEC=cvec
 
-DEST=~/bin
-
-FLAGS=-static -Wall -Wextra -pedantic -flto -I../../include/
+FLAGS=-std=c11 -static -Wall -Wextra -pedantic -flto -I../../include/
 DFLAGS=$(FLAGS) -g
 CFLAGS=$(FLAGS) -O3
 
-INCLUDE=char_vec.h int_vec.h gen_vec.h
-INPUT=main.c char_vec.c int_vec.c
-OBJS=$(INPUT:.c=.o)
+HEADERS=char_vec.h int_vec.h gen_vec.h
+SRC=main.c char_vec.c int_vec.c
+OBJS=$(SRC:.c=.o)
 
-DEPS=$(INPUT) $(INCLUDE)
+DEPS=$(SRC) $(HEADERS)
 
 debug: $(DEPS)
-	$(CC) $(DFLAGS) -c $(INPUT)
+	$(CC) $(DFLAGS) -c $(SRC)
 	$(CC) $(DFLAGS) $(OBJS) -o $(EXEC)
 
 all:
-	$(CC) $(CFLAGS) -c $(INPUT)
+	$(CC) $(CFLAGS) -c $(SRC)
 	$(CC) $(CFLAGS) $(OBJS) -o $(EXEC)
 	strip -s $(EXEC)
-
-install: all
-	install -m 0700 $(EXEC) -t $(DEST)
-
-uninstall:
-	rm -f $(DEST)/$(EXEC)
 
 clean:
 	rm -rf $(OBJS) $(EXEC)
