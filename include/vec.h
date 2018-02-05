@@ -234,9 +234,8 @@ struct VEC_VEC        VEC_WITH_CAPACITY  (size_t capacity);
 static inline bool _VEC_INCREASE_CAPACITY (struct VEC_VEC * self)
 {
     assert(self != NULL);
-    return (self->length >= self->capacity) ?
-        VEC_RESERVE(self, (self->capacity >> 1) + 1) :
-        true ; /* no need to increase */
+    return (self->length < self->capacity) ||
+        VEC_RESERVE(self, (self->capacity >> 1) + 1) ;
 }
 
 /**=========================================================
@@ -349,7 +348,7 @@ VEC_STATIC bool VEC_SHRINK_TO_FIT (struct VEC_VEC * self)
         self->capacity = self->length;
     }
 
-    return (ptr != NULL) ? true : false;
+    return ptr != NULL;
 }
 
 /**=========================================================
