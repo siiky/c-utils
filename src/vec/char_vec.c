@@ -5,8 +5,8 @@
 
 struct char_vec char_vec_init (size_t capacity)
 {
-    struct char_vec ret = char_with_capacity(capacity);
-    for (size_t i = 1; i <= ret.capacity; i++)
+    struct char_vec ret = char_new();
+    for (size_t i = 1; i <= capacity; i++)
         char_push(&ret, rand() % 256);
     return ret;
 }

@@ -5,8 +5,8 @@
 
 struct int_vec int_vec_init (size_t capacity)
 {
-    struct int_vec ret = int_with_capacity(capacity);
-    for (size_t i = 1; i <= ret.capacity; i++) {
+    struct int_vec ret = int_new();
+    for (size_t i = 1; i <= capacity; i++) {
         int x = rand() % i; /* `Floating point exception` if `i` starts at 0 */
         int_push(&ret, x);
     }

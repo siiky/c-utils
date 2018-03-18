@@ -16,15 +16,17 @@ int main (void)
 
 # ifdef INT
     puts("INT");
-    struct int_vec ivec = vec_init(&ivec, 100000);
-    vec_print(&ivec);
+    struct int_vec ivec = vec_init(&ivec, 1000000);
+    printf("len: %zu\tcap: %zu\n", int_len(&ivec), int_capacity(&ivec));
+    //vec_print(&ivec);
     vec_free(&ivec, NULL);
 # endif /* INT */
 
 # ifdef CHAR
     puts("CHAR");
-    struct char_vec cvec = vec_init(&cvec, 100000);
-    vec_print(&cvec);
+    struct char_vec cvec = vec_init(&cvec, 1000000);
+    printf("len: %zu\tcap: %zu\n", char_len(&cvec), char_capacity(&cvec));
+    //vec_print(&cvec);
     vec_free(&cvec, NULL);
 # endif /* CHAR */
 

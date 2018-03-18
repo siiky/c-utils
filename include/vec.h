@@ -234,8 +234,10 @@ struct VEC_VEC        VEC_WITH_CAPACITY  (size_t capacity);
 static inline bool _VEC_INCREASE_CAPACITY (struct VEC_VEC * self)
 {
     assert(self != NULL);
+    /* new_cap = (cap * 1.5) + 1 */
+    size_t new_cap = self->capacity + (self->capacity >> 1) + 1;
     return (self->length < self->capacity) ||
-        VEC_RESERVE(self, (self->capacity >> 1) + 1) ;
+        VEC_RESERVE(self, new_cap);
 }
 
 /**=========================================================
