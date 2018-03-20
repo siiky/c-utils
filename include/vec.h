@@ -242,21 +242,21 @@ static inline bool _VEC_INCREASE_CAPACITY (struct VEC_VEC * self)
  * @brief Free a vec type
  * @param self The vector
  * @param dtor A function to apply on every element of @a self
- * @returns `true`
+ * @returns `false` if @a self is `NULL`, `true` otherwise
  */
 VEC_STATIC bool VEC_FREE (struct VEC_VEC * self, VEC_DATA_TYPE dtor (VEC_DATA_TYPE))
 {
-    assert(self != NULL);
+    if (self == NULL)
+        return false;
 
     if (dtor != NULL)
         VEC_MAP(self, dtor);
 
-    if (self->ptr != NULL) {
+    if (self->ptr != NULL)
         free(self->ptr);
-        self->ptr = NULL;
-    }
 
     memset(self, 0, sizeof(struct VEC_VEC));
+
     return true;
 }
 
