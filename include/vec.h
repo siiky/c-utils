@@ -233,9 +233,9 @@ struct VEC_VEC        VEC_WITH_CAPACITY  (size_t capacity);
  */
 static inline bool _VEC_INCREASE_CAPACITY (struct VEC_VEC * self)
 {
-    assert(self != NULL);
-    return (self->length < self->capacity) ||
-        VEC_RESERVE(self, (self->capacity >> 1) + 1) ;
+    return (self != NULL)
+        && ((self->length < self->capacity)
+                || VEC_RESERVE(self, (self->capacity >> 1) + 1));
 }
 
 /**=========================================================
@@ -316,34 +316,39 @@ VEC_STATIC inline size_t VEC_CAPACITY (const struct VEC_VEC * self)
  * @brief Reserve memory for a total of @a total elements
  * @param self The vector
  * @param total Number of total elements
- * @returns `true` if everything went well, `false` otherwise
+ * @returns `true` if @a self already had enough capacity or it was
+ *          able to reserve the extra capacity needed, `false` otherwise
  */
 VEC_STATIC bool VEC_RESERVE (struct VEC_VEC * self, size_t total)
 {
-    assert(self != NULL);
+    if (self == NULL)
+        return false;
 
     if (self->capacity >= total)
         return true;
 
-    VEC_DATA_TYPE * new = realloc(self->ptr, total * sizeof(VEC_DATA_TYPE));
-    if (new != NULL) {
+    VEC_DATA_TYPE * ptr = realloc(self->ptr, total * sizeof(VEC_DATA_TYPE));
+    if (ptr != NULL) {
+        self->ptr = ptr;
         self->capacity = total;
-        self->ptr = new;
     }
 
-    return new != NULL;
+    return ptr != NULL;
 }
 
 /**=========================================================
  * @brief Shrink the capacity of @a self to its length
  * @param self The vector
  * @returns `true` if everything went well, `false` otherwise
+ * @returns `false` if @a self is `NULL` or it wasn't able to shrink
+ *          @a self, `true` otherwise
  */
 VEC_STATIC bool VEC_SHRINK_TO_FIT (struct VEC_VEC * self)
 {
-    assert(self != NULL);
-    VEC_DATA_TYPE * ptr = realloc(self->ptr, self->length * sizeof(VEC_DATA_TYPE));
+    if (self == NULL)
+        return false;
 
+    VEC_DATA_TYPE * ptr = realloc(self->ptr, self->length * sizeof(VEC_DATA_TYPE));
     if (ptr != NULL) {
         self->ptr = ptr;
         self->capacity = self->length;
@@ -356,13 +361,16 @@ VEC_STATIC bool VEC_SHRINK_TO_FIT (struct VEC_VEC * self)
  * @brief Shorten @a self, keeping the first @a len elements
  * @param self The vector
  * @param len New length
- * @returns `true`
+ * @returns `false` if @a self is `NULL`, `true` otherwise
  */
 VEC_STATIC bool VEC_TRUNCATE (struct VEC_VEC * self, size_t len)
 {
-    assert(self != NULL);
+    if (self == NULL)
+        return false;
+
     if (self->length > len)
         self->length = len;
+
     return true;
 }
 
@@ -373,8 +381,9 @@ VEC_STATIC bool VEC_TRUNCATE (struct VEC_VEC * self, size_t len)
  */
 VEC_STATIC inline const VEC_DATA_TYPE * VEC_AS_SLICE (const struct VEC_VEC * self)
 {
-    assert(self != NULL);
-    return (const VEC_DATA_TYPE *) self->ptr;
+    return (self != NULL) ?
+        (const VEC_DATA_TYPE *) self->ptr :
+        NULL;
 }
 
 /**=========================================================
@@ -384,19 +393,21 @@ VEC_STATIC inline const VEC_DATA_TYPE * VEC_AS_SLICE (const struct VEC_VEC * sel
  */
 VEC_STATIC inline VEC_DATA_TYPE * VEC_AS_MUT_SLICE (struct VEC_VEC * self)
 {
-    assert(self != NULL);
-    return self->ptr;
+    return (self != NULL) ?
+        self->ptr :
+        NULL;
 }
 
 /**=========================================================
  * @brief Sets the length of @a self, without checks
  * @param self The vector
  * @param len The new length
- * @returns `true`
+ * @returns `false` if @a self is `NULL`, `true` otherwise
  */
 VEC_STATIC inline bool VEC_SET_LEN (struct VEC_VEC * self, size_t len)
 {
-    assert(self != NULL);
+    if (self == NULL)
+        return false;
     self->length = len;
     return true;
 }
@@ -475,9 +486,10 @@ VEC_STATIC VEC_DATA_TYPE VEC_REMOVE (struct VEC_VEC * self, size_t index)
  */
 VEC_STATIC bool VEC_FILTER (struct VEC_VEC * self, bool pred (VEC_DATA_TYPE *))
 {
-    assert(self != NULL);
-    assert(self->ptr != NULL);
-    assert(pred != NULL);
+    if (self == NULL
+            || self->ptr == NULL
+            || pred == NULL)
+        return false;
 
     size_t len = 0;
 
@@ -497,9 +509,7 @@ VEC_STATIC bool VEC_FILTER (struct VEC_VEC * self, bool pred (VEC_DATA_TYPE *))
  */
 VEC_STATIC bool VEC_PUSH (struct VEC_VEC * self, VEC_DATA_TYPE element)
 {
-    assert(self != NULL);
-
-    if (!_VEC_INCREASE_CAPACITY(self))
+    if ((self == NULL) || !_VEC_INCREASE_CAPACITY(self))
         return false;
 
     self->ptr[self->length] = element;
@@ -530,14 +540,12 @@ VEC_STATIC VEC_DATA_TYPE VEC_POP (struct VEC_VEC * self)
  */
 VEC_STATIC bool VEC_APPEND (struct VEC_VEC * restrict self, struct VEC_VEC * restrict other)
 {
-    assert(self != NULL);
-    assert(other != NULL);
-    assert(self->ptr != NULL);
-    assert(other->ptr != NULL);
-    /* `self->ptr != other->ptr` => `self != other` */
-    assert(self->ptr != other->ptr);
-
-    if (!VEC_RESERVE(self, self->length + other->length))
+    if (self == NULL
+            || other == NULL
+            || self->ptr == NULL
+            || other->ptr == NULL
+            || self->ptr == other->ptr
+            || !VEC_RESERVE(self, self->length + other->length))
         return false;
 
     VEC_DATA_TYPE * dest = self->ptr + self->length;
@@ -625,9 +633,10 @@ VEC_STATIC inline VEC_DATA_TYPE VEC_GET_NTH (const struct VEC_VEC * self, size_t
  */
 VEC_STATIC inline bool VEC_SET_NTH (struct VEC_VEC * self, size_t nth, VEC_DATA_TYPE element)
 {
-    assert(self != NULL);
-    assert(self->ptr != NULL);
-    assert(nth < self->length);
+    if (self == NULL
+            || self->ptr == NULL
+            || nth >= self->length)
+        return false;
     self->ptr[nth] = element;
     return true;
 }
@@ -643,8 +652,8 @@ VEC_STATIC size_t VEC_FIND (const struct VEC_VEC * self, VEC_DATA_TYPE element)
 {
     assert(self != NULL);
     assert(self->ptr != NULL);
-    size_t ret = 0;
 
+    size_t ret = 0;
     for (ret = 0;
          ret < self->length
          && !(VEC_DATA_TYPE_EQ(self->ptr[ret], element));
@@ -694,9 +703,8 @@ VEC_STATIC VEC_DATA_TYPE * VEC_BSEARCH (const struct VEC_VEC * self, VEC_DATA_TY
  */
 VEC_STATIC bool VEC_QSORT (struct VEC_VEC * self, int compar (const void *, const void *))
 {
-    assert(self != NULL);
-    assert(self->ptr != NULL);
-    assert(compar != NULL);
+    if (self == NULL || self->ptr == NULL || compar == NULL)
+        return false;
     qsort(self->ptr, self->length, sizeof(VEC_DATA_TYPE), compar);
     return true;
 }
@@ -709,9 +717,8 @@ VEC_STATIC bool VEC_QSORT (struct VEC_VEC * self, int compar (const void *, cons
  */
 VEC_STATIC bool VEC_MAP (struct VEC_VEC * self, VEC_DATA_TYPE f (VEC_DATA_TYPE))
 {
-    assert(self != NULL);
-    assert(self->ptr != NULL);
-    assert(f != NULL);
+    if (self == NULL || self->ptr == NULL || f == NULL)
+        return false;
     size_t len = VEC_LEN(self);
     for (size_t i = 0; i < len; i++)
         self->ptr[i] = f(self->ptr[i]);
@@ -727,12 +734,10 @@ VEC_STATIC bool VEC_MAP (struct VEC_VEC * self, VEC_DATA_TYPE f (VEC_DATA_TYPE))
  */
 VEC_STATIC bool VEC_ITER (struct VEC_VEC * self)
 {
-    assert(self != NULL);
-    assert(!self->iterating);
-
-    if (self->iterating
-        || self->ptr == NULL
-        || self->length == 0)
+    if (self == NULL
+            || self->iterating
+            || self->ptr == NULL
+            || self->length == 0)
         return false;
 
     self->idx = (self->reverse) ?
@@ -747,13 +752,11 @@ VEC_STATIC bool VEC_ITER (struct VEC_VEC * self)
 /**=========================================================
  * @brief End the iterator.
  * @param self The vector
- * @returns `true`
+ * @returns `false` if @a self is NULL, `true` otherwise
  */
 VEC_STATIC inline bool VEC_ITER_END (struct VEC_VEC * self)
 {
-    assert(self != NULL);
-    self->iterating = false;
-    return true;
+    return (self != NULL) && !(self->iterating = false);
 }
 
 /**=========================================================
@@ -763,8 +766,7 @@ VEC_STATIC inline bool VEC_ITER_END (struct VEC_VEC * self)
  */
 VEC_STATIC inline bool VEC_ITERING (const struct VEC_VEC * self)
 {
-    assert(self != NULL);
-    return self->iterating;
+    return (self != NULL) && self->iterating;
 }
 
 /**=========================================================
@@ -782,15 +784,12 @@ VEC_STATIC inline size_t VEC_ITER_IDX (struct VEC_VEC * self)
 /**=========================================================
  * @brief Moves the iterator to the next index.
  * @param self The vector
- * @returns `false` if the end was reached, `true` otherwise.
+ * @returns `true` if still iterating, false otherwise
  */
 VEC_STATIC bool VEC_ITER_NEXT (struct VEC_VEC * self)
 {
-    assert(self != NULL);
-    assert(self->idx < self->length);
-
-    if (!self->iterating)
-        goto out;
+    if (self == NULL || self->idx >= self->length || !self->iterating)
+        return false;
 
     bool over = self->idx == ((!self->reverse) ?
                               self->length - 1 :
@@ -804,7 +803,6 @@ VEC_STATIC bool VEC_ITER_NEXT (struct VEC_VEC * self)
         else
             self->idx++;
 
-out:
     return self->iterating;
 }
 
@@ -812,15 +810,14 @@ out:
  * @brief Sets the `reverse` flag, i.e., if the iterator should
  *        move from beggining to end or end to begginning.
  * @param self The vector
- * @returns The old value.
+ * @returns `false` if @a self is NULL or is iterating, `true` otherwise
  */
 VEC_STATIC bool VEC_ITER_REV (struct VEC_VEC * self, bool rev)
 {
-    assert(self != NULL);
-    assert(!self->iterating);
-    bool ret = self->reverse;
+    if (self == NULL || self->iterating)
+        return false;
     self->reverse = rev;
-    return ret;
+    return true;
 }
 
 #endif /* VEC_IMPLEMENTATION */
