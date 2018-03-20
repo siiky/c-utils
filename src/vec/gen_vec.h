@@ -4,10 +4,10 @@
 #include "char_vec.h"
 #include "int_vec.h"
 
-#define vec_free(vec, dtor) _Generic((vec), \
+#define vec_free(vec) _Generic((vec), \
                                      struct char_vec * : char_free, \
                                      struct int_vec *  : int_free   \
-                                     )((vec), (dtor))
+                                     )(vec)
 
 #define vec_print(vec) _Generic((vec), \
                                 struct char_vec * : char_vec_print, \

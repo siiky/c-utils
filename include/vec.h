@@ -1,8 +1,13 @@
-/*
+/* vec - v2018.03.20-0
+ *
  * A vector type inspired by
  *  * Rust's `Vec` type
  *  * [stb](https://github.com/nothings/stb)
  *  * [sort](https://github.com/swenson/sort)
+ *
+ * The most up to date version of this file can be found at
+ * `include/vec.h` on [siiky/c-utils](https://github.com/siiky/c-utils)
+ * More usage examples can be found at `src/vec.h` on the link above
  *
  * # Usage
  *
@@ -244,7 +249,7 @@ static inline bool _VEC_INCREASE_CAPACITY (struct VEC_VEC * self)
     if (self == NULL)
         return false;
 
-    if (self->length >= self->capacity)
+    if (self->length < self->capacity)
         return true;
 
     /* new_cap = (cap * 1.5) + 1 */

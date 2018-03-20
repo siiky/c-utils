@@ -18,16 +18,16 @@ int main (void)
     puts("INT");
     struct int_vec ivec = vec_init(&ivec, 1000000);
     printf("len: %zu\tcap: %zu\n", int_len(&ivec), int_capacity(&ivec));
-    //vec_print(&ivec);
-    vec_free(&ivec, NULL);
+    vec_print(&ivec);
+    vec_free(&ivec);
 # endif /* INT */
 
 # ifdef CHAR
     puts("CHAR");
     struct char_vec cvec = vec_init(&cvec, 1000000);
     printf("len: %zu\tcap: %zu\n", char_len(&cvec), char_capacity(&cvec));
-    //vec_print(&cvec);
-    vec_free(&cvec, NULL);
+    vec_print(&cvec);
+    vec_free(&cvec);
 # endif /* CHAR */
 
     return 0;

@@ -1,6 +1,9 @@
 #ifndef _CHAR_VEC_H
 #define _CHAR_VEC_H
 
+char char_dtor (char elem);
+
+#define VEC_DTOR char_dtor
 #define VEC_DATA_TYPE char
 #define VEC_PREFIX char_
 #include <vec.h>

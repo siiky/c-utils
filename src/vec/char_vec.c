@@ -3,6 +3,11 @@
 
 #include "char_vec.h"
 
+char char_dtor (char elem)
+{
+    return elem;
+}
+
 struct char_vec char_vec_init (size_t capacity)
 {
     struct char_vec ret = char_new();
