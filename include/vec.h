@@ -307,8 +307,9 @@ VEC_STATIC inline struct VEC_VEC VEC_FROM_RAW_PARTS (VEC_DATA_TYPE * ptr, size_t
  */
 VEC_STATIC inline size_t VEC_CAPACITY (const struct VEC_VEC * self)
 {
-    assert(self != NULL);
-    return self->capacity;
+    return (self != NULL) ?
+        self->capacity :
+        0;
 }
 
 /**=========================================================
@@ -556,36 +557,21 @@ VEC_STATIC bool VEC_APPEND (struct VEC_VEC * restrict self, struct VEC_VEC * res
  */
 VEC_STATIC inline size_t VEC_LEN (const struct VEC_VEC * self)
 {
-    assert(self != NULL);
-    return self->length;
+    return (self != NULL) ?
+        self->length :
+        0;
 }
 
 /**=========================================================
  * @brief Checks if @a self is empty
  * @param self The vector
- * @returns `true` if `length == 0`, and `false` otherwise
+ * @returns `true` if @a self is empty, and `false` otherwise
  */
 VEC_STATIC inline bool VEC_IS_EMPTY (const struct VEC_VEC * self)
 {
-    assert(self != NULL);
-    /*
-     * T := true
-     * N := self->ptr == NULL
-     * L := self->length == 0
-     *
-     * A valid vector either has no mem and its length is 0
-     *   or it has mem, and its length may be any value
-     *
-     * V := (!N && (L || !L)) || (N && L)
-     *  <=> (!N && T) || (N && L)
-     *  <=> !N || (N && L)
-     *  <=> (!N || N) && (!N || L)
-     *  <=> T && (!N || L)
-     *  <=> !N || L
-     */
-    bool ret = self->length == 0;
-    assert(self->ptr != NULL || ret);
-    return ret;
+    return self == NULL
+        || self->ptr == NULL
+        || self->length == 0;
 }
 
 /**=========================================================
@@ -675,9 +661,9 @@ VEC_STATIC size_t VEC_FIND (const struct VEC_VEC * self, VEC_DATA_TYPE element)
  */
 VEC_STATIC inline bool VEC_ELEM (const struct VEC_VEC * self, VEC_DATA_TYPE element)
 {
-    assert(self != NULL);
-    assert(self->ptr != NULL);
-    return VEC_FIND(self, element) < self->length;
+    return self != NULL
+        && self->ptr != NULL
+        && (VEC_FIND(self, element) < self->length);
 }
 
 /**=========================================================
