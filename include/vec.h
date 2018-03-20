@@ -322,7 +322,7 @@ VEC_STATIC bool VEC_RESERVE (struct VEC_VEC * self, size_t total)
     assert(self != NULL);
 
     if (self->capacity >= total)
-        return false;
+        return true;
 
     VEC_DATA_TYPE * new = realloc(self->ptr, total * sizeof(VEC_DATA_TYPE));
     if (new != NULL) {
