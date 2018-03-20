@@ -472,15 +472,17 @@ VEC_STATIC VEC_DATA_TYPE VEC_SWAP_REMOVE (struct VEC_VEC * self, size_t index)
  * @param self The vector
  * @param index Where the element will be inserted
  * @param element Element to be inserted
- * @returns `false` if @a index is out of bounds, `true` otherwise
+ * @returns `false` if @a index is out of bounds or @a self didn't have
+ *          enough capacity and it wasn't possible to increase it,
+ *          `true` otherwise
  */
 VEC_STATIC bool VEC_INSERT (struct VEC_VEC * self, size_t index, VEC_DATA_TYPE element)
 {
     if (self == NULL
-            /* allow inserting at the head */
-            || (VEC_IS_EMPTY(self) && index > 0)
-            || index >= self->length
-            || !_VEC_INCREASE_CAPACITY(self))
+    /* allow inserting at the head */
+    || (VEC_IS_EMPTY(self) && index > 0)
+    || index >= self->length
+    || !_VEC_INCREASE_CAPACITY(self))
         return false;
 
     for (size_t i = self->length; i >= index; i--)
@@ -522,13 +524,14 @@ VEC_STATIC VEC_DATA_TYPE VEC_REMOVE (struct VEC_VEC * self, size_t index)
  *        @a pred
  * @param self The vector
  * @param pred The predicate
- * @returns `false` if @a self is not a valid vector, `true` otherwise
+ * @returns `false` if @a self is not a valid vector or @a pred is
+ *          NULL, `true` otherwise
  */
 VEC_STATIC bool VEC_FILTER (struct VEC_VEC * self, bool pred (VEC_DATA_TYPE *))
 {
     if (self == NULL
-            || self->ptr == NULL
-            || pred == NULL)
+    || self->ptr == NULL
+    || pred == NULL)
         return false;
 
     size_t len = 0;
@@ -593,11 +596,11 @@ VEC_STATIC VEC_DATA_TYPE VEC_POP (struct VEC_VEC * self)
 VEC_STATIC bool VEC_APPEND (struct VEC_VEC * restrict self, struct VEC_VEC * restrict other)
 {
     if (self == NULL
-            || other == NULL
-            || self->ptr == NULL
-            || other->ptr == NULL
-            || self->ptr == other->ptr
-            || !VEC_RESERVE(self, self->length + other->length))
+    || other == NULL
+    || self->ptr == NULL
+    || other->ptr == NULL
+    || self->ptr == other->ptr
+    || !VEC_RESERVE(self, self->length + other->length))
         return false;
 
     VEC_DATA_TYPE * dest = self->ptr + self->length;
@@ -688,8 +691,8 @@ VEC_STATIC inline VEC_DATA_TYPE VEC_GET_NTH (const struct VEC_VEC * self, size_t
 VEC_STATIC inline bool VEC_SET_NTH (struct VEC_VEC * self, size_t nth, VEC_DATA_TYPE element)
 {
     if (self == NULL
-            || self->ptr == NULL
-            || nth >= self->length)
+    || self->ptr == NULL
+    || nth >= self->length)
         return false;
     self->ptr[nth] = element;
     return true;
@@ -793,9 +796,9 @@ VEC_STATIC bool VEC_MAP (struct VEC_VEC * self, VEC_DATA_TYPE f (VEC_DATA_TYPE))
 VEC_STATIC bool VEC_ITER (struct VEC_VEC * self)
 {
     if (self == NULL
-            || self->iterating
-            || self->ptr == NULL
-            || self->length == 0)
+    || self->iterating
+    || self->ptr == NULL
+    || self->length == 0)
         return false;
 
     self->idx = (self->reverse) ?
