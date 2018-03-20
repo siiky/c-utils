@@ -15,6 +15,11 @@
  * // (Not optional for compound types, like structs)
  * #define VEC_DATA_TYPE_EQ(L, R) ((L) == (R))
  *
+ * // Optionally, define a destructor function of type
+ * //     VEC_DATA_TYPE dtor (VEC_DATA_TYPE);
+ * // If defined, it will be used by VEC_FILTER() and VEC_FREE()
+ * #define VEC_DTOR my_dtor_function
+ *
  * // Optionally, define a prefix (defaults to `vec_`)
  * #define VEC_PREFIX my_
  *
@@ -43,10 +48,9 @@
  *         assert(r == i);
  *     }
  *
- *     // You can give a destructor function to `my_free()`
- *     // to apply to every element of the vector
- *     // If NULL, only `free()` is called
- *     my_free(&vec, NULL);
+ *     // If VEC_DTOR is defined, VEC_FREE() will automatically
+ *     // call it on every element
+ *     my_free(&vec);
  *
  *     assert(my_as_slice(&vec) == NULL);
  *     assert(my_len(&vec) == 0);
@@ -195,7 +199,7 @@ VEC_DATA_TYPE *       VEC_AS_MUT_SLICE   (struct VEC_VEC * self);
 bool                  VEC_APPEND         (struct VEC_VEC * restrict self, struct VEC_VEC * restrict other);
 bool                  VEC_ELEM           (const struct VEC_VEC * self, VEC_DATA_TYPE element);
 bool                  VEC_FILTER         (struct VEC_VEC * self, bool pred (VEC_DATA_TYPE *));
-bool                  VEC_FREE           (struct VEC_VEC * self, VEC_DATA_TYPE dtor (VEC_DATA_TYPE));
+bool                  VEC_FREE           (struct VEC_VEC * self);
 bool                  VEC_INSERT         (struct VEC_VEC * self, size_t index, VEC_DATA_TYPE element);
 bool                  VEC_IS_EMPTY       (const struct VEC_VEC * self);
 bool                  VEC_ITER           (struct VEC_VEC * self);
@@ -279,13 +283,14 @@ static inline bool _VEC_DECREASE_CAPACITY (struct VEC_VEC * self)
  * @param dtor A function to apply on every element of @a self
  * @returns `false` if @a self is `NULL`, `true` otherwise
  */
-VEC_STATIC bool VEC_FREE (struct VEC_VEC * self, VEC_DATA_TYPE dtor (VEC_DATA_TYPE))
+VEC_STATIC bool VEC_FREE (struct VEC_VEC * self)
 {
     if (self == NULL)
         return false;
 
-    if (dtor != NULL)
-        VEC_MAP(self, dtor);
+# ifdef VEC_DTOR
+    VEC_MAP(self, VEC_DTOR);
+# endif /* VEC_DTOR */
 
     if (self->ptr != NULL)
         free(self->ptr);
@@ -539,6 +544,10 @@ VEC_STATIC bool VEC_FILTER (struct VEC_VEC * self, bool pred (VEC_DATA_TYPE *))
     for (size_t r = 0; r < self->length; r++)
         if (pred(self->ptr + r))
             self->ptr[len++] = self->ptr[r];
+# ifdef VEC_DTOR
+        else
+            VEC_DTOR(self->ptr[r]);
+# endif /* VEC_DTOR */
 
     self->length = len;
 
