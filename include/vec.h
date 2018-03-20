@@ -179,6 +179,7 @@ struct VEC_VEC {
 #define VEC_SWAP_REMOVE        VEC_MAKE_STR(swap_remove)
 #define VEC_TRUNCATE           VEC_MAKE_STR(truncate)
 #define VEC_WITH_CAPACITY      VEC_MAKE_STR(with_capacity)
+#define _VEC_DECREASE_CAPACITY VEC_MAKE_STR(_decrease_capacity)
 #define _VEC_INCREASE_CAPACITY VEC_MAKE_STR(_increase_capacity)
 
 /*==========================================================
@@ -233,11 +234,42 @@ struct VEC_VEC        VEC_WITH_CAPACITY  (size_t capacity);
  */
 static inline bool _VEC_INCREASE_CAPACITY (struct VEC_VEC * self)
 {
-    return (self != NULL)
-        && ((self->length < self->capacity)
-                || VEC_RESERVE(self, (self->capacity >> 1) + 1));
+    if (self == NULL)
+        return false;
+
+    if (self->length >= self->capacity)
+        return true;
+
+    /* new_cap = (cap * 1.5) + 1 */
+    size_t new_cap = self->capacity + (self->capacity >> 1) + 1;
+
+    return VEC_RESERVE(self, new_cap);
 }
 
+
+/**=========================================================
+ * @brief Checks if @a self has too much unused memory and decreases it
+ * @param self The vector
+ * @returns `false` if @a self has too much unused memory but it
+ *          couldn't decrease it.
+ */
+static inline bool _VEC_DECREASE_CAPACITY (struct VEC_VEC * self)
+{
+    /* more than half of the capacity in use? */
+    if (self->length > (self->capacity >> 1))
+        return true;
+
+    /* new_cap = len * 1.5 */
+    /* len * 1.5 ~ cap * 0.75 */
+    size_t new_cap = self->length + (self->length >> 1);
+    VEC_DATA_TYPE * new = realloc(self->ptr, new_cap * sizeof(VEC_DATA_TYPE));
+    if (new != NULL) {
+        self->ptr = new;
+        self->capacity = new_cap;
+    }
+
+    return new != NULL;
+}
 /**=========================================================
  * @brief Free a vec type
  * @param self The vector
@@ -475,6 +507,8 @@ VEC_STATIC VEC_DATA_TYPE VEC_REMOVE (struct VEC_VEC * self, size_t index)
 
     self->length--;
 
+    _VEC_DECREASE_CAPACITY(self);
+
     return ret;
 }
 
@@ -498,6 +532,9 @@ VEC_STATIC bool VEC_FILTER (struct VEC_VEC * self, bool pred (VEC_DATA_TYPE *))
             self->ptr[len++] = self->ptr[r];
 
     self->length = len;
+
+    _VEC_DECREASE_CAPACITY(self);
+
     return true;
 }
 
@@ -528,7 +565,11 @@ VEC_STATIC VEC_DATA_TYPE VEC_POP (struct VEC_VEC * self)
     assert(self != NULL);
     assert(self->ptr != NULL);
     assert(self->length > 0);
+
     self->length--;
+
+    _VEC_DECREASE_CAPACITY(self);
+
     return self->ptr[self->length];
 }
 
@@ -863,6 +904,7 @@ VEC_STATIC bool VEC_ITER_REV (struct VEC_VEC * self, bool rev)
 #undef VEC_SWAP_REMOVE
 #undef VEC_TRUNCATE
 #undef VEC_WITH_CAPACITY
+#undef _VEC_DECREASE_CAPACITY
 #undef _VEC_INCREASE_CAPACITY
 
 /*
