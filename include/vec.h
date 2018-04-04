@@ -127,14 +127,19 @@
 struct VEC_VEC {
     /** Pointer to actual data */
     VEC_DATA_TYPE * ptr;
+
     /** Number of elements */
     size_t length;
+
     /** Number of elements the vector can hold currently */
     size_t capacity;
+
     /** Iterator index */
     size_t idx;
+
     /** Should iterate from begginning or end */
     unsigned char reverse : 1;
+
     /** Is currently iterating */
     unsigned char iterating : 1;
 };
@@ -175,6 +180,7 @@ struct VEC_VEC {
 #define VEC_ITER_REV           VEC_MAKE_STR(iter_rev)
 #define VEC_LEN                VEC_MAKE_STR(len)
 #define VEC_MAP                VEC_MAKE_STR(map)
+#define VEC_MAP_RANGE          VEC_MAKE_STR(map_range)
 #define VEC_NEW                VEC_MAKE_STR(new)
 #define VEC_POP                VEC_MAKE_STR(pop)
 #define VEC_PUSH               VEC_MAKE_STR(push)
@@ -213,6 +219,7 @@ bool                  VEC_ITER_END       (struct VEC_VEC * self);
 bool                  VEC_ITER_NEXT      (struct VEC_VEC * self);
 bool                  VEC_ITER_REV       (struct VEC_VEC * self, bool rev);
 bool                  VEC_MAP            (struct VEC_VEC * self, VEC_DATA_TYPE f (VEC_DATA_TYPE));
+bool                  VEC_MAP_RANGE      (struct VEC_VEC * self, VEC_DATA_TYPE f (VEC_DATA_TYPE), size_t from, size_t to);
 bool                  VEC_PUSH           (struct VEC_VEC * self, VEC_DATA_TYPE element);
 bool                  VEC_QSORT          (struct VEC_VEC * self, int compar (const void *, const void *));
 bool                  VEC_RESERVE        (struct VEC_VEC * self, size_t total);
@@ -282,10 +289,10 @@ static inline bool _VEC_DECREASE_CAPACITY (struct VEC_VEC * self)
 
     return new != NULL;
 }
+
 /**=========================================================
- * @brief Free @a self, applying @a dtor on every element
+ * @brief Free @a self
  * @param self The vector
- * @param dtor A function to apply on every element of @a self
  * @returns `false` if @a self is `NULL`, `true` otherwise
  */
 VEC_STATIC bool VEC_FREE (struct VEC_VEC * self)
@@ -785,19 +792,43 @@ VEC_STATIC bool VEC_QSORT (struct VEC_VEC * self, int compar (const void *, cons
 }
 
 /**=========================================================
+ * @brief Apply @a f on every element of @a self in the range
+ *        [@a from, @a to[
+ * @param self The vector
+ * @param f The function to apply on every element
+ * @param from The start index
+ * @param to The end index (not including element at this index)
+ * @returns `false` if @a self is not a valid vector, @a f is NULL,
+ *          @a from is larger than or equal to @a to, or @a to is out of bounds,
+ *          `true` otherwise
+ */
+VEC_STATIC bool VEC_MAP_RANGE (struct VEC_VEC * self, VEC_DATA_TYPE f (VEC_DATA_TYPE), size_t from, size_t to)
+{
+    if (self == NULL
+    || self->ptr == NULL
+    || f == NULL
+    || from >= to
+    || to > self->length)
+        return false;
+
+    for (size_t i = from; i < to; i++)
+        self->ptr[i] = f(self->ptr[i]);
+
+    return true;
+}
+
+/**=========================================================
  * @brief Apply @a f to every element of @a self
  * @param self The vector
  * @param f The function to apply on every element
- * @returns `false` if @a self is not a valid vector, `true` otherwise
+ * @returns `false` if @a self is not a valid vector or @a f is NULL,
+ *          `true` otherwise
  */
 VEC_STATIC bool VEC_MAP (struct VEC_VEC * self, VEC_DATA_TYPE f (VEC_DATA_TYPE))
 {
-    if (self == NULL || self->ptr == NULL || f == NULL)
-        return false;
-    size_t len = VEC_LEN(self);
-    for (size_t i = 0; i < len; i++)
-        self->ptr[i] = f(self->ptr[i]);
-    return true;
+    return (self != NULL) ?
+        VEC_MAP_RANGE(self, f, 0, self->length) :
+        false;
 }
 
 /**=========================================================
@@ -926,6 +957,7 @@ VEC_STATIC bool VEC_ITER_REV (struct VEC_VEC * self, bool rev)
 #undef VEC_ITER_REV
 #undef VEC_LEN
 #undef VEC_MAP
+#undef VEC_MAP_RANGE
 #undef VEC_NEW
 #undef VEC_POP
 #undef VEC_PUSH
