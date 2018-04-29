@@ -86,6 +86,7 @@
  * <stdlib.h>
  *  bsearch()
  *  calloc()
+ *  malloc()
  *  qsort()
  *  realloc()
  *
