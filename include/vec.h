@@ -1,4 +1,4 @@
-/* vec - v2018.03.20-0
+/* vec - v2018.04.29-0
  *
  * A vector type inspired by
  *  * Rust's `Vec` type
@@ -102,25 +102,32 @@
 /*
  * Type of data for the vector to hold
  */
-#ifndef VEC_DATA_TYPE
-# error "Must declare VEC_DATA_TYPE"
-#endif /* VEC_DATA_TYPE */
+# ifndef VEC_DATA_TYPE
+#  error "Must declare VEC_DATA_TYPE"
+# endif /* VEC_DATA_TYPE */
 
 /*
  * If no prefix was defined, default to `vec_`
  */
-#ifndef VEC_PREFIX
-# define VEC_PREFIX vec_
-#endif /* VEC_PREFIX */
+# ifndef VEC_PREFIX
+#  define VEC_PREFIX vec_
+# endif /* VEC_PREFIX */
 
 /*
  * Magic from `sort.h`
  */
-#define VEC_CONCAT(A, B)    A ## B
-#define VEC_MAKE_STR1(A, B) VEC_CONCAT(A, B)
-#define VEC_MAKE_STR(A)     VEC_MAKE_STR1(VEC_PREFIX, A)
+# define VEC_CONCAT(A, B)    A ## B
+# define VEC_MAKE_STR1(A, B) VEC_CONCAT(A, B)
+# define VEC_MAKE_STR(A)     VEC_MAKE_STR1(VEC_PREFIX, A)
 
-#define VEC_VEC VEC_MAKE_STR(vec)
+/*
+ * Allow overwriting the vector name
+ */
+# ifndef VEC_VEC
+#  define VEC_VEC VEC_MAKE_STR(vec)
+# endif
+
+# ifdef VEC_IMPLEMENTATION
 /**=========================================================
  * @brief The vector type
  */
@@ -143,6 +150,9 @@ struct VEC_VEC {
     /** Is currently iterating */
     unsigned char iterating : 1;
 };
+# else
+struct VEC_VEC;
+# endif
 
 # ifndef VEC_DATA_TYPE_EQ
 #  define VEC_DATA_TYPE_EQ(L, R) ((L) == (R))
@@ -210,7 +220,6 @@ VEC_DATA_TYPE *       VEC_AS_MUT_SLICE   (struct VEC_VEC * self);
 bool                  VEC_APPEND         (struct VEC_VEC * restrict self, struct VEC_VEC * restrict other);
 bool                  VEC_ELEM           (const struct VEC_VEC * self, VEC_DATA_TYPE element);
 bool                  VEC_FILTER         (struct VEC_VEC * self, bool pred (VEC_DATA_TYPE *));
-bool                  VEC_FREE           (struct VEC_VEC * self);
 bool                  VEC_INSERT         (struct VEC_VEC * self, size_t index, VEC_DATA_TYPE element);
 bool                  VEC_IS_EMPTY       (const struct VEC_VEC * self);
 bool                  VEC_ITER           (struct VEC_VEC * self);
@@ -233,10 +242,11 @@ size_t                VEC_CAPACITY       (const struct VEC_VEC * self);
 size_t                VEC_FIND           (const struct VEC_VEC * self, VEC_DATA_TYPE element);
 size_t                VEC_ITER_IDX       (struct VEC_VEC * self);
 size_t                VEC_LEN            (const struct VEC_VEC * self);
-struct VEC_VEC        VEC_FROM_RAW_PARTS (VEC_DATA_TYPE * ptr, size_t length, size_t capacity);
-struct VEC_VEC        VEC_NEW            (void);
-struct VEC_VEC        VEC_SPLIT_OFF      (struct VEC_VEC * self, size_t at);
-struct VEC_VEC        VEC_WITH_CAPACITY  (size_t capacity);
+struct VEC_VEC *      VEC_FREE           (struct VEC_VEC * self);
+struct VEC_VEC *      VEC_FROM_RAW_PARTS (VEC_DATA_TYPE * ptr, size_t length, size_t capacity);
+struct VEC_VEC *      VEC_NEW            (void);
+struct VEC_VEC *      VEC_SPLIT_OFF      (struct VEC_VEC * self, size_t at);
+struct VEC_VEC *      VEC_WITH_CAPACITY  (size_t capacity);
 
 #ifdef VEC_IMPLEMENTATION
 
@@ -293,30 +303,29 @@ static inline bool _VEC_DECREASE_CAPACITY (struct VEC_VEC * self)
 /**=========================================================
  * @brief Free @a self
  * @param self The vector
- * @returns `false` if @a self is `NULL`, `true` otherwise
+ * @returns `NULL`
  */
-VEC_STATIC bool VEC_FREE (struct VEC_VEC * self)
+VEC_STATIC struct VEC_VEC * VEC_FREE (struct VEC_VEC * self)
 {
-    if (self == NULL)
-        return false;
-
+    if (self != NULL) {
 # ifdef VEC_DTOR
-    VEC_MAP(self, VEC_DTOR);
+        VEC_MAP(self, VEC_DTOR);
 # endif /* VEC_DTOR */
 
-    if (self->ptr != NULL)
-        free(self->ptr);
+        if (self->ptr != NULL)
+            free(self->ptr);
 
-    memset(self, 0, sizeof(struct VEC_VEC));
+        free(self);
+    }
 
-    return true;
+    return NULL;
 }
 
 /**=========================================================
  * @brief Create a new empty vector
  * @returns The new vector
  */
-VEC_STATIC inline struct VEC_VEC VEC_NEW (void)
+VEC_STATIC inline struct VEC_VEC * VEC_NEW (void)
 {
     return VEC_FROM_RAW_PARTS(NULL, 0, 0);
 }
@@ -326,7 +335,7 @@ VEC_STATIC inline struct VEC_VEC VEC_NEW (void)
  * @param capacity Number of elements to allocate
  * @returns The new vector
  */
-VEC_STATIC inline struct VEC_VEC VEC_WITH_CAPACITY (size_t capacity)
+VEC_STATIC inline struct VEC_VEC * VEC_WITH_CAPACITY (size_t capacity)
 {
     VEC_DATA_TYPE * data = calloc(capacity, sizeof(VEC_DATA_TYPE));
     capacity = (data != NULL) ? capacity : 0;
@@ -340,16 +349,21 @@ VEC_STATIC inline struct VEC_VEC VEC_WITH_CAPACITY (size_t capacity)
  * @param capacity Total number of elements @a ptr can hold
  * @returns A new vector pointing to @a ptr, with @a length and @a capacity
  */
-VEC_STATIC inline struct VEC_VEC VEC_FROM_RAW_PARTS (VEC_DATA_TYPE * ptr, size_t length, size_t capacity)
+VEC_STATIC inline struct VEC_VEC * VEC_FROM_RAW_PARTS (VEC_DATA_TYPE * ptr, size_t length, size_t capacity)
 {
-    return (struct VEC_VEC) {
-        .ptr = ptr,
-        .length = length,
-        .capacity = capacity,
-        .idx = 0,
-        .reverse = 0,
-        .iterating = 0,
-    };
+    struct VEC_VEC * ret = malloc(sizeof(struct VEC_VEC));
+
+    if (ret != NULL) {
+        ret->ptr = ptr;
+        ret->length = length;
+        ret->capacity = capacity;
+
+        ret->idx = 0;
+        ret->reverse = 0;
+        ret->iterating = 0;
+    }
+
+    return ret;
 }
 
 /**=========================================================
@@ -665,23 +679,26 @@ VEC_STATIC inline bool VEC_IS_EMPTY (const struct VEC_VEC * self)
  * @param at Where to split
  * @returns The new vector
  */
-VEC_STATIC struct VEC_VEC VEC_SPLIT_OFF (struct VEC_VEC * self, size_t at)
+VEC_STATIC struct VEC_VEC * VEC_SPLIT_OFF (struct VEC_VEC * self, size_t at)
 {
     assert(self != NULL);
     assert(self->ptr != NULL);
     assert(at < self->length);
     assert(at > 0);
 
-    struct VEC_VEC ret = VEC_WITH_CAPACITY(self->length - at + 1);
+    struct VEC_VEC * ret = VEC_WITH_CAPACITY(self->length - at + 1);
 
-    if (ret.ptr != NULL) {
-        void * dest = ret.ptr;
+    if (ret == NULL)
+        return NULL;
+
+    if (ret->ptr != NULL) {
+        void * dest = ret->ptr;
         const void * src = self->ptr + at - 1;
-        size_t n = sizeof(VEC_DATA_TYPE) * ret.capacity;
+        size_t n = sizeof(VEC_DATA_TYPE) * ret->capacity;
         memcpy(dest, src, n);
 
-        ret.length = ret.capacity;
-        self->length -= ret.capacity;
+        ret->length = ret->capacity;
+        self->length -= ret->capacity;
     }
 
     return ret;
