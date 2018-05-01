@@ -367,9 +367,18 @@ VEC_STATIC inline struct VEC_VEC * VEC_NEW (void)
  */
 VEC_STATIC inline struct VEC_VEC * VEC_WITH_CAPACITY (size_t capacity)
 {
-    VEC_DATA_TYPE * data = _VEC_CALLOC(capacity, sizeof(VEC_DATA_TYPE));
-    capacity = (data != NULL) ? capacity : 0;
-    return VEC_FROM_RAW_PARTS(data, 0, capacity);
+    if (capacity == 0)
+        return VEC_NEW();
+
+    VEC_DATA_TYPE * ptr = _VEC_CALLOC(capacity, sizeof(VEC_DATA_TYPE));
+    if (ptr == NULL)
+        return NULL;
+
+    struct VEC_VEC * ret = VEC_FROM_RAW_PARTS(ptr, 0, capacity);
+    if (ret == NULL)
+        _VEC_FREE(ptr);
+
+    return ret;
 }
 
 /**=========================================================
