@@ -41,7 +41,7 @@ int mkheader (char * name)
           name);
 
     for (size_t i = 0; i < len; i++)
-        tmp[i] = toupper(tmp[i]);
+        tmp[i] = (char) toupper(tmp[i]);
     tmp[len - 1] = '\0';
 
     ABORT(ko, fprintf(f, TXTFMT, tmp, tmp, tmp) < 0,

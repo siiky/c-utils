@@ -1,24 +1,49 @@
-CC=musl-gcc
-#CC=cc
-CFLAGS=-std=c11 -static -Wall -Wextra -Wconversion -pedantic -O3 -I../../include/
-EXECS=mkheader mkmakefile
-DEST=~/bin/
+CC := musl-gcc
+#CC := cc
 
-all: $(EXECS)
+DEST := ~/bin
 
-mkheader: mkheader.c
-	$(CC) $(CFLAGS) mkheader.c -o mkheader
+INCLUDE := \
+    -I../../include/ \
 
-mkmakefile: mkmakefile.c
-	$(CC) $(CFLAGS) mkmakefile.c -o mkmakefile
+HEADERS :=
+
+SRC := \
+    mkheader.c   \
+    mkmakefile.c \
+
+EXEC := $(SRC:.c=)
+
+OPT := -Og -g
+
+CFLAGS := \
+    $(INCLUDE)   \
+    $(OPT)       \
+    -Wall        \
+    -Wconversion \
+    -Wextra      \
+    -flto        \
+    -pedantic    \
+    -static      \
+    -std=c11     \
+
+all: $(EXEC)
+
+%: %.c
+	$(CC) $(CFLAGS) $< -o $@
+
+strip: $(EXEC)	strip -s $(EXEC)
 
 install: all
-	strip -s $(EXECS)
-	install -m 0700 $(EXECS) -t $(DEST)
-
-uninstall:
-	cd $(DEST)
-	rm -f $(EXECS)
+	install -m 0700 $(EXEC) -t $(DEST)
 
 clean:
-	rm -rf $(EXECS)
+	$(RM) $(OBJS) $(EXEC)
+
+check: $(SRC) $(HEADERS)
+	cppcheck --std=c11 -f --language=c --enable=all $(INCLUDE) $(SRC) $(HEADERS)
+
+tags: $(SRC) $(HEADERS)
+	ctags --language-force=c --tag-relative=yes -f .tags $(SRC) $(HEADERS)
+
+.PHONY: all check clean install strip tags
