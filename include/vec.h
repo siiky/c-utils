@@ -1,4 +1,4 @@
-/* vec - v2018.05.03-0
+/* vec - v2018.05.03-1
  *
  * A vector type inspired by
  *  * Rust's `Vec` type
@@ -7,7 +7,7 @@
  *
  * The most up to date version of this file can be found at
  * `include/vec.h` on [siiky/c-utils](https://github.com/siiky/c-utils)
- * More usage examples can be found at `src/vec.h` on the link above
+ * More usage examples can be found at `src/vec` on the link above
  *
  * # Usage
  *
@@ -28,6 +28,9 @@
  * // Optionally, define a prefix (defaults to `vec_`)
  * #define VEC_PREFIX my_
  *
+ * // Optionally, define the struct identifier
+ * #define VEC_VEC my_uber_vec
+ *
  * // Optionally, define NDEBUG to disable asserts inside vec.h
  * #define NDEBUG
  *
@@ -39,27 +42,46 @@
  *
  * int main (void)
  * {
- *     struct my_vec vec = my_new();
+ *     struct my_uber_vec * vec = my_new();
+ *
+ *     assert(vec != NULL);
  *
  *     size_t used = 0;
  *     for (size_t i = 0; i < 100; i++)
- *         if (my_push(&vec, i)) used++;
+ *         if (my_push(vec, i))
+ *             used++;
  *
- *     size_t len = my_len(&vec);
- *     assert(used == len);
- *     assert(len >= my_capacity(&vec));
- *     for (my_iter(&vec); my_itering(&vec); my_iter_next(&vec)) {
- *         size_t r = my_get_nth(&vec, my_iter_idx(&vec));
+ *     {
+ *         size_t len = my_len(vec);
+ *         size_t cap = my_capacity(vec);
+ *
+ *         assert(used == len);
+ *         assert(cap >= len);
+ *     }
+ *
+ *     for (my_iter(vec); my_itering(vec); my_iter_next(vec)) {
+ *         size_t r = my_get_nth(vec, my_iter_idx(vec));
  *         assert(r == i);
  *     }
  *
  *     // If VEC_DTOR is defined, VEC_FREE() will automatically
  *     // call it on every element
- *     my_free(&vec);
+ *     vec = my_free(vec);
  *
- *     assert(my_as_slice(&vec) == NULL);
- *     assert(my_len(&vec) == 0);
- *     assert(my_capacity(&vec) == 0);
+ *     {
+ *         // For VEC_LEN(), VEC_CAPACITY(), VEC_AS_MUT_SLICE(),
+ *         // VEC_AS_SLICE() and VEC_IS_EMPTY() NULL is an empty vector
+ *         bool empty = my_is_empty(vec);
+ *         size_t * ptr = my_as_slice(vec);
+ *         size_t cap = my_capacity(vec);
+ *         size_t len = my_len(vec);
+ *
+ *         assert(cap == 0);
+ *         assert(empty);
+ *         assert(len == 0);
+ *         assert(ptr == NULL);
+ *         assert(vec == NULL);
+ *     }
  *
  *     return 0;
  * }
@@ -112,6 +134,7 @@
  */
 # ifndef VEC_PREFIX
 #  define VEC_PREFIX vec_
+#  define VEC_VEC    vec
 # endif /* VEC_PREFIX */
 
 /*
@@ -129,6 +152,7 @@
 # endif
 
 # ifdef VEC_IMPLEMENTATION
+
 /**=========================================================
  * @brief The vector type
  */
@@ -151,8 +175,11 @@ struct VEC_VEC {
     /** Is currently iterating */
     unsigned char iterating : 1;
 };
+
 # else
+
 struct VEC_VEC;
+
 # endif /* VEC_IMPLEMENTATION */
 
 # ifndef VEC_DATA_TYPE_EQ
@@ -206,6 +233,7 @@ struct VEC_VEC;
 #define VEC_SWAP_REMOVE        VEC_MAKE_STR(swap_remove)
 #define VEC_TRUNCATE           VEC_MAKE_STR(truncate)
 #define VEC_WITH_CAPACITY      VEC_MAKE_STR(with_capacity)
+#define _VEC_CHANGE_CAPACITY   VEC_MAKE_STR(_change_capacity)
 #define _VEC_DECREASE_CAPACITY VEC_MAKE_STR(_decrease_capacity)
 #define _VEC_INCREASE_CAPACITY VEC_MAKE_STR(_increase_capacity)
 
@@ -1036,6 +1064,7 @@ VEC_STATIC bool VEC_ITER_REV (struct VEC_VEC * self, bool rev)
 #undef VEC_SWAP_REMOVE
 #undef VEC_TRUNCATE
 #undef VEC_WITH_CAPACITY
+#undef _VEC_CHANGE_CAPACITY
 #undef _VEC_DECREASE_CAPACITY
 #undef _VEC_INCREASE_CAPACITY
 
