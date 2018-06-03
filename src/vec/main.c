@@ -8,7 +8,7 @@
 /* Example with a vec of type int */
 #define INT
 
-#include "gen_vec.h"
+#include "vec.h"
 
 int main (void)
 {

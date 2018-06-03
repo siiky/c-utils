@@ -17,15 +17,14 @@ struct char_vec * char_vec_init (size_t capacity)
     return ret;
 }
 
-char char_print (char elem)
+static void _char_print (const char elem)
 {
     putchar(elem);
     putchar(' ');
-    return elem;
 }
 
 void char_vec_print (struct char_vec * vec)
 {
-    char_map(vec, char_print);
+    char_foreach(vec, _char_print);
     putchar('\n');
 }

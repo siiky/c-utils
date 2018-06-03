@@ -14,9 +14,13 @@ struct int_vec * int_vec_init (size_t capacity)
     return ret;
 }
 
+static void _int_print (const int e)
+{
+    printf("%d ", e);
+}
+
 void int_vec_print (struct int_vec * vec)
 {
-    for (int_iter(vec); int_itering(vec); int_iter_next(vec))
-        printf("%d ", int_get_nth(vec, int_iter_idx(vec)));
+    int_foreach(vec, _int_print);
     putchar('\n');
 }

@@ -1,8 +1,8 @@
-#ifndef _GEN_VEC_H
-#define _GEN_VEC_H
+#ifndef _VEC_H
+#define _VEC_H
 
-#include "char_vec.h"
-#include "int_vec.h"
+#include "vec/char_vec.h"
+#include "vec/int_vec.h"
 
 #define vec_free(vec) _Generic((vec),  \
         struct char_vec * : char_free, \
@@ -29,4 +29,4 @@
         struct int_vec *  : int_len   \
         )((vec))
 
-#endif /* _GEN_VEC_H */
+#endif /* _VEC_H */

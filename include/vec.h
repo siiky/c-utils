@@ -1,4 +1,4 @@
-/* vec - v2018.05.03-1
+/* vec - v2018.06.03-1
  *
  * A vector type inspired by
  *  * Rust's `Vec` type
@@ -205,6 +205,8 @@ struct VEC_VEC;
 #define VEC_ELEM               VEC_MAKE_STR(elem)
 #define VEC_FILTER             VEC_MAKE_STR(filter)
 #define VEC_FIND               VEC_MAKE_STR(find)
+#define VEC_FOREACH            VEC_MAKE_STR(foreach)
+#define VEC_FOREACH_RANGE      VEC_MAKE_STR(foreach_range)
 #define VEC_FREE               VEC_MAKE_STR(free)
 #define VEC_FREE_RANGE         VEC_MAKE_STR(free_range)
 #define VEC_FROM_RAW_PARTS     VEC_MAKE_STR(from_raw_parts)
@@ -250,6 +252,8 @@ VEC_DATA_TYPE *       VEC_AS_MUT_SLICE   (struct VEC_VEC * self);
 bool                  VEC_APPEND         (struct VEC_VEC * restrict self, struct VEC_VEC * restrict other);
 bool                  VEC_ELEM           (const struct VEC_VEC * self, VEC_DATA_TYPE element);
 bool                  VEC_FILTER         (struct VEC_VEC * self, bool pred (VEC_DATA_TYPE *));
+bool                  VEC_FOREACH        (const struct VEC_VEC * self, void f (const VEC_DATA_TYPE));
+bool                  VEC_FOREACH_RANGE  (const struct VEC_VEC * self, void f (const VEC_DATA_TYPE), size_t from, size_t to);
 bool                  VEC_FREE_RANGE     (struct VEC_VEC * self, size_t from, size_t to);
 bool                  VEC_INSERT         (struct VEC_VEC * self, size_t index, VEC_DATA_TYPE element);
 bool                  VEC_IS_EMPTY       (const struct VEC_VEC * self);
@@ -271,7 +275,7 @@ const VEC_DATA_TYPE * VEC_AS_SLICE       (const struct VEC_VEC * self);
 size_t                VEC_BSEARCH        (const struct VEC_VEC * self, VEC_DATA_TYPE key, int compar (const void *, const void *));
 size_t                VEC_CAPACITY       (const struct VEC_VEC * self);
 size_t                VEC_FIND           (const struct VEC_VEC * self, VEC_DATA_TYPE element);
-size_t                VEC_ITER_IDX       (struct VEC_VEC * self);
+size_t                VEC_ITER_IDX       (const struct VEC_VEC * self);
 size_t                VEC_LEN            (const struct VEC_VEC * self);
 struct VEC_VEC *      VEC_FREE           (struct VEC_VEC * self);
 struct VEC_VEC *      VEC_FROM_RAW_PARTS (VEC_DATA_TYPE * ptr, size_t length, size_t capacity);
@@ -443,7 +447,7 @@ VEC_STATIC inline struct VEC_VEC * VEC_FROM_RAW_PARTS (VEC_DATA_TYPE * ptr, size
 VEC_STATIC inline size_t VEC_CAPACITY (const struct VEC_VEC * self)
 {
     return (self != NULL) ?
-        self->capacity :
+        self->capacity:
         0;
 }
 
@@ -457,9 +461,9 @@ VEC_STATIC inline size_t VEC_CAPACITY (const struct VEC_VEC * self)
 VEC_STATIC bool VEC_RESERVE (struct VEC_VEC * self, size_t total)
 {
     return (self == NULL) ?
-        false :
+        false:
         (self->capacity >= total) ?
-        true :
+        true:
         _VEC_CHANGE_CAPACITY(self, total);
 }
 
@@ -501,7 +505,7 @@ VEC_STATIC bool VEC_TRUNCATE (struct VEC_VEC * self, size_t len)
 VEC_STATIC inline const VEC_DATA_TYPE * VEC_AS_SLICE (const struct VEC_VEC * self)
 {
     return (self != NULL) ?
-        (const VEC_DATA_TYPE *) self->ptr :
+        self->ptr:
         NULL;
 }
 
@@ -513,7 +517,7 @@ VEC_STATIC inline const VEC_DATA_TYPE * VEC_AS_SLICE (const struct VEC_VEC * sel
 VEC_STATIC inline VEC_DATA_TYPE * VEC_AS_MUT_SLICE (struct VEC_VEC * self)
 {
     return (self != NULL) ?
-        self->ptr :
+        self->ptr:
         NULL;
 }
 
@@ -730,7 +734,7 @@ VEC_STATIC bool VEC_APPEND (struct VEC_VEC * restrict self, struct VEC_VEC * res
 VEC_STATIC inline size_t VEC_LEN (const struct VEC_VEC * self)
 {
     return (self != NULL) ?
-        self->length :
+        self->length:
         0;
 }
 
@@ -865,7 +869,7 @@ VEC_STATIC size_t VEC_BSEARCH (const struct VEC_VEC * self, VEC_DATA_TYPE key, i
 
     VEC_DATA_TYPE * found = bsearch(&key, base, nmemb, size, compar);
     return (found != NULL) ?
-        (size_t) (found - self->ptr) :
+        (size_t) (found - self->ptr):
         self->length;
 }
 
@@ -919,7 +923,49 @@ VEC_STATIC bool VEC_MAP_RANGE (struct VEC_VEC * self, VEC_DATA_TYPE f (VEC_DATA_
 VEC_STATIC bool VEC_MAP (struct VEC_VEC * self, VEC_DATA_TYPE f (VEC_DATA_TYPE))
 {
     return (self != NULL) ?
-        VEC_MAP_RANGE(self, f, 0, self->length) :
+        VEC_MAP_RANGE(self, f, 0, self->length):
+        false;
+}
+
+/**=========================================================
+ * @brief For every element in @a self in the range [@a from, @a to[,
+ *        call @a f with it. This function is similar to VEC_MAP_RANGE
+ *        except @a self or its elements are not altered
+ * @param self The vector
+ * @param f The function to call for every element
+ * @param from The start index
+ * @param to The end index (not including element at this index)
+ * @returns `false` if @a self is not a valid vector or @a f is NULL,
+ *          `true` otherwise
+ */
+VEC_STATIC bool VEC_FOREACH_RANGE (const struct VEC_VEC * self, void f (const VEC_DATA_TYPE), size_t from, size_t to)
+{
+    if (self == NULL
+    || self->ptr == NULL
+    || f == NULL
+    || from >= to
+    || to > self->length)
+        return false;
+
+    for (size_t i = from; i < to; i++)
+        f(self->ptr[i]);
+
+    return true;
+}
+
+/**=========================================================
+ * @brief For every element in @a self call @a f with it. This function
+ *        is similar to VEC_MAP except @a self or its elements are not
+ *        altered
+ * @param self The vector
+ * @param f The function to apply on every element
+ * @returns `false` if @a self is not a valid vector or @a f is NULL,
+ *          `true` otherwise
+ */
+VEC_STATIC bool VEC_FOREACH (const struct VEC_VEC * self, void f (const VEC_DATA_TYPE))
+{
+    return (self != NULL) ?
+        VEC_FOREACH_RANGE(self, f, 0, self->length):
         false;
 }
 
@@ -939,7 +985,7 @@ VEC_STATIC bool VEC_ITER (struct VEC_VEC * self)
         return false;
 
     self->idx = (self->reverse) ?
-        self->length - 1 :
+        self->length - 1:
         0;
 
     self->iterating = true;
@@ -972,7 +1018,7 @@ VEC_STATIC inline bool VEC_ITERING (const struct VEC_VEC * self)
  * @param self The vector
  * @returns The current index of the iterator
  */
-VEC_STATIC inline size_t VEC_ITER_IDX (struct VEC_VEC * self)
+VEC_STATIC inline size_t VEC_ITER_IDX (const struct VEC_VEC * self)
 {
     assert(self != NULL);
     assert(self->idx < self->length);
@@ -990,7 +1036,7 @@ VEC_STATIC bool VEC_ITER_NEXT (struct VEC_VEC * self)
         return false;
 
     bool over = self->idx == ((!self->reverse) ?
-            self->length - 1 :
+            self->length - 1:
             0);
 
     if (over)
@@ -1036,6 +1082,8 @@ VEC_STATIC bool VEC_ITER_REV (struct VEC_VEC * self, bool rev)
 #undef VEC_ELEM
 #undef VEC_FILTER
 #undef VEC_FIND
+#undef VEC_FOREACH
+#undef VEC_FOREACH_RANGE
 #undef VEC_FREE
 #undef VEC_FREE_RANGE
 #undef VEC_FROM_RAW_PARTS

@@ -6,20 +6,28 @@ FLAGS=-std=c11 -static -Wall -Wextra -pedantic -flto -I../../include/
 DFLAGS=$(FLAGS) -g
 CFLAGS=$(FLAGS) -O3
 
-HEADERS=char_vec.h int_vec.h gen_vec.h
-SRC=main.c char_vec.c int_vec.c
+HEADERS := \
+    vec/char_vec.h \
+    vec/int_vec.h  \
+    vec.h          \
+
+SRC := \
+    vec/char_vec.c \
+    vec/int_vec.c  \
+    main.c         \
+
 OBJS=$(SRC:.c=.o)
 
-DEPS=$(SRC) $(HEADERS)
+DEPS=$(HEADERS) $(OBJS)
 
-debug: $(DEPS)
-	$(CC) $(DFLAGS) -c $(SRC)
-	$(CC) $(DFLAGS) $(OBJS) -o $(EXEC)
+all: $(EXEC)
 
-all:
-	$(CC) $(CFLAGS) -c $(SRC)
+$(EXEC): $(DEPS)
 	$(CC) $(CFLAGS) $(OBJS) -o $(EXEC)
 	strip -s $(EXEC)
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
 	rm -rf $(OBJS) $(EXEC)
