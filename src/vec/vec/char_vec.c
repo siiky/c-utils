@@ -8,12 +8,14 @@ char char_dtor (char elem)
     return elem;
 }
 
-struct char_vec * char_vec_init (size_t capacity)
+bool char_vec_init (struct char_vec * self, size_t capacity)
 {
-    struct char_vec * ret = char_new();
-    if (ret == NULL) return NULL;
-    for (size_t i = 1; i <= capacity; i++)
-        char_push(ret, rand() % 256);
+    bool ret = char_with_capacity(self, capacity);
+
+    if (ret)
+        for (size_t i = 1; i <= capacity; i++)
+            char_push(self, rand() % 256);
+
     return ret;
 }
 
