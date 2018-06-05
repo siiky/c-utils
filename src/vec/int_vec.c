@@ -3,14 +3,17 @@
 
 #include "int_vec.h"
 
-struct int_vec * int_vec_init (size_t capacity)
+bool int_vec_init (struct int_vec * self, size_t capacity)
 {
-    struct int_vec * ret = int_new();
-    if (ret == NULL) return NULL;
-    for (size_t i = 1; i <= capacity; i++) {
-        int x = rand() % i; /* `Floating point exception` if `i` starts at 0 */
-        int_push(ret, x);
+    bool ret = int_with_capacity(self, capacity);
+
+    if (ret) {
+        for (size_t i = 1; i <= capacity; i++) {
+            int x = rand() % i; /* `Floating point exception` if `i` starts at 0 */
+            int_push(self, x);
+        }
     }
+
     return ret;
 }
 
