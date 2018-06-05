@@ -1,4 +1,4 @@
-/* vec - v2018.06.05-4
+/* vec - v2018.06.05-5
  *
  * A vector type inspired by
  *  * Rust's `Vec` type
@@ -14,29 +14,29 @@
  * ```c
  * #include <assert.h>
  *
- * #define VEC_DATA_TYPE size_t
+ * #define VEC_CFG_DATA_TYPE size_t
  *
  * // Optionally, define an equality function
  * // (Not optional for compound types, like structs)
- * #define VEC_DATA_TYPE_EQ(L, R) ((L) == (R))
+ * #define VEC_CFG_DATA_TYPE_EQ(L, R) ((L) == (R))
  *
  * // Optionally, define a destructor function of type
- * //     VEC_DATA_TYPE dtor (VEC_DATA_TYPE);
+ * //     VEC_CFG_DATA_TYPE dtor (VEC_CFG_DATA_TYPE);
  * // If defined, it will be used by VEC_FILTER() and VEC_FREE()
- * #define VEC_DTOR my_dtor_function
+ * #define VEC_CFG_DTOR my_dtor_function
  *
  * // Optionally, define a prefix (defaults to `vec_`)
- * #define VEC_PREFIX my_
+ * #define VEC_CFG_PREFIX my_
  *
  * // Optionally, define the struct identifier
- * #define VEC_VEC my_uber_vec
+ * #define VEC_CFG_VEC my_uber_vec
  *
  * // Optionally, define NDEBUG to disable asserts inside vec.h
  * #define NDEBUG
  *
- * // Optionally, define VEC_STATIC to mark definitions as static
+ * // Optionally, define VEC_CFG_STATIC to mark definitions as static
  * // Probably will raise `unused-function` warnings
- * #define VEC_STATIC
+ * #define VEC_CFG_STATIC
  *
  * #include <vec.h>
  *
@@ -64,7 +64,7 @@
  *         assert(r == i);
  *     }
  *
- *     // If VEC_DTOR is defined, VEC_FREE() will automatically
+ *     // If VEC_CFG_DTOR is defined, VEC_FREE() will automatically
  *     // call it on every element
  *     vec = my_free(vec);
  *
@@ -125,37 +125,37 @@
 /*
  * Magic from `sort.h`
  */
-# define VEC_CONCAT(A, B)    A ## B
-# define VEC_MAKE_STR1(A, B) VEC_CONCAT(A, B)
-# define VEC_MAKE_STR(A)     VEC_MAKE_STR1(VEC_PREFIX, A)
+# define VEC_CFG_CONCAT(A, B)    A ## B
+# define VEC_CFG_MAKE_STR1(A, B) VEC_CFG_CONCAT(A, B)
+# define VEC_CFG_MAKE_STR(A)     VEC_CFG_MAKE_STR1(VEC_CFG_PREFIX, A)
 
 /*
  * Type of data for the vector to hold
  */
-# ifndef VEC_DATA_TYPE
-#  error "Must define VEC_DATA_TYPE"
-# endif /* VEC_DATA_TYPE */
+# ifndef VEC_CFG_DATA_TYPE
+#  error "Must define VEC_CFG_DATA_TYPE"
+# endif /* VEC_CFG_DATA_TYPE */
 
 /*
  * If no prefix was defined, default to `vec_`
  */
-# ifndef VEC_PREFIX
-#  define VEC_PREFIX vec_
-# endif /* VEC_PREFIX */
+# ifndef VEC_CFG_PREFIX
+#  define VEC_CFG_PREFIX vec_
+# endif /* VEC_CFG_PREFIX */
 
 /*
  * Allow overwriting the vector name, default to `prefix_vec`
  */
-# ifndef VEC_VEC
-#  define VEC_VEC VEC_MAKE_STR(vec)
+# ifndef VEC_CFG_VEC
+#  define VEC_CFG_VEC VEC_CFG_MAKE_STR(vec)
 # endif
 
 /**=========================================================
  * @brief The vector type
  */
-struct VEC_VEC {
+struct VEC_CFG_VEC {
     /** Pointer to actual data */
-    VEC_DATA_TYPE * ptr;
+    VEC_CFG_DATA_TYPE * ptr;
 
     /** Number of elements */
     size_t length;
@@ -176,119 +176,119 @@ struct VEC_VEC {
 /*==========================================================
  * Function names
  *=========================================================*/
-#define VEC_APPEND             VEC_MAKE_STR(append)
-#define VEC_AS_MUT_SLICE       VEC_MAKE_STR(as_mut_slice)
-#define VEC_AS_SLICE           VEC_MAKE_STR(as_slice)
-#define VEC_BSEARCH            VEC_MAKE_STR(bsearch)
-#define VEC_CAPACITY           VEC_MAKE_STR(capacity)
-#define VEC_ELEM               VEC_MAKE_STR(elem)
-#define VEC_FILTER             VEC_MAKE_STR(filter)
-#define VEC_FIND               VEC_MAKE_STR(find)
-#define VEC_FOREACH            VEC_MAKE_STR(foreach)
-#define VEC_FOREACH_RANGE      VEC_MAKE_STR(foreach_range)
-#define VEC_FREE               VEC_MAKE_STR(free)
-#define VEC_FREE_RANGE         VEC_MAKE_STR(free_range)
-#define VEC_FROM_RAW_PARTS     VEC_MAKE_STR(from_raw_parts)
-#define VEC_GET_NTH            VEC_MAKE_STR(get_nth)
-#define VEC_INSERT             VEC_MAKE_STR(insert)
-#define VEC_IS_EMPTY           VEC_MAKE_STR(is_empty)
-#define VEC_ITER               VEC_MAKE_STR(iter)
-#define VEC_ITERING            VEC_MAKE_STR(itering)
-#define VEC_ITER_END           VEC_MAKE_STR(iter_end)
-#define VEC_ITER_IDX           VEC_MAKE_STR(iter_idx)
-#define VEC_ITER_NEXT          VEC_MAKE_STR(iter_next)
-#define VEC_ITER_REV           VEC_MAKE_STR(iter_rev)
-#define VEC_LEN                VEC_MAKE_STR(len)
-#define VEC_MAP                VEC_MAKE_STR(map)
-#define VEC_MAP_RANGE          VEC_MAKE_STR(map_range)
-#define VEC_POP                VEC_MAKE_STR(pop)
-#define VEC_PUSH               VEC_MAKE_STR(push)
-#define VEC_QSORT              VEC_MAKE_STR(qsort)
-#define VEC_REMOVE             VEC_MAKE_STR(remove)
-#define VEC_RESERVE            VEC_MAKE_STR(reserve)
-#define VEC_SET_LEN            VEC_MAKE_STR(set_len)
-#define VEC_SET_NTH            VEC_MAKE_STR(set_nth)
-#define VEC_SHRINK_TO_FIT      VEC_MAKE_STR(shrink_to_fit)
-#define VEC_SPLIT_OFF          VEC_MAKE_STR(split_off)
-#define VEC_SWAP_REMOVE        VEC_MAKE_STR(swap_remove)
-#define VEC_TRUNCATE           VEC_MAKE_STR(truncate)
-#define VEC_WITH_CAPACITY      VEC_MAKE_STR(with_capacity)
-#define _VEC_CHANGE_CAPACITY   VEC_MAKE_STR(_change_capacity)
-#define _VEC_CLEAN             VEC_MAKE_STR(_clean)
-#define _VEC_DECREASE_CAPACITY VEC_MAKE_STR(_decrease_capacity)
-#define _VEC_INCREASE_CAPACITY VEC_MAKE_STR(_increase_capacity)
+#define VEC_APPEND             VEC_CFG_MAKE_STR(append)
+#define VEC_AS_MUT_SLICE       VEC_CFG_MAKE_STR(as_mut_slice)
+#define VEC_AS_SLICE           VEC_CFG_MAKE_STR(as_slice)
+#define VEC_BSEARCH            VEC_CFG_MAKE_STR(bsearch)
+#define VEC_CAPACITY           VEC_CFG_MAKE_STR(capacity)
+#define VEC_ELEM               VEC_CFG_MAKE_STR(elem)
+#define VEC_FILTER             VEC_CFG_MAKE_STR(filter)
+#define VEC_FIND               VEC_CFG_MAKE_STR(find)
+#define VEC_FOREACH            VEC_CFG_MAKE_STR(foreach)
+#define VEC_FOREACH_RANGE      VEC_CFG_MAKE_STR(foreach_range)
+#define VEC_FREE               VEC_CFG_MAKE_STR(free)
+#define VEC_FREE_RANGE         VEC_CFG_MAKE_STR(free_range)
+#define VEC_FROM_RAW_PARTS     VEC_CFG_MAKE_STR(from_raw_parts)
+#define VEC_GET_NTH            VEC_CFG_MAKE_STR(get_nth)
+#define VEC_INSERT             VEC_CFG_MAKE_STR(insert)
+#define VEC_IS_EMPTY           VEC_CFG_MAKE_STR(is_empty)
+#define VEC_ITER               VEC_CFG_MAKE_STR(iter)
+#define VEC_ITERING            VEC_CFG_MAKE_STR(itering)
+#define VEC_ITER_END           VEC_CFG_MAKE_STR(iter_end)
+#define VEC_ITER_IDX           VEC_CFG_MAKE_STR(iter_idx)
+#define VEC_ITER_NEXT          VEC_CFG_MAKE_STR(iter_next)
+#define VEC_ITER_REV           VEC_CFG_MAKE_STR(iter_rev)
+#define VEC_LEN                VEC_CFG_MAKE_STR(len)
+#define VEC_MAP                VEC_CFG_MAKE_STR(map)
+#define VEC_MAP_RANGE          VEC_CFG_MAKE_STR(map_range)
+#define VEC_POP                VEC_CFG_MAKE_STR(pop)
+#define VEC_PUSH               VEC_CFG_MAKE_STR(push)
+#define VEC_QSORT              VEC_CFG_MAKE_STR(qsort)
+#define VEC_REMOVE             VEC_CFG_MAKE_STR(remove)
+#define VEC_RESERVE            VEC_CFG_MAKE_STR(reserve)
+#define VEC_SET_LEN            VEC_CFG_MAKE_STR(set_len)
+#define VEC_SET_NTH            VEC_CFG_MAKE_STR(set_nth)
+#define VEC_SHRINK_TO_FIT      VEC_CFG_MAKE_STR(shrink_to_fit)
+#define VEC_SPLIT_OFF          VEC_CFG_MAKE_STR(split_off)
+#define VEC_SWAP_REMOVE        VEC_CFG_MAKE_STR(swap_remove)
+#define VEC_TRUNCATE           VEC_CFG_MAKE_STR(truncate)
+#define VEC_WITH_CAPACITY      VEC_CFG_MAKE_STR(with_capacity)
+#define _VEC_CHANGE_CAPACITY   VEC_CFG_MAKE_STR(_change_capacity)
+#define _VEC_CLEAN             VEC_CFG_MAKE_STR(_clean)
+#define _VEC_DECREASE_CAPACITY VEC_CFG_MAKE_STR(_decrease_capacity)
+#define _VEC_INCREASE_CAPACITY VEC_CFG_MAKE_STR(_increase_capacity)
 
 /*==========================================================
  * Function prototypes
  *
  * RETURN TYPE        FUNCTION NAME      PARAMETER LIST
  *==========================================================*/
-VEC_DATA_TYPE         VEC_GET_NTH        (const struct VEC_VEC * self, size_t nth);
-VEC_DATA_TYPE         VEC_POP            (struct VEC_VEC * self);
-VEC_DATA_TYPE         VEC_REMOVE         (struct VEC_VEC * self, size_t index);
-VEC_DATA_TYPE         VEC_SWAP_REMOVE    (struct VEC_VEC * self, size_t index);
-VEC_DATA_TYPE *       VEC_AS_MUT_SLICE   (struct VEC_VEC * self);
-bool                  VEC_APPEND         (struct VEC_VEC * restrict self, struct VEC_VEC * restrict other);
-bool                  VEC_ELEM           (const struct VEC_VEC * self, VEC_DATA_TYPE element);
-bool                  VEC_FILTER         (struct VEC_VEC * self, bool pred (VEC_DATA_TYPE *));
-bool                  VEC_FOREACH        (const struct VEC_VEC * self, void f (const VEC_DATA_TYPE));
-bool                  VEC_FOREACH_RANGE  (const struct VEC_VEC * self, void f (const VEC_DATA_TYPE), size_t from, size_t to);
-bool                  VEC_FREE_RANGE     (struct VEC_VEC * self, size_t from, size_t to);
-bool                  VEC_FROM_RAW_PARTS (struct VEC_VEC * self, VEC_DATA_TYPE * ptr, size_t length, size_t capacity);
-bool                  VEC_INSERT         (struct VEC_VEC * self, size_t index, VEC_DATA_TYPE element);
-bool                  VEC_IS_EMPTY       (const struct VEC_VEC * self);
-bool                  VEC_ITER           (struct VEC_VEC * self);
-bool                  VEC_ITERING        (const struct VEC_VEC * self);
-bool                  VEC_ITER_END       (struct VEC_VEC * self);
-bool                  VEC_ITER_NEXT      (struct VEC_VEC * self);
-bool                  VEC_ITER_REV       (struct VEC_VEC * self, bool rev);
-bool                  VEC_MAP            (struct VEC_VEC * self, VEC_DATA_TYPE f (VEC_DATA_TYPE));
-bool                  VEC_MAP_RANGE      (struct VEC_VEC * self, VEC_DATA_TYPE f (VEC_DATA_TYPE), size_t from, size_t to);
-bool                  VEC_PUSH           (struct VEC_VEC * self, VEC_DATA_TYPE element);
-bool                  VEC_QSORT          (struct VEC_VEC * self, int compar (const void *, const void *));
-bool                  VEC_RESERVE        (struct VEC_VEC * self, size_t total);
-bool                  VEC_SET_LEN        (struct VEC_VEC * self, size_t len);
-bool                  VEC_SET_NTH        (struct VEC_VEC * self, size_t nth, VEC_DATA_TYPE element);
-bool                  VEC_SHRINK_TO_FIT  (struct VEC_VEC * self);
-bool                  VEC_SPLIT_OFF      (struct VEC_VEC * self, struct VEC_VEC * other, size_t at);
-bool                  VEC_TRUNCATE       (struct VEC_VEC * self, size_t len);
-bool                  VEC_WITH_CAPACITY  (struct VEC_VEC * self, size_t capacity);
-const VEC_DATA_TYPE * VEC_AS_SLICE       (const struct VEC_VEC * self);
-size_t                VEC_BSEARCH        (const struct VEC_VEC * self, VEC_DATA_TYPE key, int compar (const void *, const void *));
-size_t                VEC_CAPACITY       (const struct VEC_VEC * self);
-size_t                VEC_FIND           (const struct VEC_VEC * self, VEC_DATA_TYPE element);
-size_t                VEC_ITER_IDX       (const struct VEC_VEC * self);
-size_t                VEC_LEN            (const struct VEC_VEC * self);
-struct VEC_VEC        VEC_FREE           (struct VEC_VEC self);
+VEC_CFG_DATA_TYPE         VEC_GET_NTH        (const struct VEC_CFG_VEC * self, size_t nth);
+VEC_CFG_DATA_TYPE         VEC_POP            (struct VEC_CFG_VEC * self);
+VEC_CFG_DATA_TYPE         VEC_REMOVE         (struct VEC_CFG_VEC * self, size_t index);
+VEC_CFG_DATA_TYPE         VEC_SWAP_REMOVE    (struct VEC_CFG_VEC * self, size_t index);
+VEC_CFG_DATA_TYPE *       VEC_AS_MUT_SLICE   (struct VEC_CFG_VEC * self);
+bool                      VEC_APPEND         (struct VEC_CFG_VEC * restrict self, struct VEC_CFG_VEC * restrict other);
+bool                      VEC_ELEM           (const struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE element);
+bool                      VEC_FILTER         (struct VEC_CFG_VEC * self, bool pred (VEC_CFG_DATA_TYPE *));
+bool                      VEC_FOREACH        (const struct VEC_CFG_VEC * self, void f (const VEC_CFG_DATA_TYPE));
+bool                      VEC_FOREACH_RANGE  (const struct VEC_CFG_VEC * self, void f (const VEC_CFG_DATA_TYPE), size_t from, size_t to);
+bool                      VEC_FREE_RANGE     (struct VEC_CFG_VEC * self, size_t from, size_t to);
+bool                      VEC_FROM_RAW_PARTS (struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE * ptr, size_t length, size_t capacity);
+bool                      VEC_INSERT         (struct VEC_CFG_VEC * self, size_t index, VEC_CFG_DATA_TYPE element);
+bool                      VEC_IS_EMPTY       (const struct VEC_CFG_VEC * self);
+bool                      VEC_ITER           (struct VEC_CFG_VEC * self);
+bool                      VEC_ITERING        (const struct VEC_CFG_VEC * self);
+bool                      VEC_ITER_END       (struct VEC_CFG_VEC * self);
+bool                      VEC_ITER_NEXT      (struct VEC_CFG_VEC * self);
+bool                      VEC_ITER_REV       (struct VEC_CFG_VEC * self, bool rev);
+bool                      VEC_MAP            (struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE f (VEC_CFG_DATA_TYPE));
+bool                      VEC_MAP_RANGE      (struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE f (VEC_CFG_DATA_TYPE), size_t from, size_t to);
+bool                      VEC_PUSH           (struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE element);
+bool                      VEC_QSORT          (struct VEC_CFG_VEC * self, int compar (const void *, const void *));
+bool                      VEC_RESERVE        (struct VEC_CFG_VEC * self, size_t total);
+bool                      VEC_SET_LEN        (struct VEC_CFG_VEC * self, size_t len);
+bool                      VEC_SET_NTH        (struct VEC_CFG_VEC * self, size_t nth, VEC_CFG_DATA_TYPE element);
+bool                      VEC_SHRINK_TO_FIT  (struct VEC_CFG_VEC * self);
+bool                      VEC_SPLIT_OFF      (struct VEC_CFG_VEC * self, struct VEC_CFG_VEC * other, size_t at);
+bool                      VEC_TRUNCATE       (struct VEC_CFG_VEC * self, size_t len);
+bool                      VEC_WITH_CAPACITY  (struct VEC_CFG_VEC * self, size_t capacity);
+const VEC_CFG_DATA_TYPE * VEC_AS_SLICE       (const struct VEC_CFG_VEC * self);
+size_t                    VEC_BSEARCH        (const struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE key, int compar (const void *, const void *));
+size_t                    VEC_CAPACITY       (const struct VEC_CFG_VEC * self);
+size_t                    VEC_FIND           (const struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE element);
+size_t                    VEC_ITER_IDX       (const struct VEC_CFG_VEC * self);
+size_t                    VEC_LEN            (const struct VEC_CFG_VEC * self);
+struct VEC_CFG_VEC        VEC_FREE           (struct VEC_CFG_VEC self);
 
 #ifdef VEC_IMPLEMENTATION
 
-# ifndef VEC_DATA_TYPE_EQ
-#  define VEC_DATA_TYPE_EQ(L, R) ((L) == (R))
-# endif /* VEC_DATA_TYPE_EQ */
+# ifndef VEC_CFG_DATA_TYPE_EQ
+#  define VEC_CFG_DATA_TYPE_EQ(L, R) ((L) == (R))
+# endif /* VEC_CFG_DATA_TYPE_EQ */
 
-# ifdef VEC_STATIC
-#  undef VEC_STATIC
-#  define VEC_STATIC static
-# else /* VEC_STATIC */
-#  undef VEC_STATIC
-#  define VEC_STATIC
-# endif /* VEC_STATIC */
+# ifdef VEC_CFG_STATIC
+#  undef VEC_CFG_STATIC
+#  define VEC_CFG_STATIC static
+# else /* VEC_CFG_STATIC */
+#  undef VEC_CFG_STATIC
+#  define VEC_CFG_STATIC
+# endif /* VEC_CFG_STATIC */
 
-# ifndef _VEC_MALLOC
-#  define _VEC_MALLOC malloc
+# ifndef VEC_CFG_MALLOC
+#  define VEC_CFG_MALLOC malloc
 # endif
 
-# ifndef _VEC_CALLOC
-#  define _VEC_CALLOC calloc
+# ifndef VEC_CFG_CALLOC
+#  define VEC_CFG_CALLOC calloc
 # endif
 
-# ifndef _VEC_REALLOC
-#  define _VEC_REALLOC realloc
+# ifndef VEC_CFG_REALLOC
+#  define VEC_CFG_REALLOC realloc
 # endif
 
-# ifndef _VEC_FREE
-#  define _VEC_FREE free
+# ifndef VEC_CFG_FREE
+#  define VEC_CFG_FREE free
 # endif
 
 /*==========================================================
@@ -301,9 +301,9 @@ struct VEC_VEC        VEC_FREE           (struct VEC_VEC self);
  * @param cap The new capacity
  * @returns `true` if the operation was successful, `false` otherwise
  */
-static inline bool _VEC_CHANGE_CAPACITY (struct VEC_VEC * self, size_t cap)
+static inline bool _VEC_CHANGE_CAPACITY (struct VEC_CFG_VEC * self, size_t cap)
 {
-    VEC_DATA_TYPE * ptr = _VEC_REALLOC(self->ptr, cap * sizeof(VEC_DATA_TYPE));
+    VEC_CFG_DATA_TYPE * ptr = VEC_CFG_REALLOC(self->ptr, cap * sizeof(VEC_CFG_DATA_TYPE));
 
     bool ret = ptr != NULL;
 
@@ -320,9 +320,9 @@ static inline bool _VEC_CHANGE_CAPACITY (struct VEC_VEC * self, size_t cap)
  * @param self The vector
  * @returns `true`
  */
-static inline bool _VEC_CLEAN (struct VEC_VEC * self)
+static inline bool _VEC_CLEAN (struct VEC_CFG_VEC * self)
 {
-    memset(self, 0, sizeof(struct VEC_VEC));
+    memset(self, 0, sizeof(struct VEC_CFG_VEC));
     return true;
 }
 
@@ -333,7 +333,7 @@ static inline bool _VEC_CLEAN (struct VEC_VEC * self)
  * @returns `true` if @a self has enough space for at least one more
  *          element, `false` otherwise
  */
-static inline bool _VEC_INCREASE_CAPACITY (struct VEC_VEC * self)
+static inline bool _VEC_INCREASE_CAPACITY (struct VEC_CFG_VEC * self)
 {
     if (self == NULL)
         return false;
@@ -353,7 +353,7 @@ static inline bool _VEC_INCREASE_CAPACITY (struct VEC_VEC * self)
  * @returns `false` if @a self has too much unused memory but it
  *          couldn't decrease it, `true` otherwise
  */
-static inline bool _VEC_DECREASE_CAPACITY (struct VEC_VEC * self)
+static inline bool _VEC_DECREASE_CAPACITY (struct VEC_CFG_VEC * self)
 {
     /* more than half of the capacity in use? */
     if (self->length > (self->capacity >> 1))
@@ -370,12 +370,12 @@ static inline bool _VEC_DECREASE_CAPACITY (struct VEC_VEC * self)
  * @param self The vector
  * @returns `NULL`
  */
-VEC_STATIC struct VEC_VEC VEC_FREE (struct VEC_VEC self)
+VEC_CFG_STATIC struct VEC_CFG_VEC VEC_FREE (struct VEC_CFG_VEC self)
 {
     VEC_FREE_RANGE(&self, 0, self.length);
 
     if (self.ptr != NULL)
-        _VEC_FREE(self.ptr);
+        VEC_CFG_FREE(self.ptr);
 
     _VEC_CLEAN(&self);
 
@@ -387,12 +387,12 @@ VEC_STATIC struct VEC_VEC VEC_FREE (struct VEC_VEC self)
  * @param capacity Number of elements to allocate
  * @returns The new vector
  */
-VEC_STATIC inline bool VEC_WITH_CAPACITY (struct VEC_VEC * self, size_t capacity)
+VEC_CFG_STATIC inline bool VEC_WITH_CAPACITY (struct VEC_CFG_VEC * self, size_t capacity)
 {
     if (capacity == 0)
         return _VEC_CLEAN(self);
 
-    VEC_DATA_TYPE * ptr = _VEC_CALLOC(capacity, sizeof(VEC_DATA_TYPE));
+    VEC_CFG_DATA_TYPE * ptr = VEC_CFG_CALLOC(capacity, sizeof(VEC_CFG_DATA_TYPE));
 
     return (ptr != NULL)
         && VEC_FROM_RAW_PARTS(self, ptr, 0, capacity);
@@ -407,7 +407,7 @@ VEC_STATIC inline bool VEC_WITH_CAPACITY (struct VEC_VEC * self, size_t capacity
  * @param capacity Total number of elements @a ptr can hold
  * @returns A new vector pointing to @a ptr, with @a length and @a capacity
  */
-VEC_STATIC inline bool VEC_FROM_RAW_PARTS (struct VEC_VEC * self, VEC_DATA_TYPE * ptr, size_t length, size_t capacity)
+VEC_CFG_STATIC inline bool VEC_FROM_RAW_PARTS (struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE * ptr, size_t length, size_t capacity)
 {
     _VEC_CLEAN(self);
 
@@ -423,7 +423,7 @@ VEC_STATIC inline bool VEC_FROM_RAW_PARTS (struct VEC_VEC * self, VEC_DATA_TYPE 
  * @param self The vector
  * @returns The capacity of @a self
  */
-VEC_STATIC inline size_t VEC_CAPACITY (const struct VEC_VEC * self)
+VEC_CFG_STATIC inline size_t VEC_CAPACITY (const struct VEC_CFG_VEC * self)
 {
     return (self != NULL) ?
         self->capacity:
@@ -437,7 +437,7 @@ VEC_STATIC inline size_t VEC_CAPACITY (const struct VEC_VEC * self)
  * @returns `true` if @a self already had enough capacity or it was
  *          able to reserve the extra capacity needed, `false` otherwise
  */
-VEC_STATIC bool VEC_RESERVE (struct VEC_VEC * self, size_t total)
+VEC_CFG_STATIC bool VEC_RESERVE (struct VEC_CFG_VEC * self, size_t total)
 {
     return (self != NULL)
         && ((self->capacity >= total) || _VEC_CHANGE_CAPACITY(self, total));
@@ -449,7 +449,7 @@ VEC_STATIC bool VEC_RESERVE (struct VEC_VEC * self, size_t total)
  * @returns `false` if it wasn't possible to shrink @a self,
  *          `true` otherwise
  */
-VEC_STATIC bool VEC_SHRINK_TO_FIT (struct VEC_VEC * self)
+VEC_CFG_STATIC bool VEC_SHRINK_TO_FIT (struct VEC_CFG_VEC * self)
 {
     return (self != NULL)
         && _VEC_CHANGE_CAPACITY(self, self->length);
@@ -461,7 +461,7 @@ VEC_STATIC bool VEC_SHRINK_TO_FIT (struct VEC_VEC * self)
  * @param len New length
  * @returns `false` if @a self is not a valid vector, `true` otherwise
  */
-VEC_STATIC bool VEC_TRUNCATE (struct VEC_VEC * self, size_t len)
+VEC_CFG_STATIC bool VEC_TRUNCATE (struct VEC_CFG_VEC * self, size_t len)
 {
     if (self == NULL)
         return false;
@@ -479,7 +479,7 @@ VEC_STATIC bool VEC_TRUNCATE (struct VEC_VEC * self, size_t len)
  * @param self The vector
  * @returns `const` qualified pointer to allocated memory
  */
-VEC_STATIC inline const VEC_DATA_TYPE * VEC_AS_SLICE (const struct VEC_VEC * self)
+VEC_CFG_STATIC inline const VEC_CFG_DATA_TYPE * VEC_AS_SLICE (const struct VEC_CFG_VEC * self)
 {
     return (self != NULL) ?
         self->ptr:
@@ -491,7 +491,7 @@ VEC_STATIC inline const VEC_DATA_TYPE * VEC_AS_SLICE (const struct VEC_VEC * sel
  * @param self The vector
  * @returns Pointer to allocated memory
  */
-VEC_STATIC inline VEC_DATA_TYPE * VEC_AS_MUT_SLICE (struct VEC_VEC * self)
+VEC_CFG_STATIC inline VEC_CFG_DATA_TYPE * VEC_AS_MUT_SLICE (struct VEC_CFG_VEC * self)
 {
     return (self != NULL) ?
         self->ptr:
@@ -504,7 +504,7 @@ VEC_STATIC inline VEC_DATA_TYPE * VEC_AS_MUT_SLICE (struct VEC_VEC * self)
  * @param len The new length
  * @returns `false` if @a self not a valid vector, `true` otherwise
  */
-VEC_STATIC inline bool VEC_SET_LEN (struct VEC_VEC * self, size_t len)
+VEC_CFG_STATIC inline bool VEC_SET_LEN (struct VEC_CFG_VEC * self, size_t len)
 {
     if (self == NULL)
         return false;
@@ -519,14 +519,14 @@ VEC_STATIC inline bool VEC_SET_LEN (struct VEC_VEC * self, size_t len)
  * @param index Index of the element to be removed
  * @returns The removed element
  */
-VEC_STATIC VEC_DATA_TYPE VEC_SWAP_REMOVE (struct VEC_VEC * self, size_t index)
+VEC_CFG_STATIC VEC_CFG_DATA_TYPE VEC_SWAP_REMOVE (struct VEC_CFG_VEC * self, size_t index)
 {
     assert(self != NULL);
     assert(self->ptr != NULL);
     assert(self->length > 0);
     assert(index < self->length);
 
-    VEC_DATA_TYPE ret = self->ptr[index];
+    VEC_CFG_DATA_TYPE ret = self->ptr[index];
     self->ptr[index] = VEC_POP(self);
 
     return ret;
@@ -542,7 +542,7 @@ VEC_STATIC VEC_DATA_TYPE VEC_SWAP_REMOVE (struct VEC_VEC * self, size_t index)
  *          enough capacity and it wasn't possible to increase it,
  *          `true` otherwise
  */
-VEC_STATIC bool VEC_INSERT (struct VEC_VEC * self, size_t index, VEC_DATA_TYPE element)
+VEC_CFG_STATIC bool VEC_INSERT (struct VEC_CFG_VEC * self, size_t index, VEC_CFG_DATA_TYPE element)
 {
     if (self == NULL
     /* allow inserting at the head */
@@ -567,13 +567,13 @@ VEC_STATIC bool VEC_INSERT (struct VEC_VEC * self, size_t index, VEC_DATA_TYPE e
  * @param index Index of the element to remove
  * @returns The removed element
  */
-VEC_STATIC VEC_DATA_TYPE VEC_REMOVE (struct VEC_VEC * self, size_t index)
+VEC_CFG_STATIC VEC_CFG_DATA_TYPE VEC_REMOVE (struct VEC_CFG_VEC * self, size_t index)
 {
     assert(self != NULL);
     assert(self->ptr != NULL);
     assert(index < self->length);
 
-    VEC_DATA_TYPE ret = self->ptr[index];
+    VEC_CFG_DATA_TYPE ret = self->ptr[index];
 
     for (size_t i = index + 1; i < self->length; i++)
         self->ptr[i - 1] = self->ptr[i];
@@ -592,10 +592,10 @@ VEC_STATIC VEC_DATA_TYPE VEC_REMOVE (struct VEC_VEC * self, size_t index)
  * @param to The end index (not including element at this index)
  * @returns Same as VEC_MAP_RANGE()
  */
-bool VEC_FREE_RANGE (struct VEC_VEC * self, size_t from, size_t to)
+bool VEC_FREE_RANGE (struct VEC_CFG_VEC * self, size_t from, size_t to)
 {
-# ifdef VEC_DTOR
-    return VEC_MAP_RANGE(self, VEC_DTOR, from, to);
+# ifdef VEC_CFG_DTOR
+    return VEC_MAP_RANGE(self, VEC_CFG_DTOR, from, to);
 # else
     /* Suppress unused warnings */
     (void) self;
@@ -613,7 +613,7 @@ bool VEC_FREE_RANGE (struct VEC_VEC * self, size_t from, size_t to)
  * @returns `false` if @a self is not a valid vector or @a pred is
  *          NULL, `true` otherwise
  */
-VEC_STATIC bool VEC_FILTER (struct VEC_VEC * self, bool pred (VEC_DATA_TYPE *))
+VEC_CFG_STATIC bool VEC_FILTER (struct VEC_CFG_VEC * self, bool pred (VEC_CFG_DATA_TYPE *))
 {
     if (self == NULL
     || self->ptr == NULL
@@ -625,10 +625,10 @@ VEC_STATIC bool VEC_FILTER (struct VEC_VEC * self, bool pred (VEC_DATA_TYPE *))
     for (size_t r = 0; r < self->length; r++)
         if (pred(self->ptr + r))
             self->ptr[len++] = self->ptr[r];
-# ifdef VEC_DTOR
+# ifdef VEC_CFG_DTOR
         else
-            VEC_DTOR(self->ptr[r]);
-# endif /* VEC_DTOR */
+            VEC_CFG_DTOR(self->ptr[r]);
+# endif /* VEC_CFG_DTOR */
 
     self->length = len;
 
@@ -645,7 +645,7 @@ VEC_STATIC bool VEC_FILTER (struct VEC_VEC * self, bool pred (VEC_DATA_TYPE *))
  *          have enough capacity and it wasn't possible to increase
  *          it, `true` otherwise
  */
-VEC_STATIC bool VEC_PUSH (struct VEC_VEC * self, VEC_DATA_TYPE element)
+VEC_CFG_STATIC bool VEC_PUSH (struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE element)
 {
     if (self == NULL || !_VEC_INCREASE_CAPACITY(self))
         return false;
@@ -661,7 +661,7 @@ VEC_STATIC bool VEC_PUSH (struct VEC_VEC * self, VEC_DATA_TYPE element)
  * @param self The vector
  * @returns The removed element
  */
-VEC_STATIC VEC_DATA_TYPE VEC_POP (struct VEC_VEC * self)
+VEC_CFG_STATIC VEC_CFG_DATA_TYPE VEC_POP (struct VEC_CFG_VEC * self)
 {
     assert(self != NULL);
     assert(self->ptr != NULL);
@@ -683,7 +683,7 @@ VEC_STATIC VEC_DATA_TYPE VEC_POP (struct VEC_VEC * self)
  *          @a self didn't have enough capacity and it wasn't possible
  *          to increase it, `true` otherwise
  */
-VEC_STATIC bool VEC_APPEND (struct VEC_VEC * restrict self, struct VEC_VEC * restrict other)
+VEC_CFG_STATIC bool VEC_APPEND (struct VEC_CFG_VEC * restrict self, struct VEC_CFG_VEC * restrict other)
 {
     if (self == NULL
     || other == NULL
@@ -693,9 +693,9 @@ VEC_STATIC bool VEC_APPEND (struct VEC_VEC * restrict self, struct VEC_VEC * res
     || !VEC_RESERVE(self, self->length + other->length))
         return false;
 
-    VEC_DATA_TYPE * dest = self->ptr + self->length;
-    VEC_DATA_TYPE * src = other->ptr;
-    size_t n = other->length * sizeof(VEC_DATA_TYPE);
+    VEC_CFG_DATA_TYPE * dest = self->ptr + self->length;
+    VEC_CFG_DATA_TYPE * src = other->ptr;
+    size_t n = other->length * sizeof(VEC_CFG_DATA_TYPE);
     memcpy(dest, src, n);
 
     other->length = 0;
@@ -708,7 +708,7 @@ VEC_STATIC bool VEC_APPEND (struct VEC_VEC * restrict self, struct VEC_VEC * res
  * @param self The vector
  * @returns The length of @a self
  */
-VEC_STATIC inline size_t VEC_LEN (const struct VEC_VEC * self)
+VEC_CFG_STATIC inline size_t VEC_LEN (const struct VEC_CFG_VEC * self)
 {
     return (self != NULL) ?
         self->length:
@@ -720,7 +720,7 @@ VEC_STATIC inline size_t VEC_LEN (const struct VEC_VEC * self)
  * @param self The vector
  * @returns `true` if @a self is empty, `false` otherwise
  */
-VEC_STATIC inline bool VEC_IS_EMPTY (const struct VEC_VEC * self)
+VEC_CFG_STATIC inline bool VEC_IS_EMPTY (const struct VEC_CFG_VEC * self)
 {
     return self == NULL
         || self->ptr == NULL
@@ -734,7 +734,7 @@ VEC_STATIC inline bool VEC_IS_EMPTY (const struct VEC_VEC * self)
  * @param at Where to split
  * @returns The new vector
  */
-VEC_STATIC bool VEC_SPLIT_OFF (struct VEC_VEC * restrict self, struct VEC_VEC * restrict other, size_t at)
+VEC_CFG_STATIC bool VEC_SPLIT_OFF (struct VEC_CFG_VEC * restrict self, struct VEC_CFG_VEC * restrict other, size_t at)
 {
     if (at >= self->length || at == 0)
         return false;
@@ -744,7 +744,7 @@ VEC_STATIC bool VEC_SPLIT_OFF (struct VEC_VEC * restrict self, struct VEC_VEC * 
     if (ret) {
         void * dest = other->ptr;
         const void * src = self->ptr + at - 1;
-        size_t n = sizeof(VEC_DATA_TYPE) * other->capacity;
+        size_t n = sizeof(VEC_CFG_DATA_TYPE) * other->capacity;
         memcpy(dest, src, n);
 
         other->length = other->capacity;
@@ -760,7 +760,7 @@ VEC_STATIC bool VEC_SPLIT_OFF (struct VEC_VEC * restrict self, struct VEC_VEC * 
  * @param nth The index
  * @returns The element at index @a nth
  */
-VEC_STATIC inline VEC_DATA_TYPE VEC_GET_NTH (const struct VEC_VEC * self, size_t nth)
+VEC_CFG_STATIC inline VEC_CFG_DATA_TYPE VEC_GET_NTH (const struct VEC_CFG_VEC * self, size_t nth)
 {
     assert(self != NULL);
     assert(self->ptr != NULL);
@@ -776,7 +776,7 @@ VEC_STATIC inline VEC_DATA_TYPE VEC_GET_NTH (const struct VEC_VEC * self, size_t
  * @returns `false` if @a self is not a valid vector or @a nth is out
  *          of bounds, `true` otherwise
  */
-VEC_STATIC inline bool VEC_SET_NTH (struct VEC_VEC * self, size_t nth, VEC_DATA_TYPE element)
+VEC_CFG_STATIC inline bool VEC_SET_NTH (struct VEC_CFG_VEC * self, size_t nth, VEC_CFG_DATA_TYPE element)
 {
     if (self == NULL
     || self->ptr == NULL
@@ -793,7 +793,7 @@ VEC_STATIC inline bool VEC_SET_NTH (struct VEC_VEC * self, size_t nth, VEC_DATA_
  * @returns The index of the first occurrence of @a element, or, if
  *          @a element does not exist, the length of @a self
  */
-VEC_STATIC size_t VEC_FIND (const struct VEC_VEC * self, VEC_DATA_TYPE element)
+VEC_CFG_STATIC size_t VEC_FIND (const struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE element)
 {
     assert(self != NULL);
     assert(self->ptr != NULL);
@@ -801,7 +801,7 @@ VEC_STATIC size_t VEC_FIND (const struct VEC_VEC * self, VEC_DATA_TYPE element)
     size_t ret = 0;
     for (ret = 0;
             ret < self->length
-            && !(VEC_DATA_TYPE_EQ(self->ptr[ret], element));
+            && !(VEC_CFG_DATA_TYPE_EQ(self->ptr[ret], element));
             ret++);
 
     return ret;
@@ -813,7 +813,7 @@ VEC_STATIC size_t VEC_FIND (const struct VEC_VEC * self, VEC_DATA_TYPE element)
  * @param element The element to look for
  * @returns `true` if @a element exists in @a self, `false` otherwise
  */
-VEC_STATIC inline bool VEC_ELEM (const struct VEC_VEC * self, VEC_DATA_TYPE element)
+VEC_CFG_STATIC inline bool VEC_ELEM (const struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE element)
 {
     return self != NULL
         && self->ptr != NULL
@@ -828,7 +828,7 @@ VEC_STATIC inline bool VEC_ELEM (const struct VEC_VEC * self, VEC_DATA_TYPE elem
  * @returns The index of an occurrence of @a element, or, if @a element
  *          does not exist, the length of @a self
  */
-VEC_STATIC size_t VEC_BSEARCH (const struct VEC_VEC * self, VEC_DATA_TYPE key, int compar (const void *, const void *))
+VEC_CFG_STATIC size_t VEC_BSEARCH (const struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE key, int compar (const void *, const void *))
 {
     assert(self != NULL);
     assert(self->ptr != NULL);
@@ -836,9 +836,9 @@ VEC_STATIC size_t VEC_BSEARCH (const struct VEC_VEC * self, VEC_DATA_TYPE key, i
 
     const void * base = self->ptr;
     size_t nmemb = self->length;
-    size_t size = sizeof(VEC_DATA_TYPE);
+    size_t size = sizeof(VEC_CFG_DATA_TYPE);
 
-    VEC_DATA_TYPE * found = bsearch(&key, base, nmemb, size, compar);
+    VEC_CFG_DATA_TYPE * found = bsearch(&key, base, nmemb, size, compar);
     return (found != NULL) ?
         (size_t) (found - self->ptr):
         self->length;
@@ -850,11 +850,11 @@ VEC_STATIC size_t VEC_BSEARCH (const struct VEC_VEC * self, VEC_DATA_TYPE key, i
  * @param compar A function suitable to be passed to `qsort()`
  * @returns `false` if @a self is not a valid vector, `true` otherwise
  */
-VEC_STATIC bool VEC_QSORT (struct VEC_VEC * self, int compar (const void *, const void *))
+VEC_CFG_STATIC bool VEC_QSORT (struct VEC_CFG_VEC * self, int compar (const void *, const void *))
 {
     if (self == NULL || self->ptr == NULL || compar == NULL)
         return false;
-    qsort(self->ptr, self->length, sizeof(VEC_DATA_TYPE), compar);
+    qsort(self->ptr, self->length, sizeof(VEC_CFG_DATA_TYPE), compar);
     return true;
 }
 
@@ -869,7 +869,7 @@ VEC_STATIC bool VEC_QSORT (struct VEC_VEC * self, int compar (const void *, cons
  *          @a from is larger than or equal to @a to, or @a to is out of bounds,
  *          `true` otherwise
  */
-VEC_STATIC bool VEC_MAP_RANGE (struct VEC_VEC * self, VEC_DATA_TYPE f (VEC_DATA_TYPE), size_t from, size_t to)
+VEC_CFG_STATIC bool VEC_MAP_RANGE (struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE f (VEC_CFG_DATA_TYPE), size_t from, size_t to)
 {
     if (self == NULL
     || self->ptr == NULL
@@ -891,7 +891,7 @@ VEC_STATIC bool VEC_MAP_RANGE (struct VEC_VEC * self, VEC_DATA_TYPE f (VEC_DATA_
  * @returns `false` if @a self is not a valid vector or @a f is NULL,
  *          `true` otherwise
  */
-VEC_STATIC bool VEC_MAP (struct VEC_VEC * self, VEC_DATA_TYPE f (VEC_DATA_TYPE))
+VEC_CFG_STATIC bool VEC_MAP (struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE f (VEC_CFG_DATA_TYPE))
 {
     return (self != NULL) ?
         VEC_MAP_RANGE(self, f, 0, self->length):
@@ -909,7 +909,7 @@ VEC_STATIC bool VEC_MAP (struct VEC_VEC * self, VEC_DATA_TYPE f (VEC_DATA_TYPE))
  * @returns `false` if @a self is not a valid vector or @a f is NULL,
  *          `true` otherwise
  */
-VEC_STATIC bool VEC_FOREACH_RANGE (const struct VEC_VEC * self, void f (const VEC_DATA_TYPE), size_t from, size_t to)
+VEC_CFG_STATIC bool VEC_FOREACH_RANGE (const struct VEC_CFG_VEC * self, void f (const VEC_CFG_DATA_TYPE), size_t from, size_t to)
 {
     if (self == NULL
     || self->ptr == NULL
@@ -933,7 +933,7 @@ VEC_STATIC bool VEC_FOREACH_RANGE (const struct VEC_VEC * self, void f (const VE
  * @returns `false` if @a self is not a valid vector or @a f is NULL,
  *          `true` otherwise
  */
-VEC_STATIC bool VEC_FOREACH (const struct VEC_VEC * self, void f (const VEC_DATA_TYPE))
+VEC_CFG_STATIC bool VEC_FOREACH (const struct VEC_CFG_VEC * self, void f (const VEC_CFG_DATA_TYPE))
 {
     return (self != NULL)
         && VEC_FOREACH_RANGE(self, f, 0, self->length);
@@ -946,7 +946,7 @@ VEC_STATIC bool VEC_FOREACH (const struct VEC_VEC * self, void f (const VEC_DATA
  * @returns `false` if @a self is not a valid vector or it is already
  *          iterating, `true` otherwise
  */
-VEC_STATIC bool VEC_ITER (struct VEC_VEC * self)
+VEC_CFG_STATIC bool VEC_ITER (struct VEC_CFG_VEC * self)
 {
     if (self == NULL
     || self->iterating
@@ -968,7 +968,7 @@ VEC_STATIC bool VEC_ITER (struct VEC_VEC * self)
  * @param self The vector
  * @returns `false` if @a self is not a valid vector, `true` otherwise
  */
-VEC_STATIC inline bool VEC_ITER_END (struct VEC_VEC * self)
+VEC_CFG_STATIC inline bool VEC_ITER_END (struct VEC_CFG_VEC * self)
 {
     return (self != NULL)
         && !(self->iterating = false);
@@ -979,7 +979,7 @@ VEC_STATIC inline bool VEC_ITER_END (struct VEC_VEC * self)
  * @param self The vector
  * @returns `true` if @a self is iterating, `false` otherwise
  */
-VEC_STATIC inline bool VEC_ITERING (const struct VEC_VEC * self)
+VEC_CFG_STATIC inline bool VEC_ITERING (const struct VEC_CFG_VEC * self)
 {
     return (self != NULL)
         && self->iterating;
@@ -990,7 +990,7 @@ VEC_STATIC inline bool VEC_ITERING (const struct VEC_VEC * self)
  * @param self The vector
  * @returns The current index of the iterator
  */
-VEC_STATIC inline size_t VEC_ITER_IDX (const struct VEC_VEC * self)
+VEC_CFG_STATIC inline size_t VEC_ITER_IDX (const struct VEC_CFG_VEC * self)
 {
     assert(self != NULL);
     assert(self->idx < self->length);
@@ -1002,7 +1002,7 @@ VEC_STATIC inline size_t VEC_ITER_IDX (const struct VEC_VEC * self)
  * @param self The vector
  * @returns `true` if still iterating, `false` otherwise
  */
-VEC_STATIC bool VEC_ITER_NEXT (struct VEC_VEC * self)
+VEC_CFG_STATIC bool VEC_ITER_NEXT (struct VEC_CFG_VEC * self)
 {
     if (self == NULL || self->idx >= self->length || !self->iterating)
         return false;
@@ -1029,7 +1029,7 @@ VEC_STATIC bool VEC_ITER_NEXT (struct VEC_VEC * self)
  * @returns `false` if @a self is iterating or it is not a valid vector,
  *          `true` otherwise
  */
-VEC_STATIC bool VEC_ITER_REV (struct VEC_VEC * self, bool rev)
+VEC_CFG_STATIC bool VEC_ITER_REV (struct VEC_CFG_VEC * self, bool rev)
 {
     if (self == NULL || self->iterating)
         return false;
@@ -1091,15 +1091,15 @@ VEC_STATIC bool VEC_ITER_REV (struct VEC_VEC * self, bool rev)
 /*
  * Other
  */
-#undef VEC_CONCAT
-#undef VEC_DATA_TYPE
-#undef VEC_DATA_TYPE_EQ
-#undef VEC_DTOR
-#undef VEC_MAKE_STR
-#undef VEC_MAKE_STR1
-#undef VEC_PREFIX
-#undef VEC_STATIC
-#undef VEC_VEC
+#undef VEC_CFG_CONCAT
+#undef VEC_CFG_DATA_TYPE
+#undef VEC_CFG_DATA_TYPE_EQ
+#undef VEC_CFG_DTOR
+#undef VEC_CFG_MAKE_STR
+#undef VEC_CFG_MAKE_STR1
+#undef VEC_CFG_PREFIX
+#undef VEC_CFG_STATIC
+#undef VEC_CFG_VEC
 
 /*==========================================================
  * License
