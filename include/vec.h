@@ -1,4 +1,4 @@
-/* vec - v2018.05.03-1
+/* vec - v2018.05.05-1
  *
  * A vector type inspired by
  *  * Rust's `Vec` type
@@ -151,8 +151,6 @@
 #  define VEC_VEC VEC_MAKE_STR(vec)
 # endif
 
-# ifdef VEC_IMPLEMENTATION
-
 /**=========================================================
  * @brief The vector type
  */
@@ -175,12 +173,6 @@ struct VEC_VEC {
     /** Is currently iterating */
     unsigned char iterating : 1;
 };
-
-# else
-
-struct VEC_VEC;
-
-# endif /* VEC_IMPLEMENTATION */
 
 # ifndef VEC_DATA_TYPE_EQ
 #  define VEC_DATA_TYPE_EQ(L, R) ((L) == (R))
