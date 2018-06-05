@@ -1,4 +1,4 @@
-/* vec - v2018.06.05-3
+/* vec - v2018.06.05-4
  *
  * A vector type inspired by
  *  * Rust's `Vec` type
@@ -123,21 +123,6 @@
 #include <string.h>
 
 /*
- * Type of data for the vector to hold
- */
-# ifndef VEC_DATA_TYPE
-#  error "Must declare VEC_DATA_TYPE"
-# endif /* VEC_DATA_TYPE */
-
-/*
- * If no prefix was defined, default to `vec_`
- */
-# ifndef VEC_PREFIX
-#  define VEC_PREFIX vec_
-#  define VEC_VEC    vec
-# endif /* VEC_PREFIX */
-
-/*
  * Magic from `sort.h`
  */
 # define VEC_CONCAT(A, B)    A ## B
@@ -145,7 +130,21 @@
 # define VEC_MAKE_STR(A)     VEC_MAKE_STR1(VEC_PREFIX, A)
 
 /*
- * Allow overwriting the vector name
+ * Type of data for the vector to hold
+ */
+# ifndef VEC_DATA_TYPE
+#  error "Must define VEC_DATA_TYPE"
+# endif /* VEC_DATA_TYPE */
+
+/*
+ * If no prefix was defined, default to `vec_`
+ */
+# ifndef VEC_PREFIX
+#  define VEC_PREFIX vec_
+# endif /* VEC_PREFIX */
+
+/*
+ * Allow overwriting the vector name, default to `prefix_vec`
  */
 # ifndef VEC_VEC
 #  define VEC_VEC VEC_MAKE_STR(vec)
@@ -173,18 +172,6 @@ struct VEC_VEC {
     /** Is currently iterating */
     unsigned char iterating : 1;
 };
-
-# ifndef VEC_DATA_TYPE_EQ
-#  define VEC_DATA_TYPE_EQ(L, R) ((L) == (R))
-# endif /* VEC_DATA_TYPE_EQ */
-
-# ifdef VEC_STATIC
-#  undef VEC_STATIC
-#  define VEC_STATIC static
-# else /* VEC_STATIC */
-#  undef VEC_STATIC
-#  define VEC_STATIC
-# endif /* VEC_STATIC */
 
 /*==========================================================
  * Function names
@@ -276,6 +263,18 @@ struct VEC_VEC        VEC_FREE           (struct VEC_VEC self);
 
 #ifdef VEC_IMPLEMENTATION
 
+# ifndef VEC_DATA_TYPE_EQ
+#  define VEC_DATA_TYPE_EQ(L, R) ((L) == (R))
+# endif /* VEC_DATA_TYPE_EQ */
+
+# ifdef VEC_STATIC
+#  undef VEC_STATIC
+#  define VEC_STATIC static
+# else /* VEC_STATIC */
+#  undef VEC_STATIC
+#  define VEC_STATIC
+# endif /* VEC_STATIC */
+
 # ifndef _VEC_MALLOC
 #  define _VEC_MALLOC malloc
 # endif
@@ -306,12 +305,14 @@ static inline bool _VEC_CHANGE_CAPACITY (struct VEC_VEC * self, size_t cap)
 {
     VEC_DATA_TYPE * ptr = _VEC_REALLOC(self->ptr, cap * sizeof(VEC_DATA_TYPE));
 
-    if (ptr != NULL) {
+    bool ret = ptr != NULL;
+
+    if (ret) {
         self->ptr = ptr;
         self->capacity = cap;
     }
 
-    return ptr != NULL;
+    return ret;
 }
 
 /**=========================================================
@@ -392,9 +393,9 @@ VEC_STATIC inline bool VEC_WITH_CAPACITY (struct VEC_VEC * self, size_t capacity
         return _VEC_CLEAN(self);
 
     VEC_DATA_TYPE * ptr = _VEC_CALLOC(capacity, sizeof(VEC_DATA_TYPE));
-    return (ptr != NULL) ?
-        VEC_FROM_RAW_PARTS(self, ptr, 0, capacity):
-        false;
+
+    return (ptr != NULL)
+        && VEC_FROM_RAW_PARTS(self, ptr, 0, capacity);
 }
 
 /**=========================================================
@@ -408,13 +409,11 @@ VEC_STATIC inline bool VEC_WITH_CAPACITY (struct VEC_VEC * self, size_t capacity
  */
 VEC_STATIC inline bool VEC_FROM_RAW_PARTS (struct VEC_VEC * self, VEC_DATA_TYPE * ptr, size_t length, size_t capacity)
 {
+    _VEC_CLEAN(self);
+
     self->ptr = ptr;
     self->length = length;
     self->capacity = capacity;
-
-    self->idx = 0;
-    self->reverse = 0;
-    self->iterating = 0;
 
     return true;
 }
@@ -440,11 +439,8 @@ VEC_STATIC inline size_t VEC_CAPACITY (const struct VEC_VEC * self)
  */
 VEC_STATIC bool VEC_RESERVE (struct VEC_VEC * self, size_t total)
 {
-    return (self == NULL) ?
-        false:
-        (self->capacity >= total) ?
-        true:
-        _VEC_CHANGE_CAPACITY(self, total);
+    return (self != NULL)
+        && ((self->capacity >= total) || _VEC_CHANGE_CAPACITY(self, total));
 }
 
 /**=========================================================
@@ -455,7 +451,8 @@ VEC_STATIC bool VEC_RESERVE (struct VEC_VEC * self, size_t total)
  */
 VEC_STATIC bool VEC_SHRINK_TO_FIT (struct VEC_VEC * self)
 {
-    return self != NULL && _VEC_CHANGE_CAPACITY(self, self->length);
+    return (self != NULL)
+        && _VEC_CHANGE_CAPACITY(self, self->length);
 }
 
 /**=========================================================
@@ -938,9 +935,8 @@ VEC_STATIC bool VEC_FOREACH_RANGE (const struct VEC_VEC * self, void f (const VE
  */
 VEC_STATIC bool VEC_FOREACH (const struct VEC_VEC * self, void f (const VEC_DATA_TYPE))
 {
-    return (self != NULL) ?
-        VEC_FOREACH_RANGE(self, f, 0, self->length):
-        false;
+    return (self != NULL)
+        && VEC_FOREACH_RANGE(self, f, 0, self->length);
 }
 
 /**=========================================================
@@ -974,7 +970,8 @@ VEC_STATIC bool VEC_ITER (struct VEC_VEC * self)
  */
 VEC_STATIC inline bool VEC_ITER_END (struct VEC_VEC * self)
 {
-    return (self != NULL) && !(self->iterating = false);
+    return (self != NULL)
+        && !(self->iterating = false);
 }
 
 /**=========================================================
@@ -984,7 +981,8 @@ VEC_STATIC inline bool VEC_ITER_END (struct VEC_VEC * self)
  */
 VEC_STATIC inline bool VEC_ITERING (const struct VEC_VEC * self)
 {
-    return (self != NULL) && self->iterating;
+    return (self != NULL)
+        && self->iterating;
 }
 
 /**=========================================================
