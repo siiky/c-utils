@@ -1,4 +1,4 @@
-/* vec - v2018.06.05-6
+/* vec - v2018.06.05-7
  *
  * A vector type inspired by
  *  * Rust's `Vec` type
@@ -1006,8 +1006,17 @@ VEC_CFG_STATIC inline size_t VEC_ITER_IDX (const struct VEC_CFG_VEC * self)
  */
 VEC_CFG_STATIC bool VEC_ITER_NEXT (struct VEC_CFG_VEC * self)
 {
-    if (self == NULL || self->idx >= self->length || !self->iterating)
+    if (self == NULL || !self->iterating)
         return false;
+
+    /*
+     * if the vec is being iterated but, for example, elements are
+     * removed
+     */
+    if (self->idx >= self->length) {
+        VEC_ITER_END(self);
+        return false;
+    }
 
     bool over = self->idx == ((!self->reverse) ?
             self->length - 1:
