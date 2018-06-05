@@ -1,4 +1,4 @@
-/* vec - v2018.06.05-5
+/* vec - v2018.06.05-6
  *
  * A vector type inspired by
  *  * Rust's `Vec` type
@@ -28,7 +28,7 @@
  * // Optionally, define a prefix (defaults to `vec_`)
  * #define VEC_CFG_PREFIX my_
  *
- * // Optionally, define the struct identifier
+ * // Optionally, define the struct identifier (defaults to `prefix_vec`)
  * #define VEC_CFG_VEC my_uber_vec
  *
  * // Optionally, define NDEBUG to disable asserts inside vec.h
@@ -42,45 +42,47 @@
  *
  * int main (void)
  * {
- *     struct my_uber_vec * vec = my_new();
- *
- *     assert(vec != NULL);
+ *     struct my_uber_vec vec;
  *
  *     size_t used = 0;
  *     for (size_t i = 0; i < 100; i++)
- *         if (my_push(vec, i))
+ *         if (my_push(&vec, i))
  *             used++;
  *
  *     {
- *         size_t len = my_len(vec);
- *         size_t cap = my_capacity(vec);
+ *         size_t len = my_len(&vec);
+ *         size_t cap = my_capacity(&vec);
  *
  *         assert(used == len);
  *         assert(cap >= len);
  *     }
  *
- *     for (my_iter(vec); my_itering(vec); my_iter_next(vec)) {
- *         size_t r = my_get_nth(vec, my_iter_idx(vec));
+ *     // Iterate over a vector
+ *     for (my_iter(&vec); my_itering(&vec); my_iter_next(&vec)) {
+ *         size_t r = my_get_nth(&vec, my_iter_idx(&vec));
  *         assert(r == i);
  *     }
+ *
+ *     // Automatically stop iterating
+ *     assert(!my_itering(&vec));
+ *
+ *     // The last index of the iteration is still available
+ *     assert(my_iter_idx(&vec) == (used - 1));
  *
  *     // If VEC_CFG_DTOR is defined, VEC_FREE() will automatically
  *     // call it on every element
  *     vec = my_free(vec);
  *
  *     {
- *         // For VEC_LEN(), VEC_CAPACITY(), VEC_AS_MUT_SLICE(),
- *         // VEC_AS_SLICE() and VEC_IS_EMPTY() NULL is an empty vector
- *         bool empty = my_is_empty(vec);
- *         size_t * ptr = my_as_slice(vec);
- *         size_t cap = my_capacity(vec);
- *         size_t len = my_len(vec);
+ *         bool empty = my_is_empty(&vec);
+ *         size_t * ptr = my_as_slice(&vec);
+ *         size_t cap = my_capacity(&vec);
+ *         size_t len = my_len(&vec);
  *
  *         assert(cap == 0);
  *         assert(empty);
  *         assert(len == 0);
  *         assert(ptr == NULL);
- *         assert(vec == NULL);
  *     }
  *
  *     return 0;
@@ -602,7 +604,7 @@ bool VEC_FREE_RANGE (struct VEC_CFG_VEC * self, size_t from, size_t to)
     (void) from;
     (void) to;
     return true;
-# endif
+# endif /* VEC_CFG_DTOR */
 }
 
 /**=========================================================
