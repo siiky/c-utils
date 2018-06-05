@@ -1,4 +1,4 @@
-/* vec - v2018.06.05-7
+/* vec - v2018.06.05-8
  *
  * A vector type inspired by
  *  * Rust's `Vec` type
@@ -143,6 +143,15 @@
  */
 # ifndef VEC_CFG_PREFIX
 #  define VEC_CFG_PREFIX vec_
+
+ /*
+  * If the vector name wasn't overwritten and the prefix wasn't
+  * defined, the vector name defaults to `vec`
+  */
+#  ifndef VEC_CFG_VEC
+#   define VEC_CFG_VEC vec
+#  endif /* VEC_CFG_VEC */
+
 # endif /* VEC_CFG_PREFIX */
 
 /*
@@ -150,7 +159,7 @@
  */
 # ifndef VEC_CFG_VEC
 #  define VEC_CFG_VEC VEC_CFG_MAKE_STR(vec)
-# endif
+# endif /* VEC_CFG_VEC */
 
 /**=========================================================
  * @brief The vector type
@@ -223,7 +232,7 @@ struct VEC_CFG_VEC {
 /*==========================================================
  * Function prototypes
  *
- * RETURN TYPE        FUNCTION NAME      PARAMETER LIST
+ * RETURN TYPE            FUNCTION NAME      PARAMETER LIST
  *==========================================================*/
 VEC_CFG_DATA_TYPE         VEC_GET_NTH        (const struct VEC_CFG_VEC * self, size_t nth);
 VEC_CFG_DATA_TYPE         VEC_POP            (struct VEC_CFG_VEC * self);
@@ -279,19 +288,19 @@ struct VEC_CFG_VEC        VEC_FREE           (struct VEC_CFG_VEC self);
 
 # ifndef VEC_CFG_MALLOC
 #  define VEC_CFG_MALLOC malloc
-# endif
+# endif /* VEC_CFG_MALLOC */
 
 # ifndef VEC_CFG_CALLOC
 #  define VEC_CFG_CALLOC calloc
-# endif
+# endif /* VEC_CFG_CALLOC */
 
 # ifndef VEC_CFG_REALLOC
 #  define VEC_CFG_REALLOC realloc
-# endif
+# endif /* VEC_CFG_REALLOC */
 
 # ifndef VEC_CFG_FREE
 #  define VEC_CFG_FREE free
-# endif
+# endif /* VEC_CFG_FREE */
 
 /*==========================================================
  * Function definitions
