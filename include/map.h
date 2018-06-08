@@ -93,7 +93,6 @@ struct MAP_CFG_MAP MAP_FREE      (struct MAP_CFG_MAP self);
 
 #ifdef MAP_CFG_IMPLEMENTATION
 
-#define _MAP_ADD_ENTRY       MAP_CFG_MAKE_STR(_add_entry)
 #define _MAP_INCREASE_LENGTH MAP_CFG_MAKE_STR(_increase_length)
 #define _MAP_INSERT_SORTED   MAP_CFG_MAKE_STR(_insert_sorted)
 
@@ -124,6 +123,7 @@ struct MAP_CFG_MAP MAP_FREE      (struct MAP_CFG_MAP self);
  *  free()
  *
  * <string.h>
+ *  memmove()
  *  memset()
  */
 #include <stdlib.h>
@@ -153,12 +153,24 @@ struct MAP_CFG_MAP MAP_FREE      (struct MAP_CFG_MAP self);
 #  error "MAP_CFG_DEFAULT_SIZE must be bigger than 2"
 # endif /* MAP_CFG_DEFAULT_SIZE < 3 */
 
-/*
- * Assume theres self->map[idx].entries has space
- */
+static bool _MAP_INCREASE_LENGTH (struct MAP_CFG_MAP * self, unsigned int idx)
+{
+    void * entries = self->map[idx].entries;
+    unsigned int len = self->map[idx].length + 1;
+    entries = MAP_CFG_REALLOC(entries,
+            sizeof(*self->map[idx].entries) * len);
+    bool ret = entries != NULL;
+
+    if (ret) {
+        self->map[idx].entries = entries;
+        self->map[idx].length++;
+    }
+
+    return ret;
+}
+
 static bool _MAP_INSERT_SORTED (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key, MAP_CFG_VALUE_DATA_TYPE value, unsigned int hash, unsigned int idx)
 {
-# if 0
     /*
      * Keep the array of entries sorted
      */
@@ -174,43 +186,30 @@ static bool _MAP_INSERT_SORTED (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE
             && (MAP_CFG_KEY_CMP(key, self->map[idx].entries[i].key) > 0);
             i++);
 
-    if (i < len) {
-        /* move entries to the right */
-    }
-
-# else
-
     /*
-     * Always insert at the end of the array
+     * (insert in the middle)
+     * key doesn't exist yet, try to increase capacity and move
+     * other keys to the right
+     * (if the key is already there, just overwrite)
      */
-    unsigned int i = self->map[idx].length - 1;
+    if (i < len && MAP_CFG_KEY_CMP(key, self->map[idx].entries[i].key) != 0) {
+        if (!_MAP_INCREASE_LENGTH(self, idx))
+            return false;
 
-# endif
+        /* move entries to the right */
+        void * src = self->map[idx].entries + i;
+        void * dst = self->map[idx].entries + i + 1;
+        memmove(dst, src, sizeof(*self->map[idx].entries) * len - i - 1);
+    } else if (i == len) { /* insert at the end */
+        if (!_MAP_INCREASE_LENGTH(self, idx))
+            return false;
+    }
 
     self->map[idx].entries[i].hash = hash;
     self->map[idx].entries[i].key = key;
     self->map[idx].entries[i].value = value;
 
     return true;
-}
-
-static bool _MAP_INCREASE_LENGTH (struct MAP_CFG_MAP * self, unsigned int idx)
-{
-    void * entries = MAP_CFG_REALLOC(self->map[idx].entries, self->map[idx].length + 1);
-    bool ret = entries != NULL;
-
-    if (ret) {
-        self->map[idx].entries = entries;
-        self->map[idx].length++;
-    }
-
-    return ret;
-}
-
-static bool _MAP_ADD_ENTRY (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key, MAP_CFG_VALUE_DATA_TYPE value, unsigned int hash, unsigned int idx)
-{
-    return _MAP_INCREASE_LENGTH(self, idx)
-        && _MAP_INSERT_SORTED(self, key, value, hash, idx);
 }
 
 /**
@@ -234,7 +233,7 @@ bool MAP_ADD (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key, MAP_CFG_VALU
     unsigned int hash = MAP_CFG_HASH_FUNC(key);
     unsigned int idx = hash % self->size;
     
-    return _MAP_ADD_ENTRY(self, key, value, hash, idx);
+    return _MAP_INSERT_SORTED(self, key, value, hash, idx);
 }
 
 bool MAP_NEW (struct MAP_CFG_MAP * self)
@@ -289,7 +288,6 @@ struct MAP_CFG_MAP MAP_FREE (struct MAP_CFG_MAP self)
 /*
  * Functions
  */
-#undef _MAP_ADD_ENTRY
 #undef _MAP_INCREASE_LENGTH
 #undef _MAP_INSERT_SORTED
 
