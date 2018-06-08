@@ -6,4 +6,6 @@
 #define MAP_CFG_VALUE_DATA_TYPE int
 #include <map.h>
 
+void ii_map_print_all_elements (const struct ii_map * self);
+
 #endif /* _II_MAP_H */

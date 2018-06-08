@@ -1,4 +1,4 @@
-/* map - v2018.06.08-1
+/* map - v2018.06.09-1
 */
 
 /*
@@ -67,6 +67,14 @@ struct MAP_CFG_MAP {
 
         /** Its length */
         unsigned int length;
+
+        /*
+         * since a call to realloc() (even if decreasing size)
+         * may fail, the total capacity has to be kept
+         * (maybe could be free slots?)
+         */
+        /** Its capacity */
+        unsigned int capacity;
     } * map;
 
     /** Its length */
@@ -155,15 +163,18 @@ struct MAP_CFG_MAP MAP_FREE      (struct MAP_CFG_MAP self);
 
 static bool _MAP_INCREASE_LENGTH (struct MAP_CFG_MAP * self, unsigned int idx)
 {
+    if (self->map[idx].length < self->map[idx].capacity)
+        return true;
+
     void * entries = self->map[idx].entries;
-    unsigned int len = self->map[idx].length + 1;
+    unsigned int cap = self->map[idx].capacity + 1;
     entries = MAP_CFG_REALLOC(entries,
-            sizeof(*self->map[idx].entries) * len);
+            sizeof(*self->map[idx].entries) * cap);
     bool ret = entries != NULL;
 
     if (ret) {
         self->map[idx].entries = entries;
-        self->map[idx].length++;
+        self->map[idx].capacity++;
     }
 
     return ret;
@@ -176,6 +187,10 @@ static bool _MAP_INSERT_SORTED (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE
      */
     unsigned int i = 0;
     unsigned int len = self->map[idx].length;
+
+    /*
+     * TODO: Use binary search
+     */
 
     /* search index by comparing hashes */
     for (i = 0; i < len && hash > self->map[idx].entries[i].hash; i++);
@@ -208,6 +223,7 @@ static bool _MAP_INSERT_SORTED (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE
     self->map[idx].entries[i].hash = hash;
     self->map[idx].entries[i].key = key;
     self->map[idx].entries[i].value = value;
+    self->map[idx].length++;
 
     return true;
 }
@@ -232,7 +248,7 @@ bool MAP_ADD (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key, MAP_CFG_VALU
 
     unsigned int hash = MAP_CFG_HASH_FUNC(key);
     unsigned int idx = hash % self->size;
-    
+
     return _MAP_INSERT_SORTED(self, key, value, hash, idx);
 }
 
