@@ -36,3 +36,4 @@ c-utils-install.sh
 cvec
 mkheader
 mkmakefile
+src/map/map
