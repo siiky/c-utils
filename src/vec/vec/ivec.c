@@ -1,4 +1,4 @@
-#define VEC_IMPLEMENTATION
+#define VEC_CFG_IMPLEMENTATION
 #include <stdio.h>
 
 #include "ivec.h"

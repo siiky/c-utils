@@ -96,9 +96,6 @@
  */
 
 /*
- * <assert.h>
- *  assert()
- *
  * <stdbool.h>
  *  bool
  *  false
@@ -106,23 +103,9 @@
  *
  * <stddef.h>
  *  size_t
- *
- * <stdlib.h>
- *  bsearch()
- *  calloc()
- *  free()
- *  malloc()
- *  qsort()
- *  realloc()
- *
- * <string.h>
- *  memcpy()
  */
-#include <assert.h>
 #include <stdbool.h>
 #include <stddef.h>
-#include <stdlib.h>
-#include <string.h>
 
 /*
  * Magic from `sort.h`
@@ -215,10 +198,6 @@ struct VEC_CFG_VEC {
 #define VEC_SWAP_REMOVE        VEC_CFG_MAKE_STR(swap_remove)
 #define VEC_TRUNCATE           VEC_CFG_MAKE_STR(truncate)
 #define VEC_WITH_CAPACITY      VEC_CFG_MAKE_STR(with_capacity)
-#define _VEC_CHANGE_CAPACITY   VEC_CFG_MAKE_STR(_change_capacity)
-#define _VEC_CLEAN             VEC_CFG_MAKE_STR(_clean)
-#define _VEC_DECREASE_CAPACITY VEC_CFG_MAKE_STR(_decrease_capacity)
-#define _VEC_INCREASE_CAPACITY VEC_CFG_MAKE_STR(_increase_capacity)
 
 /*==========================================================
  * Function prototypes
@@ -263,7 +242,26 @@ size_t                    VEC_ITER_IDX       (const struct VEC_CFG_VEC * self);
 size_t                    VEC_LEN            (const struct VEC_CFG_VEC * self);
 struct VEC_CFG_VEC        VEC_FREE           (struct VEC_CFG_VEC self);
 
-#ifdef VEC_IMPLEMENTATION
+#ifdef VEC_CFG_IMPLEMENTATION
+
+/*
+ * <assert.h>
+ *  assert()
+ *
+ * <stdlib.h>
+ *  bsearch()
+ *  calloc()
+ *  free()
+ *  malloc()
+ *  qsort()
+ *  realloc()
+ *
+ * <string.h>
+ *  memcpy()
+ */
+#include <assert.h>
+#include <stdlib.h>
+#include <string.h>
 
 # ifndef VEC_CFG_DATA_TYPE_EQ
 #  define VEC_CFG_DATA_TYPE_EQ(L, R) ((L) == (R))
@@ -292,6 +290,14 @@ struct VEC_CFG_VEC        VEC_FREE           (struct VEC_CFG_VEC self);
 # ifndef VEC_CFG_FREE
 #  define VEC_CFG_FREE free
 # endif /* VEC_CFG_FREE */
+
+/*==========================================================
+ * Static functions' names
+ *=========================================================*/
+#define _VEC_CHANGE_CAPACITY   VEC_CFG_MAKE_STR(_change_capacity)
+#define _VEC_CLEAN             VEC_CFG_MAKE_STR(_clean)
+#define _VEC_DECREASE_CAPACITY VEC_CFG_MAKE_STR(_decrease_capacity)
+#define _VEC_INCREASE_CAPACITY VEC_CFG_MAKE_STR(_increase_capacity)
 
 /*==========================================================
  * Function definitions
@@ -1048,7 +1054,26 @@ VEC_CFG_STATIC bool VEC_ITER_REV (struct VEC_CFG_VEC * self, bool rev)
     return true;
 }
 
-#endif /* VEC_IMPLEMENTATION */
+/*==========================================================
+ * Implementation clean up
+ *=========================================================*/
+
+/*
+ * Functions
+ */
+#undef _VEC_CHANGE_CAPACITY
+#undef _VEC_CLEAN
+#undef _VEC_DECREASE_CAPACITY
+#undef _VEC_INCREASE_CAPACITY
+
+/*
+ * Other
+ */
+#undef VEC_CFG_DATA_TYPE_EQ
+#undef VEC_CFG_DTOR
+#undef VEC_CFG_STATIC
+
+#endif /* VEC_CFG_IMPLEMENTATION */
 
 /*==========================================================
  * Clean up
@@ -1094,22 +1119,15 @@ VEC_CFG_STATIC bool VEC_ITER_REV (struct VEC_CFG_VEC * self, bool rev)
 #undef VEC_SWAP_REMOVE
 #undef VEC_TRUNCATE
 #undef VEC_WITH_CAPACITY
-#undef _VEC_CHANGE_CAPACITY
-#undef _VEC_CLEAN
-#undef _VEC_DECREASE_CAPACITY
-#undef _VEC_INCREASE_CAPACITY
 
 /*
  * Other
  */
 #undef VEC_CFG_CONCAT
 #undef VEC_CFG_DATA_TYPE
-#undef VEC_CFG_DATA_TYPE_EQ
-#undef VEC_CFG_DTOR
 #undef VEC_CFG_MAKE_STR
 #undef VEC_CFG_MAKE_STR1
 #undef VEC_CFG_PREFIX
-#undef VEC_CFG_STATIC
 #undef VEC_CFG_VEC
 
 /*==========================================================
