@@ -101,6 +101,7 @@ struct MAP_CFG_MAP MAP_FREE      (struct MAP_CFG_MAP self);
 
 #ifdef MAP_CFG_IMPLEMENTATION
 
+#define _MAP_ENTRY_CMP       MAP_CFG_MAKE_STR(_entry_cmp)
 #define _MAP_INCREASE_LENGTH MAP_CFG_MAKE_STR(_increase_length)
 #define _MAP_INSERT_SORTED   MAP_CFG_MAKE_STR(_insert_sorted)
 
@@ -180,6 +181,15 @@ static bool _MAP_INCREASE_LENGTH (struct MAP_CFG_MAP * self, unsigned int idx)
     return ret;
 }
 
+static inline int _MAP_ENTRY_CMP (unsigned int ha, MAP_CFG_KEY_DATA_TYPE ka, unsigned int hb, MAP_CFG_KEY_DATA_TYPE kb)
+{
+    return (ha < hb) ?
+        -1:
+        (ha > hb) ?
+        1:
+        MAP_CFG_KEY_CMP(ka, kb);
+}
+
 static bool _MAP_INSERT_SORTED (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key, MAP_CFG_VALUE_DATA_TYPE value, unsigned int hash, unsigned int idx)
 {
     /*
@@ -192,13 +202,11 @@ static bool _MAP_INSERT_SORTED (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE
      * TODO: Use binary search
      */
 
-    /* search index by comparing hashes */
-    for (i = 0; i < len && hash > self->map[idx].entries[i].hash; i++);
-
-    /* search index by comparing keys (because of hash collision) */
-    for (; i < len
-            && hash == self->map[idx].entries[i].hash
-            && (MAP_CFG_KEY_CMP(key, self->map[idx].entries[i].key) > 0);
+    for (i = 0;
+            i < len
+            && _MAP_ENTRY_CMP(hash, key,
+                self->map[idx].entries[i].hash,
+                self->map[idx].entries[i].key) > 0;
             i++);
 
     /*
@@ -304,6 +312,7 @@ struct MAP_CFG_MAP MAP_FREE (struct MAP_CFG_MAP self)
 /*
  * Functions
  */
+#undef _MAP_ENTRY_CMP
 #undef _MAP_INCREASE_LENGTH
 #undef _MAP_INSERT_SORTED
 
