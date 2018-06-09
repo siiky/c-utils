@@ -87,6 +87,7 @@ struct MAP_CFG_MAP {
 #define MAP_ADD       MAP_CFG_MAKE_STR(add)
 #define MAP_FREE      MAP_CFG_MAKE_STR(free)
 #define MAP_NEW       MAP_CFG_MAKE_STR(new)
+#define MAP_REMOVE    MAP_CFG_MAKE_STR(remove)
 #define MAP_WITH_SIZE MAP_CFG_MAKE_STR(with_size)
 
 /*==========================================================
@@ -96,15 +97,17 @@ struct MAP_CFG_MAP {
  *==========================================================*/
 bool               MAP_ADD       (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key, MAP_CFG_VALUE_DATA_TYPE value);
 bool               MAP_NEW       (struct MAP_CFG_MAP * self);
+bool               MAP_REMOVE    (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key);
 bool               MAP_WITH_SIZE (struct MAP_CFG_MAP * self, unsigned int size);
 struct MAP_CFG_MAP MAP_FREE      (struct MAP_CFG_MAP self);
 
 #ifdef MAP_CFG_IMPLEMENTATION
 
-#define _MAP_ENTRY_CMP       MAP_CFG_MAKE_STR(_entry_cmp)
-#define _MAP_INCREASE_LENGTH MAP_CFG_MAKE_STR(_increase_length)
-#define _MAP_INSERT_SORTED   MAP_CFG_MAKE_STR(_insert_sorted)
-#define _MAP_SEARCH          MAP_CFG_MAKE_STR(_search)
+#define _MAP_DECREASE_CAPACITY MAP_CFG_MAKE_STR(_decrease_length)
+#define _MAP_ENTRY_CMP         MAP_CFG_MAKE_STR(_entry_cmp)
+#define _MAP_INCREASE_CAPACITY MAP_CFG_MAKE_STR(_increase_length)
+#define _MAP_INSERT_SORTED     MAP_CFG_MAKE_STR(_insert_sorted)
+#define _MAP_SEARCH            MAP_CFG_MAKE_STR(_search)
 
 /*
  * Hash function for the keys
@@ -163,7 +166,26 @@ struct MAP_CFG_MAP MAP_FREE      (struct MAP_CFG_MAP self);
 #  error "MAP_CFG_DEFAULT_SIZE must be bigger than 2"
 # endif /* MAP_CFG_DEFAULT_SIZE < 3 */
 
-static bool _MAP_INCREASE_LENGTH (struct MAP_CFG_MAP * self, unsigned int idx)
+static bool _MAP_DECREASE_CAPACITY (struct MAP_CFG_MAP * self, unsigned int idx)
+{
+    if (self->map[idx].length == self->map[idx].capacity)
+        return true;
+
+    void * entries = self->map[idx].entries;
+    unsigned int cap = self->map[idx].length;
+    entries = MAP_CFG_REALLOC(entries,
+            sizeof(*self->map[idx].entries) * cap);
+    bool ret = entries != NULL;
+
+    if (ret) {
+        self->map[idx].entries = entries;
+        self->map[idx].capacity = cap;
+    }
+
+    return ret;
+}
+
+static bool _MAP_INCREASE_CAPACITY (struct MAP_CFG_MAP * self, unsigned int idx)
 {
     if (self->map[idx].length < self->map[idx].capacity)
         return true;
@@ -233,7 +255,7 @@ static bool _MAP_INSERT_SORTED (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE
     bool exists = _MAP_SEARCH(self, key, hash, idx, &i);
 
     if (!exists) {
-        if (!_MAP_INCREASE_LENGTH(self, idx))
+        if (!_MAP_INCREASE_CAPACITY(self, idx))
             return false;
 
         /* move entries to the right */
@@ -279,6 +301,40 @@ bool MAP_ADD (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key, MAP_CFG_VALU
 bool MAP_NEW (struct MAP_CFG_MAP * self)
 {
     return MAP_WITH_SIZE(self, MAP_CFG_DEFAULT_SIZE);
+}
+
+bool MAP_REMOVE (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key)
+{
+    if (self == NULL || self->size == 0 || self->map == NULL)
+        return false;
+
+    unsigned int hash = MAP_CFG_HASH_FUNC(key);
+    unsigned int idx = hash % self->size;
+
+    unsigned int i = 0;
+    bool exists = _MAP_SEARCH(self, key, hash, idx, &i);
+    if (!exists)
+        return false;
+
+#ifdef MAP_CFG_KEY_DTOR
+    MAP_CFG_KEY_DTOR(self->map[idx].entries[i].key)
+#endif /* MAP_CFG_KEY_DTOR */
+
+#ifdef MAP_CFG_VALUE_DTOR
+    MAP_CFG_VALUE_DTOR(self->map[idx].entries[i].value)
+#endif /* MAP_CFG_VALUE_DTOR */
+
+    {
+        unsigned int len = self->map[idx].length;
+        unsigned int size = sizeof(*self->map[idx].entries) * (len - i - 1);
+        void * dst = self->map[idx].entries + i;
+        void * src = self->map[idx].entries + i + 1;
+        memmove(dst, src, size);
+    }
+
+    _MAP_DECREASE_CAPACITY(self, idx);
+
+    return true;
 }
 
 bool MAP_WITH_SIZE (struct MAP_CFG_MAP * self, unsigned int size)
@@ -331,8 +387,9 @@ struct MAP_CFG_MAP MAP_FREE (struct MAP_CFG_MAP self)
 /*
  * Functions
  */
+#undef _MAP_DECREASE_CAPACITY
 #undef _MAP_ENTRY_CMP
-#undef _MAP_INCREASE_LENGTH
+#undef _MAP_INCREASE_CAPACITY
 #undef _MAP_INSERT_SORTED
 #undef _MAP_SEARCH
 
@@ -359,6 +416,7 @@ struct MAP_CFG_MAP MAP_FREE (struct MAP_CFG_MAP self)
 #undef MAP_ADD
 #undef MAP_FREE
 #undef MAP_NEW
+#undef MAP_REMOVE
 #undef MAP_WITH_SIZE
 
 /*
