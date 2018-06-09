@@ -287,8 +287,11 @@ bool MAP_WITH_SIZE (struct MAP_CFG_MAP * self, unsigned int size)
 
     bool ret = self->map != NULL;
 
-    if (ret)
+    if (ret) {
         self->size = size;
+        size *= sizeof(*self->map);
+        memset(self->map, 0, size);
+    }
 
     return ret;
 }
@@ -353,10 +356,10 @@ struct MAP_CFG_MAP MAP_FREE (struct MAP_CFG_MAP self)
 /*
  * Functions
  */
+#undef MAP_ADD
 #undef MAP_FREE
 #undef MAP_NEW
 #undef MAP_WITH_SIZE
-#undef MAP_ADD
 
 /*
  * Other
