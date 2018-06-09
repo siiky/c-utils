@@ -12,13 +12,13 @@ int main (void)
     bool succ = true;
 
 #define _(b1, b2) ((b1) = (b1) && (b2))
-    for (int i = 0; i < 1000000; i++)
+    for (unsigned int i = 0; i < 1000000; i++)
         _(succ, ii_map_add(&map, i, i));
 #undef _
 
     //ii_map_print_all_elements(&map);
 
-    puts((succ) ? "yay" : "noes");
+    //puts((succ) ? "yay" : "noes");
 
     map = ii_map_free(map);
 

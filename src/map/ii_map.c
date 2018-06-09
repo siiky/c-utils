@@ -1,9 +1,9 @@
-static unsigned int ii_hash (const int key)
+static unsigned int ii_hash (const unsigned int key)
 {
     return key;
 }
 
-static int ii_cmp (const int a, const int b)
+static int ii_cmp (const unsigned int a, const unsigned int b)
 {
     return (a < b) ?
         -1:

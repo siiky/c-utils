@@ -1,16 +1,29 @@
-CC=musl-gcc
-#CC=cc
-EXEC=map
+CC := musl-gcc
+#CC := cc
+EXEC := map
 
 FLAGS := \
-    -I../../include/ \
-    -Wall            \
-    -Wextra          \
-    -flto            \
-    -fno-common      \
-    -pedantic        \
-    -static          \
-    -std=c11         \
+    -I../../include/                      \
+    -Wall                                 \
+    -Wcast-align                          \
+    -Wcast-qual                           \
+    -Wconversion                          \
+    -Werror-implicit-function-declaration \
+    -Wextra                               \
+    -Winit-self                           \
+    -Wpointer-arith                       \
+    -Wshadow                              \
+    -Wstrict-prototypes                   \
+    -Wundef                               \
+    -Wuninitialized                       \
+    -Wunreachable-code                    \
+    -Wwrite-strings                       \
+    -flto                                 \
+    -fno-common                           \
+    -march=native                         \
+    -pedantic                             \
+    -static                               \
+    -std=c11                              \
 
 OPT := -g
 
