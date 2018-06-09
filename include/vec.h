@@ -139,27 +139,18 @@
 # endif /* VEC_CFG_DATA_TYPE */
 
 /*
- * If no prefix was defined, default to `vec_`
- */
-# ifndef VEC_CFG_PREFIX
-#  define VEC_CFG_PREFIX vec_
-
- /*
-  * If the vector name wasn't overwritten and the prefix wasn't
-  * defined, the vector name defaults to `vec`
-  */
-#  ifndef VEC_CFG_VEC
-#   define VEC_CFG_VEC vec
-#  endif /* VEC_CFG_VEC */
-
-# endif /* VEC_CFG_PREFIX */
-
-/*
- * Allow overwriting the vector name, default to `prefix_vec`
+ * The vector name defaults to `vec`
  */
 # ifndef VEC_CFG_VEC
-#  define VEC_CFG_VEC VEC_CFG_MAKE_STR(vec)
+#  define VEC_CFG_VEC vec
 # endif /* VEC_CFG_VEC */
+
+/*
+ * The prefix defaults to the vector name with an '_' appended
+ */
+# ifndef VEC_CFG_PREFIX
+#  define VEC_CFG_PREFIX VEC_CFG_MAKE_STR1(VEC_CFG_VEC, _)
+# endif /* VEC_CFG_PREFIX */
 
 /**=========================================================
  * @brief The vector type

@@ -16,7 +16,7 @@ int main (void)
 
 # ifdef INT
     puts("INT");
-    struct int_vec ivec;
+    struct ivec ivec;
     if (vec_init(&ivec, 1000000)) {
         printf("len: %zu\tcap: %zu\n", vec_len(&ivec), vec_capacity(&ivec));
         vec_print(&ivec);
@@ -26,7 +26,7 @@ int main (void)
 
 # ifdef CHAR
     puts("CHAR");
-    struct char_vec cvec;
+    struct cvec cvec;
     if (vec_init(&cvec, 1000000)) {
         printf("len: %zu\tcap: %zu\n", vec_len(&cvec), vec_capacity(&cvec));
         vec_print(&cvec);

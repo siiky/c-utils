@@ -1,32 +1,32 @@
 #ifndef _VEC_H
 #define _VEC_H
 
-#include "vec/char_vec.h"
-#include "vec/int_vec.h"
+#include "vec/cvec.h"
+#include "vec/ivec.h"
 
 #define vec_free(vec) _Generic((vec), \
-        struct char_vec : char_free,  \
-        struct int_vec  : int_free    \
+        struct cvec : cvec_free,      \
+        struct ivec : ivec_free       \
         )(vec)
 
-#define vec_print(vec) _Generic((vec),      \
-        struct char_vec * : char_vec_print, \
-        struct int_vec *  : int_vec_print   \
+#define vec_print(vec) _Generic((vec), \
+        struct cvec * : cvec_print,    \
+        struct ivec * : ivec_print     \
         )(vec)
 
 #define vec_init(vec, size) _Generic((vec), \
-        struct char_vec * : char_vec_init,  \
-        struct int_vec *  : int_vec_init    \
+        struct cvec * : cvec_init,          \
+        struct ivec * : ivec_init           \
         )((vec), (size))
 
-#define vec_capacity(vec) _Generic((vec),  \
-        struct char_vec * : char_capacity, \
-        struct int_vec *  : int_capacity   \
+#define vec_capacity(vec) _Generic((vec), \
+        struct cvec * : cvec_capacity,    \
+        struct ivec * : ivec_capacity     \
         )(vec)
 
-#define vec_len(vec) _Generic((vec),  \
-        struct char_vec * : char_len, \
-        struct int_vec *  : int_len   \
+#define vec_len(vec) _Generic((vec), \
+        struct cvec * : cvec_len,    \
+        struct ivec * : ivec_len     \
         )(vec)
 
 #endif /* _VEC_H */

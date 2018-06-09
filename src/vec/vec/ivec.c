@@ -1,16 +1,16 @@
 #define VEC_IMPLEMENTATION
 #include <stdio.h>
 
-#include "int_vec.h"
+#include "ivec.h"
 
-bool int_vec_init (struct int_vec * self, size_t capacity)
+bool ivec_init (struct ivec * self, size_t capacity)
 {
-    bool ret = int_with_capacity(self, capacity);
+    bool ret = ivec_with_capacity(self, capacity);
 
     if (ret) {
         for (size_t i = 1; i <= capacity; i++) {
             int x = rand() % i; /* `Floating point exception` if `i` starts at 0 */
-            int_push(self, x);
+            ivec_push(self, x);
         }
     }
 
@@ -22,8 +22,8 @@ static void _int_print (const int e)
     printf("%d ", e);
 }
 
-void int_vec_print (struct int_vec * vec)
+void ivec_print (struct ivec * vec)
 {
-    int_foreach(vec, _int_print);
+    ivec_foreach(vec, _int_print);
     putchar('\n');
 }

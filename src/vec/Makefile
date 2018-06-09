@@ -7,14 +7,14 @@ DFLAGS=$(FLAGS) -g
 CFLAGS=$(FLAGS) -O3
 
 HEADERS := \
-    vec/char_vec.h \
-    vec/int_vec.h  \
-    vec.h          \
+    vec.h      \
+    vec/cvec.h \
+    vec/ivec.h \
 
 SRC := \
-    vec/char_vec.c \
-    vec/int_vec.c  \
-    main.c         \
+    main.c     \
+    vec/cvec.c \
+    vec/ivec.c \
 
 OBJS=$(SRC:.c=.o)
 
