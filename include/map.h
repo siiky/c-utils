@@ -85,6 +85,7 @@ struct MAP_CFG_MAP {
  * Function names
  *=========================================================*/
 #define MAP_ADD       MAP_CFG_MAKE_STR(add)
+#define MAP_CONTAINS  MAP_CFG_MAKE_STR(contains)
 #define MAP_FREE      MAP_CFG_MAKE_STR(free)
 #define MAP_NEW       MAP_CFG_MAKE_STR(new)
 #define MAP_REMOVE    MAP_CFG_MAKE_STR(remove)
@@ -96,6 +97,7 @@ struct MAP_CFG_MAP {
  * RETURN TYPE     FUNCTION NAME PARAMETER LIST
  *==========================================================*/
 bool               MAP_ADD       (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key, MAP_CFG_VALUE_DATA_TYPE value);
+bool               MAP_CONTAINS  (const struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key);
 bool               MAP_NEW       (struct MAP_CFG_MAP * self);
 bool               MAP_REMOVE    (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key);
 bool               MAP_WITH_SIZE (struct MAP_CFG_MAP * self, unsigned int size);
@@ -162,7 +164,7 @@ struct MAP_CFG_MAP MAP_FREE      (struct MAP_CFG_MAP self);
 #  define MAP_CFG_DEFAULT_SIZE 101
 # endif /* MAP_CFG_DEFAULT_SIZE */
 
-# if MAP_CFG_DEFAULT_SIZE < 2
+# if MAP_CFG_DEFAULT_SIZE < 3
 #  error "MAP_CFG_DEFAULT_SIZE must be bigger than 2"
 # endif /* MAP_CFG_DEFAULT_SIZE < 3 */
 
@@ -241,8 +243,7 @@ static bool _MAP_SEARCH (const struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE 
     }
 
 out:
-    if (_i != NULL)
-        *_i = i;
+    *_i = i;
 
     return ret;
 }
@@ -289,13 +290,25 @@ static bool _MAP_INSERT_SORTED (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE
  */
 bool MAP_ADD (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key, MAP_CFG_VALUE_DATA_TYPE value)
 {
-    if (self == NULL || self->size == 0 || self->map == NULL)
+    if (self == NULL || self->size < 3 || self->map == NULL)
         return false;
 
     unsigned int hash = MAP_CFG_HASH_FUNC(key);
     unsigned int idx = hash % self->size;
 
     return _MAP_INSERT_SORTED(self, key, value, hash, idx);
+}
+
+bool MAP_CONTAINS (const struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key)
+{
+    if (self == NULL || self->size < 3 || self->map)
+        return false;
+
+    unsigned int hash = MAP_CFG_HASH_FUNC(key);
+    unsigned int idx = hash % self->size;
+
+    unsigned int _i;
+    return _MAP_SEARCH(self, key, hash, idx, &_i);
 }
 
 bool MAP_NEW (struct MAP_CFG_MAP * self)
@@ -305,7 +318,7 @@ bool MAP_NEW (struct MAP_CFG_MAP * self)
 
 bool MAP_REMOVE (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key)
 {
-    if (self == NULL || self->size == 0 || self->map == NULL)
+    if (self == NULL || self->size < 3 || self->map == NULL)
         return false;
 
     unsigned int hash = MAP_CFG_HASH_FUNC(key);
@@ -339,6 +352,9 @@ bool MAP_REMOVE (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key)
 
 bool MAP_WITH_SIZE (struct MAP_CFG_MAP * self, unsigned int size)
 {
+    if (size < 3)
+        return false;
+
     self->map = MAP_CFG_CALLOC(size, sizeof(*self->map));
 
     bool ret = self->map != NULL;
@@ -414,6 +430,7 @@ struct MAP_CFG_MAP MAP_FREE (struct MAP_CFG_MAP self)
  * Functions
  */
 #undef MAP_ADD
+#undef MAP_CONTAINS
 #undef MAP_FREE
 #undef MAP_NEW
 #undef MAP_REMOVE
