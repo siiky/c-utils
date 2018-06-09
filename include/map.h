@@ -87,6 +87,7 @@ struct MAP_CFG_MAP {
 #define MAP_ADD       MAP_CFG_MAKE_STR(add)
 #define MAP_CONTAINS  MAP_CFG_MAKE_STR(contains)
 #define MAP_FREE      MAP_CFG_MAKE_STR(free)
+#define MAP_GET       MAP_CFG_MAKE_STR(get)
 #define MAP_NEW       MAP_CFG_MAKE_STR(new)
 #define MAP_REMOVE    MAP_CFG_MAKE_STR(remove)
 #define MAP_WITH_SIZE MAP_CFG_MAKE_STR(with_size)
@@ -96,12 +97,13 @@ struct MAP_CFG_MAP {
  *
  * RETURN TYPE     FUNCTION NAME PARAMETER LIST
  *==========================================================*/
-bool               MAP_ADD       (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key, MAP_CFG_VALUE_DATA_TYPE value);
-bool               MAP_CONTAINS  (const struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key);
-bool               MAP_NEW       (struct MAP_CFG_MAP * self);
-bool               MAP_REMOVE    (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key);
-bool               MAP_WITH_SIZE (struct MAP_CFG_MAP * self, unsigned int size);
-struct MAP_CFG_MAP MAP_FREE      (struct MAP_CFG_MAP self);
+MAP_CFG_VALUE_DATA_TYPE * MAP_GET       (const struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key);
+bool                      MAP_ADD       (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key, MAP_CFG_VALUE_DATA_TYPE value);
+bool                      MAP_CONTAINS  (const struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key);
+bool                      MAP_NEW       (struct MAP_CFG_MAP * self);
+bool                      MAP_REMOVE    (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key);
+bool                      MAP_WITH_SIZE (struct MAP_CFG_MAP * self, unsigned int size);
+struct MAP_CFG_MAP        MAP_FREE      (struct MAP_CFG_MAP self);
 
 #ifdef MAP_CFG_IMPLEMENTATION
 
@@ -128,6 +130,9 @@ struct MAP_CFG_MAP MAP_FREE      (struct MAP_CFG_MAP self);
 # ifdef MAP_CFG_STATIC
 #  undef MAP_CFG_STATIC
 #  define MAP_CFG_STATIC static
+# else /* MAP_CFG_STATIC */
+#  undef MAP_CFG_STATIC
+#  define MAP_CFG_STATIC
 # endif /* MAP_CFG_STATIC */
 
 /*
@@ -275,6 +280,22 @@ static bool _MAP_INSERT_SORTED (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE
     return true;
 }
 
+MAP_CFG_STATIC MAP_CFG_VALUE_DATA_TYPE * MAP_GET (const struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key)
+{
+    if (self == NULL || self->size < 3 || self->map == NULL)
+        return false;
+
+    unsigned int hash = MAP_CFG_HASH_FUNC(key);
+    unsigned int idx = hash % self->size;
+    unsigned int i = 0;
+
+    bool exists = _MAP_SEARCH(self, key, hash, idx, &i);
+
+    return (exists) ?
+        &self->map[idx].entries[i].value:
+        NULL;
+}
+
 /**
  * @brief Adds an entry to @a self with @a key and @a value.
  *        @a self must have been successfully initialized with
@@ -288,7 +309,7 @@ static bool _MAP_INSERT_SORTED (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE
  *          This function fails (returns `false`) if @a self isn't
  *          valid, or it wasn't possible to get space for the new entry
  */
-bool MAP_ADD (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key, MAP_CFG_VALUE_DATA_TYPE value)
+MAP_CFG_STATIC bool MAP_ADD (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key, MAP_CFG_VALUE_DATA_TYPE value)
 {
     if (self == NULL || self->size < 3 || self->map == NULL)
         return false;
@@ -299,7 +320,7 @@ bool MAP_ADD (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key, MAP_CFG_VALU
     return _MAP_INSERT_SORTED(self, key, value, hash, idx);
 }
 
-bool MAP_CONTAINS (const struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key)
+MAP_CFG_STATIC bool MAP_CONTAINS (const struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key)
 {
     if (self == NULL || self->size < 3 || self->map)
         return false;
@@ -311,12 +332,12 @@ bool MAP_CONTAINS (const struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key)
     return _MAP_SEARCH(self, key, hash, idx, &_i);
 }
 
-bool MAP_NEW (struct MAP_CFG_MAP * self)
+MAP_CFG_STATIC bool MAP_NEW (struct MAP_CFG_MAP * self)
 {
     return MAP_WITH_SIZE(self, MAP_CFG_DEFAULT_SIZE);
 }
 
-bool MAP_REMOVE (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key)
+MAP_CFG_STATIC bool MAP_REMOVE (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key)
 {
     if (self == NULL || self->size < 3 || self->map == NULL)
         return false;
@@ -350,7 +371,7 @@ bool MAP_REMOVE (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key)
     return true;
 }
 
-bool MAP_WITH_SIZE (struct MAP_CFG_MAP * self, unsigned int size)
+MAP_CFG_STATIC bool MAP_WITH_SIZE (struct MAP_CFG_MAP * self, unsigned int size)
 {
     if (size < 3)
         return false;
@@ -368,7 +389,7 @@ bool MAP_WITH_SIZE (struct MAP_CFG_MAP * self, unsigned int size)
     return ret;
 }
 
-struct MAP_CFG_MAP MAP_FREE (struct MAP_CFG_MAP self)
+MAP_CFG_STATIC struct MAP_CFG_MAP MAP_FREE (struct MAP_CFG_MAP self)
 {
     if (self.map != NULL) {
         for (unsigned int i = 0; i < self.size; i++) {
@@ -432,6 +453,7 @@ struct MAP_CFG_MAP MAP_FREE (struct MAP_CFG_MAP self)
 #undef MAP_ADD
 #undef MAP_CONTAINS
 #undef MAP_FREE
+#undef MAP_GET
 #undef MAP_NEW
 #undef MAP_REMOVE
 #undef MAP_WITH_SIZE
