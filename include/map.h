@@ -322,7 +322,7 @@ MAP_CFG_STATIC bool MAP_ADD (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE ke
 
 MAP_CFG_STATIC bool MAP_CONTAINS (const struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key)
 {
-    if (self == NULL || self->size < 3 || self->map)
+    if (self == NULL || self->size < 3 || self->map == NULL)
         return false;
 
     unsigned int hash = MAP_CFG_HASH_FUNC(key);
