@@ -224,32 +224,39 @@ static bool _MAP_SEARCH (const struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE 
 {
     bool ret = false;
     unsigned int i = 0;
-    unsigned int len = self->map[idx].length;
+    unsigned int size = self->map[idx].length;
+    unsigned int base = 0;
 
-    if (len == 0)
+    if (size == 0)
         goto out;
 
-    unsigned int left = 0;
-    unsigned int right = len - 1;
-
-    while (!ret && left <= right) {
-        i = left + ((right - left) >> 1);
+    while (size > 1) {
+        unsigned int half = size >> 1;
+        unsigned int mid = base + half;
 
         int cmp = _MAP_ENTRY_CMP(hash, key,
-                self->map[idx].entries[i].hash,
-                self->map[idx].entries[i].key);
+                self->map[idx].entries[mid].hash,
+                self->map[idx].entries[mid].key);
 
-        if (cmp == 0)
-            ret = true;
-        else if (cmp < 0)
-            right = i - 1;
-        else
-            left = i + 1;
+        base = (cmp > 0) ?
+            base :
+            mid;
+
+        size -= half;
     }
+
+    int cmp = _MAP_ENTRY_CMP(hash, key,
+            self->map[idx].entries[base].hash,
+            self->map[idx].entries[base].key);
+
+    ret = cmp == 0;
+
+    i = (ret) ?
+        base :
+        base + (cmp < 0);
 
 out:
     *_i = i;
-
     return ret;
 }
 
@@ -283,7 +290,7 @@ static bool _MAP_INSERT_SORTED (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE
 MAP_CFG_STATIC MAP_CFG_VALUE_DATA_TYPE * MAP_GET (const struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key)
 {
     if (self == NULL || self->size < 3 || self->map == NULL)
-        return false;
+        return NULL;
 
     unsigned int hash = MAP_CFG_HASH_FUNC(key);
     unsigned int idx = hash % self->size;
@@ -351,11 +358,11 @@ MAP_CFG_STATIC bool MAP_REMOVE (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE
         return false;
 
 #ifdef MAP_CFG_KEY_DTOR
-    MAP_CFG_KEY_DTOR(self->map[idx].entries[i].key)
+    MAP_CFG_KEY_DTOR(self->map[idx].entries[i].key);
 #endif /* MAP_CFG_KEY_DTOR */
 
 #ifdef MAP_CFG_VALUE_DTOR
-    MAP_CFG_VALUE_DTOR(self->map[idx].entries[i].value)
+    MAP_CFG_VALUE_DTOR(self->map[idx].entries[i].value);
 #endif /* MAP_CFG_VALUE_DTOR */
 
     {

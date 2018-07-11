@@ -2,25 +2,29 @@
 
 #include <stdio.h>
 
+#define MAP_SIZE   1000
+#define MAP_NELEMS 1000000
+
 int main (void)
 {
     struct ii_map map;
 
-    if (!ii_map_with_size(&map, 1000))
+    if (!ii_map_with_size(&map, MAP_SIZE))
         return !0;
 
     bool succ = true;
 
-#define _(b1, b2) ((b1) = (b1) && (b2))
-    for (unsigned int i = 0; i < 1000000; i++)
-        _(succ, ii_map_add(&map, i, i));
-#undef _
+    for (unsigned int i = 0; i < MAP_NELEMS; i++) {
+        bool tmp = ii_map_add(&map, i, i);
+        succ = succ && tmp;
+    }
 
-    //ii_map_print_all_elements(&map);
-
-    //puts((succ) ? "yay" : "noes");
+    for (unsigned int i = 0; i < MAP_NELEMS; i++)
+        if (ii_map_contains(&map, i))
+            ii_map_remove(&map, i);
 
     map = ii_map_free(map);
 
+    puts((succ) ? "yay" : "nay");
     return 0;
 }
