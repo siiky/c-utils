@@ -1,4 +1,4 @@
-/* vec - v2018.06.05-8
+/* vec - v2018.07.13-0
  *
  * A vector type inspired by
  *  * Rust's `Vec` type
@@ -9,91 +9,112 @@
  * `include/vec.h` on [siiky/c-utils](https://github.com/siiky/c-utils)
  * More usage examples can be found at `src/vec` on the link above
  *
- * # Usage
- *
- * ```c
- * #include <assert.h>
- *
- * #define VEC_CFG_DATA_TYPE size_t
- *
- * // Optionally, define an equality function
- * // (Not optional for compound types, like structs)
- * #define VEC_CFG_DATA_TYPE_EQ(L, R) ((L) == (R))
- *
- * // Optionally, define a destructor function of type
- * //     VEC_CFG_DATA_TYPE dtor (VEC_CFG_DATA_TYPE);
- * // If defined, it will be used by VEC_FILTER() and VEC_FREE()
- * #define VEC_CFG_DTOR my_dtor_function
- *
- * // Optionally, define a prefix (defaults to `vec_`)
- * #define VEC_CFG_PREFIX my_
- *
- * // Optionally, define the struct identifier (defaults to `prefix_vec`)
- * #define VEC_CFG_VEC my_uber_vec
- *
- * // Optionally, define NDEBUG to disable asserts inside vec.h
- * #define NDEBUG
- *
- * // Optionally, define VEC_CFG_STATIC to mark definitions as static
- * // Probably will raise `unused-function` warnings
- * #define VEC_CFG_STATIC
- *
- * #include <vec.h>
- *
- * int main (void)
- * {
- *     struct my_uber_vec vec;
- *
- *     size_t used = 0;
- *     for (size_t i = 0; i < 100; i++)
- *         if (my_push(&vec, i))
- *             used++;
- *
- *     {
- *         size_t len = my_len(&vec);
- *         size_t cap = my_capacity(&vec);
- *
- *         assert(used == len);
- *         assert(cap >= len);
- *     }
- *
- *     // Iterate over a vector
- *     for (my_iter(&vec); my_itering(&vec); my_iter_next(&vec)) {
- *         size_t r = my_get_nth(&vec, my_iter_idx(&vec));
- *         assert(r == i);
- *     }
- *
- *     // Automatically stop iterating
- *     assert(!my_itering(&vec));
- *
- *     // The last index of the iteration is still available
- *     assert(my_iter_idx(&vec) == (used - 1));
- *
- *     // If VEC_CFG_DTOR is defined, VEC_FREE() will automatically
- *     // call it on every element
- *     vec = my_free(vec);
- *
- *     {
- *         bool empty = my_is_empty(&vec);
- *         size_t * ptr = my_as_slice(&vec);
- *         size_t cap = my_capacity(&vec);
- *         size_t len = my_len(&vec);
- *
- *         assert(cap == 0);
- *         assert(empty);
- *         assert(len == 0);
- *         assert(ptr == NULL);
- *     }
- *
- *     return 0;
- * }
- * ```
- *
  * # TODO
  *
  * - [X] Allow more than one implementation for different types
  * - [ ] More options
+ *
+ * # Usage
+ *
+ * A simple, single implementation, example follows below. A more
+ * advanced example, with multiple implementations and use of
+ * _Generic(), can be found on the repository.
  */
+
+# if 0
+#include <stddef.h>
+
+size_t my_dtor_function (size_t elem)
+{
+    return elem;
+}
+
+#define VEC_CFG_DATA_TYPE size_t
+
+// Optionally, define a comparison function similar to strcmp()
+// (Not optional for compound types, like structs)
+#define VEC_CFG_DATA_TYPE_CMP(L, R) \
+    (((L) < (R)) ? \
+     (-1) :        \
+     ((L) > (R)) ? \
+     (1) :         \
+     (0))
+
+// Optionally, define a destructor function of type
+//     VEC_CFG_DATA_TYPE dtor (VEC_CFG_DATA_TYPE);
+// If defined, it will be used when removing elements
+#define VEC_CFG_DTOR my_dtor_function
+
+// Optionally, define the struct identifier (defaults to `vec`)
+#define VEC_CFG_VEC my_uber_vec
+
+// Optionally, define a prefix for the generated functions (defaults
+// to `VEC_CFG_VEC_`, in this case `my_uber_vec_`)
+#define VEC_CFG_PREFIX my_
+
+// Optionally, define NDEBUG to disable asserts inside vec.h
+//#define NDEBUG
+
+// Optionally, define VEC_CFG_STATIC to mark definitions as `static`
+// Probably will raise `unused-function` warnings
+//#define VEC_CFG_STATIC
+
+// Create implementation, instead of working as a header
+#define VEC_CFG_IMPLEMENTATION
+
+#include <vec.h>
+
+#include <assert.h>
+
+int main (void)
+{
+    struct my_uber_vec _vec = {0};
+    struct my_uber_vec * vec = &_vec;
+
+    size_t used = 0;
+    for (size_t i = 0; i < 100; i++)
+        if (my_push(vec, i))
+            used++;
+
+    {
+        size_t len = my_len(vec);
+        size_t cap = my_capacity(vec);
+
+        assert(used == len);
+        assert(cap >= len);
+    }
+
+    // Iterate over a vector
+    for (my_iter(vec); my_itering(vec); my_iter_next(vec)) {
+        size_t r = my_get_nth(vec, my_iter_idx(vec));
+        assert(r == my_iter_idx(vec));
+    }
+
+    // Automatically stop iterating
+    assert(!my_itering(vec));
+
+    // The last index of the iteration is still available
+    assert(my_iter_idx(vec) == (used - 1));
+
+    // If VEC_CFG_DTOR is defined, VEC_FREE() will automatically
+    // call it on every element
+    _vec = my_free(_vec);
+
+    {
+        bool empty = my_is_empty(vec);
+        const size_t * ptr = my_as_slice(vec);
+        size_t cap = my_capacity(vec);
+        size_t len = my_len(vec);
+
+        assert(cap == 0);
+        assert(empty);
+        assert(len == 0);
+        assert(ptr == NULL);
+    }
+
+    return 0;
+}
+# endif
 
 /*
  * <stdbool.h>
@@ -263,9 +284,14 @@ struct VEC_CFG_VEC        VEC_FREE           (struct VEC_CFG_VEC self);
 #include <stdlib.h>
 #include <string.h>
 
-# ifndef VEC_CFG_DATA_TYPE_EQ
-#  define VEC_CFG_DATA_TYPE_EQ(L, R) ((L) == (R))
-# endif /* VEC_CFG_DATA_TYPE_EQ */
+# ifndef VEC_CFG_DATA_TYPE_CMP
+#  define VEC_CFG_DATA_TYPE_CMP(L, R) \
+    (((L) < (R)) ? \
+     (-1) :        \
+     ((L) > (R)) ? \
+     (1) :         \
+     (0))
+# endif /* VEC_CFG_DATA_TYPE_CMP */
 
 # ifdef VEC_CFG_STATIC
 #  undef VEC_CFG_STATIC
@@ -336,16 +362,14 @@ static inline bool _VEC_CLEAN (struct VEC_CFG_VEC * self)
 
 /**=========================================================
  * @brief Check if @a self has capacity for another element, and try
- *        to increase it
+ *        to increase it, if it doesn't
  * @param self The vector
  * @returns `true` if @a self has enough space for at least one more
- *          element, `false` otherwise
+ *          element (after the operation, i.e., if it already had
+ *          before, or it was able to increase), `false` otherwise
  */
 static inline bool _VEC_INCREASE_CAPACITY (struct VEC_CFG_VEC * self)
 {
-    if (self == NULL)
-        return false;
-
     if (self->length < self->capacity)
         return true;
 
@@ -376,7 +400,7 @@ static inline bool _VEC_DECREASE_CAPACITY (struct VEC_CFG_VEC * self)
 /**=========================================================
  * @brief Free @a self
  * @param self The vector
- * @returns `NULL`
+ * @returns An empty vector (i.e. zeroed)
  */
 VEC_CFG_STATIC struct VEC_CFG_VEC VEC_FREE (struct VEC_CFG_VEC self)
 {
@@ -391,7 +415,7 @@ VEC_CFG_STATIC struct VEC_CFG_VEC VEC_FREE (struct VEC_CFG_VEC self)
 }
 
 /**=========================================================
- * @brief Create a new vector with @a capacity free slots
+ * @brief Clean and initialize a vector with @a capacity free slots
  * @param capacity Number of elements to allocate
  * @returns The new vector
  */
@@ -407,10 +431,8 @@ VEC_CFG_STATIC inline bool VEC_WITH_CAPACITY (struct VEC_CFG_VEC * self, size_t 
 }
 
 /**=========================================================
- * @brief Create a vector from separate components. In case it is not
- *        possible to allocate memory for the vector, nothing is done
- *        to @a ptr
- * @param ptr A pointer to allocated memory
+ * @brief Create a vector from separate components
+ * @param ptr A pointer to malloc()'d memory
  * @param length Number of elements in @a ptr
  * @param capacity Total number of elements @a ptr can hold
  * @returns A new vector pointing to @a ptr, with @a length and @a capacity
@@ -442,8 +464,8 @@ VEC_CFG_STATIC inline size_t VEC_CAPACITY (const struct VEC_CFG_VEC * self)
  * @brief Reserve memory for @a total elements
  * @param self The vector
  * @param total Number of total elements
- * @returns `true` if @a self already had enough capacity or it was
- *          able to reserve the extra capacity needed, `false` otherwise
+ * @returns `true` if @a self has enough capacity (after the operation),
+ *          `false` otherwise
  */
 VEC_CFG_STATIC bool VEC_RESERVE (struct VEC_CFG_VEC * self, size_t total)
 {
@@ -452,7 +474,7 @@ VEC_CFG_STATIC bool VEC_RESERVE (struct VEC_CFG_VEC * self, size_t total)
 }
 
 /**=========================================================
- * @brief Shrink the capacity of @a self to its length
+ * @brief Shrink @a self to its length
  * @param self The vector
  * @returns `false` if it wasn't possible to shrink @a self,
  *          `true` otherwise
@@ -542,7 +564,7 @@ VEC_CFG_STATIC VEC_CFG_DATA_TYPE VEC_SWAP_REMOVE (struct VEC_CFG_VEC * self, siz
 
 /**=========================================================
  * @brief Insert an @a element at @a index, shifting every element
- *        before it to the right
+ *        after it to the right
  * @param self The vector
  * @param index Where the element will be inserted
  * @param element Element to be inserted
@@ -572,7 +594,7 @@ VEC_CFG_STATIC bool VEC_INSERT (struct VEC_CFG_VEC * self, size_t index, VEC_CFG
  * @brief Remove an element at @a index, shifting every element after
  *        it to the left
  * @param self The vector
- * @param index Index of the element to remove
+ * @param index Index of the element to be removed
  * @returns The removed element
  */
 VEC_CFG_STATIC VEC_CFG_DATA_TYPE VEC_REMOVE (struct VEC_CFG_VEC * self, size_t index)
@@ -582,11 +604,15 @@ VEC_CFG_STATIC VEC_CFG_DATA_TYPE VEC_REMOVE (struct VEC_CFG_VEC * self, size_t i
     assert(index < self->length);
 
     VEC_CFG_DATA_TYPE ret = self->ptr[index];
-
-    for (size_t i = index + 1; i < self->length; i++)
-        self->ptr[i - 1] = self->ptr[i];
-
     self->length--;
+
+    if (self->length > 0) {
+        void * dst = self->ptr + index;
+        void * src = self->ptr + index + 1;
+        size_t size = sizeof(VEC_CFG_DATA_TYPE);
+        size_t nmemb = self->length - index + 1;
+        memmove(dst, src, size * nmemb);
+    }
 
     _VEC_DECREASE_CAPACITY(self);
 
@@ -597,7 +623,7 @@ VEC_CFG_STATIC VEC_CFG_DATA_TYPE VEC_REMOVE (struct VEC_CFG_VEC * self, size_t i
  * @brief Free the elements of @a self in the range [@a from, @a to[
  * @param self The vector
  * @param from The start index
- * @param to The end index (not including element at this index)
+ * @param to The end index (not including the element at this index)
  * @returns Same as VEC_MAP_RANGE()
  */
 bool VEC_FREE_RANGE (struct VEC_CFG_VEC * self, size_t from, size_t to)
@@ -615,7 +641,8 @@ bool VEC_FREE_RANGE (struct VEC_CFG_VEC * self, size_t from, size_t to)
 
 /**=========================================================
  * @brief Keep every element of @a self that satisfies a predicate
- *        @a pred
+ *        @a pred. If VEC_CFG_DTOR is defined, it is called on
+ *        each element of @a self that does not satisfy @a pred
  * @param self The vector
  * @param pred The predicate
  * @returns `false` if @a self is not a valid vector or @a pred is
@@ -739,13 +766,19 @@ VEC_CFG_STATIC inline bool VEC_IS_EMPTY (const struct VEC_CFG_VEC * self)
  * @brief Split @a self in two, keeping the first `at - 1` elements
  *        in @a self, and the rest in the returned vector
  * @param self The vector
+ * @param other Where to put the elements to the right of @a at
  * @param at Where to split
- * @returns The new vector
+ * @returns `true` if the operation was successful, `false` otherwise
  */
 VEC_CFG_STATIC bool VEC_SPLIT_OFF (struct VEC_CFG_VEC * restrict self, struct VEC_CFG_VEC * restrict other, size_t at)
 {
-    if (at >= self->length || at == 0)
+    if (self == NULL
+    || other == NULL
+    || at >= self->length
+    || at == 0)
         return false;
+
+    *other = VEC_FREE(*other);
 
     bool ret = VEC_WITH_CAPACITY(other, self->length - at + 1);
 
@@ -786,8 +819,7 @@ VEC_CFG_STATIC inline VEC_CFG_DATA_TYPE VEC_GET_NTH (const struct VEC_CFG_VEC * 
  */
 VEC_CFG_STATIC inline bool VEC_SET_NTH (struct VEC_CFG_VEC * self, size_t nth, VEC_CFG_DATA_TYPE element)
 {
-    if (self == NULL
-    || self->ptr == NULL
+    if (VEC_IS_EMPTY(self)
     || nth >= self->length)
         return false;
     self->ptr[nth] = element;
@@ -809,7 +841,7 @@ VEC_CFG_STATIC size_t VEC_FIND (const struct VEC_CFG_VEC * self, VEC_CFG_DATA_TY
     size_t ret = 0;
     for (ret = 0;
             ret < self->length
-            && !(VEC_CFG_DATA_TYPE_EQ(self->ptr[ret], element));
+            && (VEC_CFG_DATA_TYPE_CMP(self->ptr[ret], element) != 0);
             ret++);
 
     return ret;
@@ -831,12 +863,12 @@ VEC_CFG_STATIC inline bool VEC_ELEM (const struct VEC_CFG_VEC * self, VEC_CFG_DA
 /**=========================================================
  * @brief Wraper for `stdlib.h`'s `bsearch()` function
  * @param self The vector
- * @param key The key to look for
+ * @param elem The elem to look for
  * @param compar A function suitable to be passed to `bsearch()`
  * @returns The index of an occurrence of @a element, or, if @a element
  *          does not exist, the length of @a self
  */
-VEC_CFG_STATIC size_t VEC_BSEARCH (const struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE key, int compar (const void *, const void *))
+VEC_CFG_STATIC size_t VEC_BSEARCH (const struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE elem, int compar (const void *, const void *))
 {
     assert(self != NULL);
     assert(self->ptr != NULL);
@@ -846,7 +878,7 @@ VEC_CFG_STATIC size_t VEC_BSEARCH (const struct VEC_CFG_VEC * self, VEC_CFG_DATA
     size_t nmemb = self->length;
     size_t size = sizeof(VEC_CFG_DATA_TYPE);
 
-    VEC_CFG_DATA_TYPE * found = bsearch(&key, base, nmemb, size, compar);
+    VEC_CFG_DATA_TYPE * found = bsearch(&elem, base, nmemb, size, compar);
     return (found != NULL) ?
         (size_t) (found - self->ptr):
         self->length;
@@ -896,14 +928,13 @@ VEC_CFG_STATIC bool VEC_MAP_RANGE (struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE 
  * @brief Apply @a f to every element of @a self
  * @param self The vector
  * @param f The function to apply on every element
- * @returns `false` if @a self is not a valid vector or @a f is NULL,
+ * @returns Same as VEC_MAP_RANGE()
  *          `true` otherwise
  */
 VEC_CFG_STATIC bool VEC_MAP (struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE f (VEC_CFG_DATA_TYPE))
 {
-    return (self != NULL) ?
-        VEC_MAP_RANGE(self, f, 0, self->length):
-        false;
+    return (self != NULL) &&
+        VEC_MAP_RANGE(self, f, 0, self->length);
 }
 
 /**=========================================================
@@ -938,8 +969,7 @@ VEC_CFG_STATIC bool VEC_FOREACH_RANGE (const struct VEC_CFG_VEC * self, void f (
  *        altered
  * @param self The vector
  * @param f The function to apply on every element
- * @returns `false` if @a self is not a valid vector or @a f is NULL,
- *          `true` otherwise
+ * @returns Same as VEC_FOREACH_RANGE()
  */
 VEC_CFG_STATIC bool VEC_FOREACH (const struct VEC_CFG_VEC * self, void f (const VEC_CFG_DATA_TYPE))
 {
@@ -956,10 +986,8 @@ VEC_CFG_STATIC bool VEC_FOREACH (const struct VEC_CFG_VEC * self, void f (const 
  */
 VEC_CFG_STATIC bool VEC_ITER (struct VEC_CFG_VEC * self)
 {
-    if (self == NULL
-    || self->iterating
-    || self->ptr == NULL
-    || self->length == 0)
+    if (VEC_IS_EMPTY(self)
+    || self->iterating)
         return false;
 
     self->idx = (self->reverse) ?
@@ -1069,7 +1097,7 @@ VEC_CFG_STATIC bool VEC_ITER_REV (struct VEC_CFG_VEC * self, bool rev)
 /*
  * Other
  */
-#undef VEC_CFG_DATA_TYPE_EQ
+#undef VEC_CFG_DATA_TYPE_CMP
 #undef VEC_CFG_DTOR
 #undef VEC_CFG_STATIC
 

@@ -3,8 +3,7 @@ CC=musl-gcc
 EXEC=cvec
 
 FLAGS=-std=c11 -static -Wall -Wextra -pedantic -flto -I../../include/
-DFLAGS=$(FLAGS) -g
-CFLAGS=$(FLAGS) -O3
+CFLAGS=$(FLAGS) -Og -g
 
 HEADERS := \
     vec.h      \
@@ -24,7 +23,6 @@ all: $(EXEC)
 
 $(EXEC): $(DEPS)
 	$(CC) $(CFLAGS) $(OBJS) -o $(EXEC)
-	strip -s $(EXEC)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<

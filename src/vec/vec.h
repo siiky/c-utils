@@ -29,4 +29,19 @@
         struct ivec * : ivec_len     \
         )(vec)
 
+#define vec_is_empty(vec) _Generic((vec), \
+        struct cvec * : cvec_is_empty,    \
+        struct ivec * : ivec_is_empty     \
+        )(vec)
+
+#define vec_remove(vec, elem) _Generic((vec), \
+        struct cvec * : cvec_remove,          \
+        struct ivec * : ivec_remove           \
+        )((vec), (elem))
+
+#define vec_swap_remove(vec, elem) _Generic((vec), \
+        struct cvec * : cvec_swap_remove,          \
+        struct ivec * : ivec_swap_remove           \
+        )((vec), (elem))
+
 #endif /* _VEC_H */
