@@ -1,7 +1,7 @@
 #define VEC_CFG_IMPLEMENTATION
-#include <stdio.h>
-
 #include "cvec.h"
+
+#include <stdio.h>
 
 char char_dtor (char elem)
 {

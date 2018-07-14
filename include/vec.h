@@ -279,6 +279,8 @@ struct VEC_CFG_VEC        VEC_FREE           (struct VEC_CFG_VEC self);
  *
  * <string.h>
  *  memcpy()
+ *  memmove()
+ *  memset()
  */
 #include <assert.h>
 #include <stdlib.h>
@@ -376,7 +378,7 @@ static inline bool _VEC_INCREASE_CAPACITY (struct VEC_CFG_VEC * self)
     /* new_cap = (cap * 1.5) + 1 */
     size_t new_cap = self->capacity + (self->capacity >> 1) + 1;
 
-    return VEC_RESERVE(self, new_cap);
+    return _VEC_CHANGE_CAPACITY(self, new_cap);
 }
 
 /**=========================================================
@@ -388,12 +390,15 @@ static inline bool _VEC_INCREASE_CAPACITY (struct VEC_CFG_VEC * self)
 static inline bool _VEC_DECREASE_CAPACITY (struct VEC_CFG_VEC * self)
 {
     /* more than half of the capacity in use? */
-    if (self->length > (self->capacity >> 1))
+    if (self->capacity == 1 || self->length >= (self->capacity >> 1))
         return true;
 
-    /* new_cap = len * 1.5 */
-    /* len * 1.5 ~ cap * 0.75 */
-    size_t new_cap = self->length + (self->length >> 1);
+    /*
+     * len * 2   ~ cap
+     * len * 1.5 ~ cap * 0.75
+     * len * 1.5 ~ new_cap
+     */
+    size_t new_cap = self->length + (self->length >> 1) + 1;
     return _VEC_CHANGE_CAPACITY(self, new_cap);
 }
 
@@ -551,10 +556,11 @@ VEC_CFG_STATIC inline bool VEC_SET_LEN (struct VEC_CFG_VEC * self, size_t len)
  */
 VEC_CFG_STATIC VEC_CFG_DATA_TYPE VEC_SWAP_REMOVE (struct VEC_CFG_VEC * self, size_t index)
 {
-    assert(self != NULL);
-    assert(self->ptr != NULL);
-    assert(self->length > 0);
+    assert(!VEC_IS_EMPTY(self));
     assert(index < self->length);
+
+    if (index == self->length - 1)
+        return VEC_POP(self);
 
     VEC_CFG_DATA_TYPE ret = self->ptr[index];
     self->ptr[index] = VEC_POP(self);
@@ -599,8 +605,7 @@ VEC_CFG_STATIC bool VEC_INSERT (struct VEC_CFG_VEC * self, size_t index, VEC_CFG
  */
 VEC_CFG_STATIC VEC_CFG_DATA_TYPE VEC_REMOVE (struct VEC_CFG_VEC * self, size_t index)
 {
-    assert(self != NULL);
-    assert(self->ptr != NULL);
+    assert(!VEC_IS_EMPTY(self));
     assert(index < self->length);
 
     VEC_CFG_DATA_TYPE ret = self->ptr[index];
@@ -698,9 +703,7 @@ VEC_CFG_STATIC bool VEC_PUSH (struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE eleme
  */
 VEC_CFG_STATIC VEC_CFG_DATA_TYPE VEC_POP (struct VEC_CFG_VEC * self)
 {
-    assert(self != NULL);
-    assert(self->ptr != NULL);
-    assert(self->length > 0);
+    assert(!VEC_IS_EMPTY(self));
 
     self->length--;
 

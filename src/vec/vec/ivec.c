@@ -1,18 +1,15 @@
 #define VEC_CFG_IMPLEMENTATION
-#include <stdio.h>
-
 #include "ivec.h"
+
+#include <stdio.h>
 
 bool ivec_init (struct ivec * self, size_t capacity)
 {
     bool ret = ivec_with_capacity(self, capacity);
 
-    if (ret) {
-        for (size_t i = 1; i <= capacity; i++) {
-            int x = rand() % i; /* `Floating point exception` if `i` starts at 0 */
-            ivec_push(self, x);
-        }
-    }
+    if (ret)
+        for (size_t i = 1; i <= capacity; i++)
+            ivec_push(self, rand() % 0x100000000);
 
     return ret;
 }
