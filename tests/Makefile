@@ -1,16 +1,18 @@
-include vec.mk
+include vec/vec.mk
 
 CC := cc
 
 EXEC := tests
 
 SRC := \
-    $(VEC_SRC) \
-    main.c     \
+    $(VEC_SRC)   \
+    common/int.c \
+    main.c       \
 
 OBJS := $(SRC:.c=.o)
 
 INCS := \
+    -I.           \
     -I../include/ \
     -Itheft/inc/  \
 
@@ -18,9 +20,12 @@ LIBS := \
     -Ltheft/build/ \
     -ltheft        \
 
+OPTS := -Og -g
+
 CFLAGS := \
     $(INCS) \
     $(LIBS) \
+    $(OPTS) \
     -Wall   \
     -Wextra \
 

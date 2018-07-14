@@ -1,12 +1,18 @@
-#include "defs.h"
-#include "vec.h"
+#include <stdbool.h>
 
 #include "push.h"
 
-static enum theft_trial_res qc_vec_push_prop (struct theft * t, void * arg1)
+#include <common.h>
+#include <unused.h>
+
+#include "vec.h"
+
+static enum theft_trial_res qc_vec_push_len_prop (struct theft * t, void * arg1, void * arg2)
 {
+    UNUSED(t);
+
     struct vec * vec = (struct vec *) arg1;
-    unsigned int elem = (unsigned int) theft_random_bits(t, 32);
+    int elem = * (int *) arg2;
 
     size_t pre_len = vec_len(vec);
 
@@ -21,16 +27,47 @@ static enum theft_trial_res qc_vec_push_prop (struct theft * t, void * arg1)
         THEFT_TRIAL_FAIL;
 }
 
-bool qc_vec_push_test (void)
+static enum theft_trial_res qc_vec_push_elem_prop (struct theft * t, void * arg1, void * arg2)
 {
-    struct theft_run_config cfg = {
-        .name = __func__,
-        .prop1 = qc_vec_push_prop,
-        .type_info = {
-            &qc_vec_info,
-        },
-        .seed = theft_seed_of_time(),
-    };
+    UNUSED(t);
 
-    return theft_run(&cfg) == THEFT_RUN_PASS;
+    struct vec * vec = (struct vec *) arg1;
+    int elem = * (int *) arg2;
+
+    bool pre_empty = vec->length == 0;
+    int pre_last = (!pre_empty) ?
+        vec->ptr[vec->length - 1]:
+        0;
+
+    bool res = vec_push(vec, elem);
+
+    bool pos_empty = vec->length == 0;
+    int pos_last = (!pos_empty) ?
+        vec->ptr[vec->length - 1]:
+        0;
+
+    return ((res) ?
+            (pos_last == elem):
+            ((pre_empty && pos_empty) || (!pre_empty && !pos_empty && pre_last == pos_last))) ?
+        THEFT_TRIAL_PASS:
+        THEFT_TRIAL_FAIL;
 }
+
+qc_mktest(qc_vec_push_len_test,
+        prop2,
+        qc_vec_push_len_prop,
+        &qc_vec_info,
+        &qc_int_info
+        );
+
+qc_mktest(qc_vec_push_elem_test,
+        prop2,
+        qc_vec_push_elem_prop,
+        &qc_vec_info,
+        &qc_int_info
+        );
+
+qc_mktest_all(qc_vec_push_test_all,
+        qc_vec_push_len_test,
+        qc_vec_push_elem_test
+        );

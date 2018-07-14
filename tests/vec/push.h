@@ -1,8 +1,6 @@
-#ifndef _PUSH_H
-#define _PUSH_H
+#ifndef _VEC_PUSH_H
+#define _VEC_PUSH_H
 
-#include <stdbool.h>
+bool qc_vec_push_test_all (void);
 
-bool qc_vec_push_test (void);
-
-#endif /* _PUSH_H */
+#endif /* _VEC_PUSH_H */

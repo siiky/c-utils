@@ -1,4 +1,4 @@
-#include "vec/qc_vec.h"
+#include "vec/qc.h"
 
 #include <stdlib.h>
 
