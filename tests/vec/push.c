@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <string.h>
 
 #include "push.h"
 
@@ -27,7 +28,7 @@ static enum theft_trial_res qc_vec_push_len_prop (struct theft * t, void * arg1,
         THEFT_TRIAL_FAIL;
 }
 
-static enum theft_trial_res qc_vec_push_elem_prop (struct theft * t, void * arg1, void * arg2)
+static enum theft_trial_res qc_vec_push_last_elem_prop (struct theft * t, void * arg1, void * arg2)
 {
     UNUSED(t);
 
@@ -53,21 +54,61 @@ static enum theft_trial_res qc_vec_push_elem_prop (struct theft * t, void * arg1
         THEFT_TRIAL_FAIL;
 }
 
-qc_mktest(qc_vec_push_len_test,
+static enum theft_trial_res qc_vec_push_content_prop (struct theft * t, void * arg1, void * arg2)
+{
+    UNUSED(t);
+
+    struct vec * vec = (struct vec *) arg1;
+    int elem = * (int *) arg2;
+
+    struct vec * pre_dup = qc_vec_dup_contents(vec);
+    if (pre_dup == NULL)
+        return THEFT_TRIAL_SKIP;
+
+    size_t pre_len = vec->length;
+    size_t pre_cap = vec->capacity;
+
+    bool succ = vec_push(vec, elem);
+
+    bool ret = true
+        && pre_dup->iterating == vec->iterating
+        && pre_dup->reverse   == vec->reverse
+        && pre_dup->idx       == vec->idx
+        && ((succ) ?
+                memcmp(pre_dup->ptr, vec->ptr, pre_len * sizeof(int)) == 0:
+                memcmp(pre_dup->ptr, vec->ptr, pre_cap * sizeof(int)) == 0);
+
+    *pre_dup = vec_free(*pre_dup);
+    free(pre_dup);
+
+    return (ret) ?
+        THEFT_TRIAL_PASS:
+        THEFT_TRIAL_FAIL;
+}
+
+QC_MKTEST(qc_vec_push_len_test,
         prop2,
         qc_vec_push_len_prop,
         &qc_vec_info,
         &qc_int_info
         );
 
-qc_mktest(qc_vec_push_elem_test,
+QC_MKTEST(qc_vec_push_last_elem_test,
         prop2,
-        qc_vec_push_elem_prop,
+        qc_vec_push_last_elem_prop,
         &qc_vec_info,
         &qc_int_info
         );
 
-qc_mktest_all(qc_vec_push_test_all,
+QC_MKTEST(qc_vec_push_content_test,
+        prop2,
+        qc_vec_push_content_prop,
+        &qc_vec_info,
+        &qc_int_info
+        );
+
+QC_MKTEST_ALL(qc_vec_push_test_all,
         qc_vec_push_len_test,
-        qc_vec_push_elem_test
+        qc_vec_push_last_elem_test,
+        qc_vec_push_content_test
         );

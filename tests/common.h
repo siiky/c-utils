@@ -8,7 +8,7 @@
  * @param prop The proposition to test
  * @param ... The generators (in order)
  */
-#define qc_mktest(fname, propf, prop, ...)        \
+#define QC_MKTEST(fname, propf, prop, ...)        \
     static bool fname (void) {                    \
         struct theft_run_config cfg = {           \
             .name = __func__,                     \
@@ -26,7 +26,7 @@
  * @param fname The function name
  * @param ... The tests to run
  */
-#define qc_mktest_all(fname, ...)                       \
+#define QC_MKTEST_ALL(fname, ...)                       \
     bool fname (void) {                                 \
         bool (*tests[]) (void) = {                      \
             __VA_ARGS__,                                \

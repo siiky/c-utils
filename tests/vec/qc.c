@@ -7,6 +7,6 @@
 
 #include <common.h>
 
-qc_mktest_all(qc_vec_test_all,
+QC_MKTEST_ALL(qc_vec_test_all,
         qc_vec_push_test_all
         );

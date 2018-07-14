@@ -8,4 +8,6 @@
 
 extern const struct theft_type_info qc_vec_info;
 
+struct vec * qc_vec_dup_contents (struct vec * self);
+
 #endif /* _VEC_DEFS_H */

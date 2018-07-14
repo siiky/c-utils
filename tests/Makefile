@@ -59,4 +59,4 @@ clean:
 clean_all: clean
 	cd theft/ && make clean
 
-.PHONY: all clean clean_all test libtheft
+.PHONY: all clean clean_all libtheft test theft

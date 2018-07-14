@@ -3,7 +3,7 @@
 
 #include <unused.h>
 
-enum theft_alloc_res qc_vec_alloc (struct theft * t, void * env, void ** output)
+static enum theft_alloc_res qc_vec_alloc (struct theft * t, void * env, void ** output)
 {
     UNUSED(env);
 
@@ -12,38 +12,40 @@ enum theft_alloc_res qc_vec_alloc (struct theft * t, void * env, void ** output)
     if (vec == NULL)
         return THEFT_ALLOC_SKIP;
 
-    size_t cap = (size_t) theft_random_bits(t, 8);
+    size_t cap = (size_t) theft_random_choice(t, 256);
     size_t len = (size_t) ((cap > 0) ?
-            ((size_t) theft_random_bits(t, 8)) % cap:
+            ((size_t) theft_random_choice(t, cap + 1)):
             0);
-
     if (!vec_with_capacity(vec, cap)) {
         free(vec);
         return THEFT_ALLOC_SKIP;
     }
 
-    for (size_t i = 0; i < len; i++) {
-        unsigned int elem = (unsigned int) theft_random_bits(t, 32);
-        vec_push(vec, elem);
-    }
+    for (size_t i = 0; i < len; i++)
+        vec->ptr[i] = (int) theft_random_bits(t, 32);
+
+    vec->length = len;
+
+    vec->idx       = (size_t) theft_random_choice(t, cap);
+    vec->iterating = theft_random_bits(t, 1);
+    vec->reverse   = theft_random_bits(t, 1);
 
     *output = vec;
     return THEFT_ALLOC_OK;
 }
 
-void qc_vec_free (void * instance, void * env)
+static void qc_vec_free (void * instance, void * env)
 {
     UNUSED(env);
     struct vec * vec = (struct vec *) instance;
     *vec = vec_free(*vec);
 }
 
-void qc_vec_print (FILE * f, const void * instance, void * env)
+static void qc_vec_print (FILE * f, const void * instance, void * env)
 {
     UNUSED(env);
 
     const struct vec * vec = (struct vec *) instance;
-
     size_t len = vec_len(vec);
 
     fputc('[', f);
@@ -64,3 +66,24 @@ const struct theft_type_info qc_vec_info = {
     .free  = qc_vec_free,
     .print = qc_vec_print,
 };
+
+struct vec * qc_vec_dup_contents (struct vec * self)
+{
+    struct vec * ret = malloc(sizeof(struct vec));
+
+    if (ret != NULL) {
+        memcpy(ret, self, sizeof(struct vec));
+
+        size_t nbytes = self->capacity * sizeof(int);
+        ret->ptr = malloc(nbytes);
+
+        if (ret->ptr != NULL) {
+            memcpy(ret->ptr, self->ptr, nbytes);
+        } else {
+            free(ret);
+            ret = NULL;
+        }
+    }
+
+    return ret;
+}
