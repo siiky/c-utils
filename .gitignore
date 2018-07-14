@@ -36,3 +36,6 @@ c-utils-install.sh
 cvec
 mkheader
 mkmakefile
+
+tests/theft/
+tests/tests
