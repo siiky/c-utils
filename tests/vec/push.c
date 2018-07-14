@@ -15,17 +15,15 @@ static enum theft_trial_res qc_vec_push_len_prop (struct theft * t, void * arg1,
     struct vec * vec = (struct vec *) arg1;
     int elem = * (int *) arg2;
 
-    size_t pre_len = vec_len(vec);
+    size_t pre_len = vec->length;
 
     bool res = vec_push(vec, elem);
 
-    size_t pos_len = vec_len(vec);
+    size_t pos_len = vec->length;
 
-    return ((res) ?
+    return QC_BOOL2TRIAL((res) ?
             (pos_len == (pre_len + 1)):
-            (pos_len == pre_len)) ?
-        THEFT_TRIAL_PASS:
-        THEFT_TRIAL_FAIL;
+            (pos_len == pre_len));
 }
 
 static enum theft_trial_res qc_vec_push_last_elem_prop (struct theft * t, void * arg1, void * arg2)
@@ -47,11 +45,9 @@ static enum theft_trial_res qc_vec_push_last_elem_prop (struct theft * t, void *
         vec->ptr[vec->length - 1]:
         0;
 
-    return ((res) ?
+    return QC_BOOL2TRIAL((res) ?
             (pos_last == elem):
-            ((pre_empty && pos_empty) || (!pre_empty && !pos_empty && pre_last == pos_last))) ?
-        THEFT_TRIAL_PASS:
-        THEFT_TRIAL_FAIL;
+            ((pre_empty && pos_empty) || (!pre_empty && !pos_empty && pre_last == pos_last)));
 }
 
 static enum theft_trial_res qc_vec_push_content_prop (struct theft * t, void * arg1, void * arg2)
@@ -81,9 +77,7 @@ static enum theft_trial_res qc_vec_push_content_prop (struct theft * t, void * a
     *pre_dup = vec_free(*pre_dup);
     free(pre_dup);
 
-    return (ret) ?
-        THEFT_TRIAL_PASS:
-        THEFT_TRIAL_FAIL;
+    return QC_BOOL2TRIAL(ret);
 }
 
 QC_MKTEST(qc_vec_push_len_test,

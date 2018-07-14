@@ -38,6 +38,8 @@
         return ret;                                     \
     } bool fname (void)
 
+#define QC_BOOL2TRIAL(succ) ((succ) ? THEFT_TRIAL_PASS : THEFT_TRIAL_FAIL)
+
 #include <theft.h>
 #include "common/int.h"
 
