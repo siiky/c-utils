@@ -1,6 +1,6 @@
 #include <theft.h>
 
-#include "common/int.h"
+#include "int.h"
 
 #include <unused.h>
 
@@ -30,7 +30,7 @@ void qc_int_print (FILE * f, const void * instance, void * env)
 {
     UNUSED(env);
 
-    int x = (int) instance;
+    int x = * (int *) instance;
 
     fprintf(f, "%d", x);
 }

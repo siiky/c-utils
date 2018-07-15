@@ -12,7 +12,7 @@ static enum theft_trial_res qc_vec_push_len_prop (struct theft * t, void * arg1,
 {
     UNUSED(t);
 
-    struct vec * vec = (struct vec *) arg1;
+    struct vec * vec = arg1;
     int elem = * (int *) arg2;
 
     size_t pre_len = vec->length;
@@ -30,7 +30,7 @@ static enum theft_trial_res qc_vec_push_last_elem_prop (struct theft * t, void *
 {
     UNUSED(t);
 
-    struct vec * vec = (struct vec *) arg1;
+    struct vec * vec = arg1;
     int elem = * (int *) arg2;
 
     bool pre_empty = vec->length == 0;
@@ -54,7 +54,7 @@ static enum theft_trial_res qc_vec_push_content_prop (struct theft * t, void * a
 {
     UNUSED(t);
 
-    struct vec * vec = (struct vec *) arg1;
+    struct vec * vec = arg1;
     int elem = * (int *) arg2;
 
     struct vec * pre_dup = qc_vec_dup_contents(vec);

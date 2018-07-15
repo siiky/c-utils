@@ -42,5 +42,6 @@
 
 #include <theft.h>
 #include "common/int.h"
+#include "common/size_t.h"
 
 #endif /* _COMMON_H */

@@ -13,9 +13,7 @@ static enum theft_alloc_res qc_vec_alloc (struct theft * t, void * env, void ** 
         return THEFT_ALLOC_SKIP;
 
     size_t cap = (size_t) theft_random_choice(t, 256);
-    size_t len = (size_t) ((cap > 0) ?
-            ((size_t) theft_random_choice(t, cap + 1)):
-            0);
+    size_t len = (size_t) theft_random_choice(t, cap + 1);
     if (!vec_with_capacity(vec, cap)) {
         free(vec);
         return THEFT_ALLOC_SKIP;
@@ -27,8 +25,9 @@ static enum theft_alloc_res qc_vec_alloc (struct theft * t, void * env, void ** 
     vec->length = len;
 
     vec->idx       = (size_t) theft_random_choice(t, cap);
-    vec->iterating = theft_random_bits(t, 1);
-    vec->reverse   = theft_random_bits(t, 1);
+    /* suppress conversion from `uint64_t` to `unsigned char : 1` warning */
+    vec->iterating = 0x1 & theft_random_bits(t, 1);
+    vec->reverse   = 0x1 & theft_random_bits(t, 1);
 
     *output = vec;
     return THEFT_ALLOC_OK;

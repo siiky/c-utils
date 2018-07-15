@@ -5,9 +5,10 @@ CC := cc
 EXEC := tests
 
 SRC := \
-    $(VEC_SRC)   \
-    common/int.c \
-    main.c       \
+    $(VEC_SRC)      \
+    common/int.c    \
+    common/size_t.c \
+    main.c          \
 
 OBJS := $(SRC:.c=.o)
 
@@ -23,11 +24,12 @@ LIBS := \
 OPTS := -Og -g
 
 CFLAGS := \
-    $(INCS) \
-    $(LIBS) \
-    $(OPTS) \
-    -Wall   \
-    -Wextra \
+    $(INCS)      \
+    $(LIBS)      \
+    $(OPTS)      \
+    -Wall        \
+    -Wconversion \
+    -Wextra      \
 
 all: $(EXEC)
 
