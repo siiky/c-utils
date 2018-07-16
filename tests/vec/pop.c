@@ -49,28 +49,50 @@ static enum theft_trial_res qc_vec_pop_content_prop (struct theft * t, void * ar
     struct vec * vec = arg1;
 
     size_t pre_len = vec->length;
-    if (pre_len == 0)
+    struct vec * pre_dup = NULL;
+    if (pre_len == 0 || (pre_dup = qc_vec_dup_contents(vec)) == NULL)
         return THEFT_TRIAL_SKIP;
 
-    struct vec * pre_dup = qc_vec_dup_contents(vec);
-    if (pre_dup == NULL)
-        return THEFT_TRIAL_SKIP;
 
     vec_pop(vec);
 
     size_t pos_len = vec->length;
 
-    bool ret = true
-        && pre_dup->iterating == vec->iterating
-        && pre_dup->reverse   == vec->reverse
-        && pre_dup->idx       == vec->idx
-        && (pos_len == 0
-                || memcmp(pre_dup->ptr, vec->ptr, pos_len * sizeof(int)) == 0);
+    bool ret = pos_len == 0
+        || memcmp(pre_dup->ptr, vec->ptr, pos_len * sizeof(int)) == 0;
 
     *pre_dup = vec_free(*pre_dup);
     free(pre_dup);
 
     return QC_BOOL2TRIAL(ret);
+}
+
+static enum theft_trial_res qc_vec_pop_iter_prop (struct theft * t, void * arg1)
+{
+    UNUSED(t);
+
+    struct vec * vec = arg1;
+
+    size_t pre_len = vec->length;
+    if (pre_len == 0)
+        return THEFT_TRIAL_SKIP;
+
+    size_t pre_idx = vec->idx;
+    unsigned char pre_iterating = vec->iterating;
+    unsigned char pre_reverse = vec->reverse;
+
+    vec_pop(vec);
+
+    size_t pos_idx = vec->idx;
+    unsigned char pos_iterating = vec->iterating;
+    unsigned char pos_reverse = vec->reverse;
+
+    bool res = true
+        && pre_iterating == pos_iterating
+        && pre_reverse   == pos_reverse
+        && pre_idx       == pos_idx;
+
+    return QC_BOOL2TRIAL(res);
 }
 
 QC_MKTEST(qc_vec_pop_len_test,
@@ -91,8 +113,15 @@ QC_MKTEST(qc_vec_pop_content_test,
         &qc_vec_info
         );
 
+QC_MKTEST(qc_vec_pop_iter_test,
+        prop1,
+        qc_vec_pop_iter_prop,
+        &qc_vec_info
+        );
+
 QC_MKTEST_ALL(qc_vec_pop_test_all,
-        qc_vec_pop_len_test,
+        qc_vec_pop_content_test,
         qc_vec_pop_elem_test,
-        qc_vec_pop_content_test
+        qc_vec_pop_iter_test,
+        qc_vec_pop_len_test
         );

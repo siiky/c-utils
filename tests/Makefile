@@ -51,7 +51,7 @@ theft:
 	    git clone --depth=1 git://github.com/silentbicycle/theft; \
 	    fi
 
-libtheft:
+libtheft: theft
 	@echo "### BUILDING THEFT ###"
 	cd theft && make
 

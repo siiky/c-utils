@@ -66,16 +66,39 @@ static enum theft_trial_res qc_vec_push_content_prop (struct theft * t, void * a
 
     bool succ = vec_push(vec, elem);
 
-    bool ret = true
-        && pre_dup->iterating == vec->iterating
-        && pre_dup->reverse   == vec->reverse
-        && pre_dup->idx       == vec->idx
-        && ((succ) ?
-                memcmp(pre_dup->ptr, vec->ptr, pre_len * sizeof(int)) == 0:
-                memcmp(pre_dup->ptr, vec->ptr, pre_cap * sizeof(int)) == 0);
+    size_t nbytes = sizeof(int) * ((succ) ?
+            pre_len:
+            pre_cap);
+
+    bool ret = memcmp(pre_dup->ptr, vec->ptr, nbytes) == 0;
 
     *pre_dup = vec_free(*pre_dup);
     free(pre_dup);
+
+    return QC_BOOL2TRIAL(ret);
+}
+
+static enum theft_trial_res qc_vec_push_iter_prop (struct theft * t, void * arg1, void * arg2)
+{
+    UNUSED(t);
+
+    struct vec * vec = arg1;
+    int elem = * (int *) arg2;
+
+    size_t pre_idx = vec->idx;
+    unsigned char pre_iterating = vec->iterating;
+    unsigned char pre_reverse = vec->reverse;
+
+    vec_push(vec, elem);
+
+    size_t pos_idx = vec->idx;
+    unsigned char pos_iterating = vec->iterating;
+    unsigned char pos_reverse = vec->reverse;
+
+    bool ret = true
+        && pre_iterating == pos_iterating
+        && pre_reverse   == pos_reverse
+        && pre_idx       == pos_idx;
 
     return QC_BOOL2TRIAL(ret);
 }
@@ -101,8 +124,16 @@ QC_MKTEST(qc_vec_push_content_test,
         &qc_int_info
         );
 
+QC_MKTEST(qc_vec_push_iter_test,
+        prop2,
+        qc_vec_push_iter_prop,
+        &qc_vec_info,
+        &qc_int_info
+        );
+
 QC_MKTEST_ALL(qc_vec_push_test_all,
-        qc_vec_push_len_test,
+        qc_vec_push_content_test,
+        qc_vec_push_iter_test,
         qc_vec_push_last_elem_test,
-        qc_vec_push_content_test
+        qc_vec_push_len_test
         );

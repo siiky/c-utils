@@ -16,6 +16,7 @@
             .type_info = {                        \
                 __VA_ARGS__,                      \
             },                                    \
+            .trials = 200,                        \
             .seed = theft_seed_of_time(),         \
         };                                        \
         return theft_run(&cfg) == THEFT_RUN_PASS; \
