@@ -1,4 +1,5 @@
 VEC_SRC := \
+    vec/append.c      \
     vec/get_nth.c     \
     vec/pop.c         \
     vec/push.c        \

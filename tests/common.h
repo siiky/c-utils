@@ -14,7 +14,7 @@
             .name = __func__,                     \
             .propf = prop,                        \
             .type_info = {                        \
-                __VA_ARGS__,                      \
+                __VA_ARGS__                       \
             },                                    \
             .trials = 200,                        \
             .seed = theft_seed_of_time(),         \
@@ -30,7 +30,7 @@
 #define QC_MKTEST_ALL(fname, ...)                       \
     bool fname (void) {                                 \
         bool (*tests[]) (void) = {                      \
-            __VA_ARGS__,                                \
+            __VA_ARGS__                                 \
         };                                              \
         size_t ntests = sizeof(tests) / sizeof(*tests); \
         bool ret = true;                                \
