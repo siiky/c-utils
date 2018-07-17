@@ -1,4 +1,4 @@
-/* vec - v2018.07.13-0
+/* vec - v2018.07.17-0
  *
  * A vector type inspired by
  *  * Rust's `Vec` type
@@ -735,6 +735,7 @@ VEC_CFG_STATIC bool VEC_APPEND (struct VEC_CFG_VEC * restrict self, struct VEC_C
     VEC_CFG_DATA_TYPE * src = other->ptr;
     size_t n = other->length * sizeof(VEC_CFG_DATA_TYPE);
     memcpy(dest, src, n);
+    self->length += other->length;
 
     other->length = 0;
 
