@@ -101,3 +101,15 @@ bool qc_vec_search (struct vec * self, int elem, size_t * _i)
     *_i = len;
     return false;
 }
+
+size_t qc_vec_count (struct vec * self, bool pred (const int *))
+{
+    size_t ret = 0;
+
+    const size_t len = self->length;
+    for (size_t i = 0; i < len; i++)
+        if (pred(self->ptr + i))
+            ret++;
+
+    return ret;
+}

@@ -1,6 +1,7 @@
 VEC_SRC := \
     vec/append.c      \
     vec/elem.c        \
+    vec/filter.c      \
     vec/find.c        \
     vec/get_nth.c     \
     vec/pop.c         \
