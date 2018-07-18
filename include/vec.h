@@ -1,4 +1,4 @@
-/* vec - v2018.07.17-0
+/* vec - v2018.07.18-0
  *
  * A vector type inspired by
  *  * Rust's `Vec` type
@@ -840,7 +840,6 @@ VEC_CFG_STATIC inline bool VEC_SET_NTH (struct VEC_CFG_VEC * self, size_t nth, V
 VEC_CFG_STATIC size_t VEC_FIND (const struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE element)
 {
     assert(self != NULL);
-    assert(self->ptr != NULL);
 
     size_t ret = 0;
     for (ret = 0;
