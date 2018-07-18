@@ -1,4 +1,4 @@
-/* vec - v2018.07.18-0
+/* vec - v2018.07.18-1
  *
  * A vector type inspired by
  *  * Rust's `Vec` type
@@ -182,43 +182,43 @@ struct VEC_CFG_VEC {
 /*==========================================================
  * Function names
  *=========================================================*/
-#define VEC_APPEND             VEC_CFG_MAKE_STR(append)
-#define VEC_AS_MUT_SLICE       VEC_CFG_MAKE_STR(as_mut_slice)
-#define VEC_AS_SLICE           VEC_CFG_MAKE_STR(as_slice)
-#define VEC_BSEARCH            VEC_CFG_MAKE_STR(bsearch)
-#define VEC_CAPACITY           VEC_CFG_MAKE_STR(capacity)
-#define VEC_ELEM               VEC_CFG_MAKE_STR(elem)
-#define VEC_FILTER             VEC_CFG_MAKE_STR(filter)
-#define VEC_FIND               VEC_CFG_MAKE_STR(find)
-#define VEC_FOREACH            VEC_CFG_MAKE_STR(foreach)
-#define VEC_FOREACH_RANGE      VEC_CFG_MAKE_STR(foreach_range)
-#define VEC_FREE               VEC_CFG_MAKE_STR(free)
-#define VEC_FREE_RANGE         VEC_CFG_MAKE_STR(free_range)
-#define VEC_FROM_RAW_PARTS     VEC_CFG_MAKE_STR(from_raw_parts)
-#define VEC_GET_NTH            VEC_CFG_MAKE_STR(get_nth)
-#define VEC_INSERT             VEC_CFG_MAKE_STR(insert)
-#define VEC_IS_EMPTY           VEC_CFG_MAKE_STR(is_empty)
-#define VEC_ITER               VEC_CFG_MAKE_STR(iter)
-#define VEC_ITERING            VEC_CFG_MAKE_STR(itering)
-#define VEC_ITER_END           VEC_CFG_MAKE_STR(iter_end)
-#define VEC_ITER_IDX           VEC_CFG_MAKE_STR(iter_idx)
-#define VEC_ITER_NEXT          VEC_CFG_MAKE_STR(iter_next)
-#define VEC_ITER_REV           VEC_CFG_MAKE_STR(iter_rev)
-#define VEC_LEN                VEC_CFG_MAKE_STR(len)
-#define VEC_MAP                VEC_CFG_MAKE_STR(map)
-#define VEC_MAP_RANGE          VEC_CFG_MAKE_STR(map_range)
-#define VEC_POP                VEC_CFG_MAKE_STR(pop)
-#define VEC_PUSH               VEC_CFG_MAKE_STR(push)
-#define VEC_QSORT              VEC_CFG_MAKE_STR(qsort)
-#define VEC_REMOVE             VEC_CFG_MAKE_STR(remove)
-#define VEC_RESERVE            VEC_CFG_MAKE_STR(reserve)
-#define VEC_SET_LEN            VEC_CFG_MAKE_STR(set_len)
-#define VEC_SET_NTH            VEC_CFG_MAKE_STR(set_nth)
-#define VEC_SHRINK_TO_FIT      VEC_CFG_MAKE_STR(shrink_to_fit)
-#define VEC_SPLIT_OFF          VEC_CFG_MAKE_STR(split_off)
-#define VEC_SWAP_REMOVE        VEC_CFG_MAKE_STR(swap_remove)
-#define VEC_TRUNCATE           VEC_CFG_MAKE_STR(truncate)
-#define VEC_WITH_CAPACITY      VEC_CFG_MAKE_STR(with_capacity)
+#define VEC_APPEND         VEC_CFG_MAKE_STR(append)
+#define VEC_AS_MUT_SLICE   VEC_CFG_MAKE_STR(as_mut_slice)
+#define VEC_AS_SLICE       VEC_CFG_MAKE_STR(as_slice)
+#define VEC_BSEARCH        VEC_CFG_MAKE_STR(bsearch)
+#define VEC_CAPACITY       VEC_CFG_MAKE_STR(capacity)
+#define VEC_ELEM           VEC_CFG_MAKE_STR(elem)
+#define VEC_FILTER         VEC_CFG_MAKE_STR(filter)
+#define VEC_FIND           VEC_CFG_MAKE_STR(find)
+#define VEC_FOREACH        VEC_CFG_MAKE_STR(foreach)
+#define VEC_FOREACH_RANGE  VEC_CFG_MAKE_STR(foreach_range)
+#define VEC_FREE           VEC_CFG_MAKE_STR(free)
+#define VEC_FREE_RANGE     VEC_CFG_MAKE_STR(free_range)
+#define VEC_FROM_RAW_PARTS VEC_CFG_MAKE_STR(from_raw_parts)
+#define VEC_GET_NTH        VEC_CFG_MAKE_STR(get_nth)
+#define VEC_INSERT         VEC_CFG_MAKE_STR(insert)
+#define VEC_IS_EMPTY       VEC_CFG_MAKE_STR(is_empty)
+#define VEC_ITER           VEC_CFG_MAKE_STR(iter)
+#define VEC_ITERING        VEC_CFG_MAKE_STR(itering)
+#define VEC_ITER_END       VEC_CFG_MAKE_STR(iter_end)
+#define VEC_ITER_IDX       VEC_CFG_MAKE_STR(iter_idx)
+#define VEC_ITER_NEXT      VEC_CFG_MAKE_STR(iter_next)
+#define VEC_ITER_REV       VEC_CFG_MAKE_STR(iter_rev)
+#define VEC_LEN            VEC_CFG_MAKE_STR(len)
+#define VEC_MAP            VEC_CFG_MAKE_STR(map)
+#define VEC_MAP_RANGE      VEC_CFG_MAKE_STR(map_range)
+#define VEC_POP            VEC_CFG_MAKE_STR(pop)
+#define VEC_PUSH           VEC_CFG_MAKE_STR(push)
+#define VEC_QSORT          VEC_CFG_MAKE_STR(qsort)
+#define VEC_REMOVE         VEC_CFG_MAKE_STR(remove)
+#define VEC_RESERVE        VEC_CFG_MAKE_STR(reserve)
+#define VEC_SET_LEN        VEC_CFG_MAKE_STR(set_len)
+#define VEC_SET_NTH        VEC_CFG_MAKE_STR(set_nth)
+#define VEC_SHRINK_TO_FIT  VEC_CFG_MAKE_STR(shrink_to_fit)
+#define VEC_SPLIT_OFF      VEC_CFG_MAKE_STR(split_off)
+#define VEC_SWAP_REMOVE    VEC_CFG_MAKE_STR(swap_remove)
+#define VEC_TRUNCATE       VEC_CFG_MAKE_STR(truncate)
+#define VEC_WITH_CAPACITY  VEC_CFG_MAKE_STR(with_capacity)
 
 /*==========================================================
  * Function prototypes
@@ -232,7 +232,7 @@ VEC_CFG_DATA_TYPE         VEC_SWAP_REMOVE    (struct VEC_CFG_VEC * self, size_t 
 VEC_CFG_DATA_TYPE *       VEC_AS_MUT_SLICE   (struct VEC_CFG_VEC * self);
 bool                      VEC_APPEND         (struct VEC_CFG_VEC * restrict self, struct VEC_CFG_VEC * restrict other);
 bool                      VEC_ELEM           (const struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE element);
-bool                      VEC_FILTER         (struct VEC_CFG_VEC * self, bool pred (VEC_CFG_DATA_TYPE *));
+bool                      VEC_FILTER         (struct VEC_CFG_VEC * self, bool pred (const VEC_CFG_DATA_TYPE *));
 bool                      VEC_FOREACH        (const struct VEC_CFG_VEC * self, void f (const VEC_CFG_DATA_TYPE));
 bool                      VEC_FOREACH_RANGE  (const struct VEC_CFG_VEC * self, void f (const VEC_CFG_DATA_TYPE), size_t from, size_t to);
 bool                      VEC_FREE_RANGE     (struct VEC_CFG_VEC * self, size_t from, size_t to);
@@ -653,7 +653,7 @@ bool VEC_FREE_RANGE (struct VEC_CFG_VEC * self, size_t from, size_t to)
  * @returns `false` if @a self is not a valid vector or @a pred is
  *          NULL, `true` otherwise
  */
-VEC_CFG_STATIC bool VEC_FILTER (struct VEC_CFG_VEC * self, bool pred (VEC_CFG_DATA_TYPE *))
+VEC_CFG_STATIC bool VEC_FILTER (struct VEC_CFG_VEC * self, bool pred (const VEC_CFG_DATA_TYPE *))
 {
     if (self == NULL
     || self->ptr == NULL
