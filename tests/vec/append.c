@@ -1,8 +1,6 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "append.h"
-
 #include "vec.h"
 
 #include <common.h>
@@ -129,26 +127,16 @@ static enum theft_trial_res qc_vec_append_iter_prop (struct theft * t, void * ar
     return QC_BOOL2TRIAL(res);
 }
 
-QC_MKTEST(qc_vec_append_len_test,
-        prop2,
-        qc_vec_append_len_prop,
-        &qc_vec_info,
-        &qc_vec_info,
-        );
+#define QC_MKTEST_APPEND(TEST)                 \
+    QC_MKTEST(qc_vec_append_ ## TEST ## _test, \
+            prop2,                             \
+            qc_vec_append_ ## TEST ## _prop,   \
+            &qc_vec_info,                      \
+            &qc_vec_info);
 
-QC_MKTEST(qc_vec_append_content_test,
-        prop2,
-        qc_vec_append_content_prop,
-        &qc_vec_info,
-        &qc_vec_info,
-        );
-
-QC_MKTEST(qc_vec_append_iter_test,
-        prop2,
-        qc_vec_append_iter_prop,
-        &qc_vec_info,
-        &qc_vec_info,
-        );
+QC_MKTEST_APPEND(content);
+QC_MKTEST_APPEND(iter);
+QC_MKTEST_APPEND(len);
 
 QC_MKTEST_ALL(qc_vec_append_test_all,
         qc_vec_append_content_test,

@@ -1,8 +1,6 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "filter.h"
-
 #include <common.h>
 #include <unused.h>
 
@@ -68,23 +66,15 @@ static enum theft_trial_res qc_vec_filter_iter_prop (struct theft * t, void * ar
     return QC_BOOL2TRIAL(ret);
 }
 
-QC_MKTEST(qc_vec_filter_len_const_true_test,
-        prop1,
-        qc_vec_filter_len_const_true_prop,
-        &qc_vec_info,
-        );
+#define QC_MKTEST_FILTER(TEST)                 \
+    QC_MKTEST(qc_vec_filter_ ## TEST ## _test, \
+            prop1,                             \
+            qc_vec_filter_ ## TEST ## _prop,   \
+            &qc_vec_info);
 
-QC_MKTEST(qc_vec_filter_len_is_even_test,
-        prop1,
-        qc_vec_filter_len_is_even_prop,
-        &qc_vec_info,
-        );
-
-QC_MKTEST(qc_vec_filter_iter_test,
-        prop1,
-        qc_vec_filter_iter_prop,
-        &qc_vec_info,
-        );
+QC_MKTEST_FILTER(iter);
+QC_MKTEST_FILTER(len_const_true);
+QC_MKTEST_FILTER(len_is_even);
 
 QC_MKTEST_ALL(qc_vec_filter_test_all,
         qc_vec_filter_iter_test,

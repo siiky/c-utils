@@ -1,8 +1,6 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "swap_remove.h"
-
 #include <common.h>
 #include <unused.h>
 
@@ -181,47 +179,19 @@ static enum theft_trial_res qc_vec_swap_remove_iter_prop (struct theft * t, void
     return QC_BOOL2TRIAL(res);
 }
 
-QC_MKTEST(qc_vec_swap_remove_len_test,
-        prop2,
-        qc_vec_swap_remove_len_prop,
-        &qc_vec_info,
-        &qc_size_t_info
-        );
+#define QC_MKTEST_SWAP_REMOVE(TEST)                 \
+    QC_MKTEST(qc_vec_swap_remove_ ## TEST ## _test, \
+            prop2,                                  \
+            qc_vec_swap_remove_ ## TEST ## _prop,   \
+            &qc_vec_info,                           \
+            &qc_size_t_info);
 
-QC_MKTEST(qc_vec_swap_remove_elem_test,
-        prop2,
-        qc_vec_swap_remove_elem_prop,
-        &qc_vec_info,
-        &qc_size_t_info
-        );
-
-QC_MKTEST(qc_vec_swap_remove_last_test,
-        prop2,
-        qc_vec_swap_remove_last_prop,
-        &qc_vec_info,
-        &qc_size_t_info
-        );
-
-QC_MKTEST(qc_vec_swap_remove_left_content_test,
-        prop2,
-        qc_vec_swap_remove_left_content_prop,
-        &qc_vec_info,
-        &qc_size_t_info
-        );
-
-QC_MKTEST(qc_vec_swap_remove_right_content_test,
-        prop2,
-        qc_vec_swap_remove_right_content_prop,
-        &qc_vec_info,
-        &qc_size_t_info
-        );
-
-QC_MKTEST(qc_vec_swap_remove_iter_test,
-        prop2,
-        qc_vec_swap_remove_iter_prop,
-        &qc_vec_info,
-        &qc_size_t_info
-        );
+QC_MKTEST_SWAP_REMOVE(elem);
+QC_MKTEST_SWAP_REMOVE(iter);
+QC_MKTEST_SWAP_REMOVE(last);
+QC_MKTEST_SWAP_REMOVE(left_content);
+QC_MKTEST_SWAP_REMOVE(len);
+QC_MKTEST_SWAP_REMOVE(right_content);
 
 QC_MKTEST_ALL(qc_vec_swap_remove_test_all,
         qc_vec_swap_remove_elem_test,
@@ -229,5 +199,5 @@ QC_MKTEST_ALL(qc_vec_swap_remove_test_all,
         qc_vec_swap_remove_last_test,
         qc_vec_swap_remove_left_content_test,
         qc_vec_swap_remove_len_test,
-        qc_vec_swap_remove_right_content_test
+        qc_vec_swap_remove_right_content_test,
         );

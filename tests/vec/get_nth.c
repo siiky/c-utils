@@ -1,8 +1,6 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "get_nth.h"
-
 #include "vec.h"
 
 #include <common.h>
@@ -92,29 +90,19 @@ static enum theft_trial_res qc_vec_get_nth_iter_prop (struct theft * t, void * a
     return QC_BOOL2TRIAL(res);
 }
 
-QC_MKTEST(qc_vec_get_nth_elem_test,
-        prop2,
-        qc_vec_get_nth_elem_prop,
-        &qc_vec_info,
-        &qc_size_t_info
-        );
+#define QC_MKTEST_GET_NTH(TEST)                 \
+    QC_MKTEST(qc_vec_get_nth_ ## TEST ## _test, \
+            prop2,                              \
+            qc_vec_get_nth_ ## TEST ## _prop,   \
+            &qc_vec_info,                       \
+            &qc_size_t_info);
 
-QC_MKTEST(qc_vec_get_nth_content_test,
-        prop2,
-        qc_vec_get_nth_content_prop,
-        &qc_vec_info,
-        &qc_size_t_info
-        );
-
-QC_MKTEST(qc_vec_get_nth_iter_test,
-        prop2,
-        qc_vec_get_nth_iter_prop,
-        &qc_vec_info,
-        &qc_size_t_info
-        );
+QC_MKTEST_GET_NTH(content);
+QC_MKTEST_GET_NTH(elem);
+QC_MKTEST_GET_NTH(iter);
 
 QC_MKTEST_ALL(qc_vec_get_nth_test_all,
         qc_vec_get_nth_content_test,
         qc_vec_get_nth_elem_test,
-        qc_vec_get_nth_iter_test
+        qc_vec_get_nth_iter_test,
         );

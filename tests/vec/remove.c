@@ -1,8 +1,6 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "remove.h"
-
 #include <common.h>
 #include <unused.h>
 
@@ -153,45 +151,23 @@ static enum theft_trial_res qc_vec_remove_iter_prop (struct theft * t, void * ar
     return QC_BOOL2TRIAL(res);
 }
 
-QC_MKTEST(qc_vec_remove_len_test,
-        prop2,
-        qc_vec_remove_len_prop,
-        &qc_vec_info,
-        &qc_size_t_info
-        );
+#define QC_MKTEST_REMOVE(TEST)                  \
+    QC_MKTEST(qc_vec_remove_ ## TEST ## _test,  \
+            prop2,                              \
+            qc_vec_remove_ ## TEST ## _prop,    \
+            &qc_vec_info,                       \
+            &qc_size_t_info);
 
-QC_MKTEST(qc_vec_remove_elem_test,
-        prop2,
-        qc_vec_remove_elem_prop,
-        &qc_vec_info,
-        &qc_size_t_info
-        );
-
-QC_MKTEST(qc_vec_remove_left_content_test,
-        prop2,
-        qc_vec_remove_left_content_prop,
-        &qc_vec_info,
-        &qc_size_t_info
-        );
-
-QC_MKTEST(qc_vec_remove_right_content_test,
-        prop2,
-        qc_vec_remove_right_content_prop,
-        &qc_vec_info,
-        &qc_size_t_info
-        );
-
-QC_MKTEST(qc_vec_remove_iter_test,
-        prop2,
-        qc_vec_remove_iter_prop,
-        &qc_vec_info,
-        &qc_size_t_info
-        );
+QC_MKTEST_REMOVE(elem);
+QC_MKTEST_REMOVE(iter);
+QC_MKTEST_REMOVE(left_content);
+QC_MKTEST_REMOVE(len);
+QC_MKTEST_REMOVE(right_content);
 
 QC_MKTEST_ALL(qc_vec_remove_test_all,
         qc_vec_remove_elem_test,
         qc_vec_remove_iter_test,
         qc_vec_remove_left_content_test,
         qc_vec_remove_len_test,
-        qc_vec_remove_right_content_test
+        qc_vec_remove_right_content_test,
         );

@@ -1,8 +1,6 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "pop.h"
-
 #include "vec.h"
 
 #include <common.h>
@@ -95,33 +93,20 @@ static enum theft_trial_res qc_vec_pop_iter_prop (struct theft * t, void * arg1)
     return QC_BOOL2TRIAL(res);
 }
 
-QC_MKTEST(qc_vec_pop_len_test,
-        prop1,
-        qc_vec_pop_len_prop,
-        &qc_vec_info
-        );
+#define QC_MKTEST_POP(TEST)                 \
+    QC_MKTEST(qc_vec_pop_ ## TEST ## _test, \
+            prop1,                          \
+            qc_vec_pop_ ## TEST ## _prop,   \
+            &qc_vec_info);
 
-QC_MKTEST(qc_vec_pop_elem_test,
-        prop1,
-        qc_vec_pop_elem_prop,
-        &qc_vec_info
-        );
-
-QC_MKTEST(qc_vec_pop_content_test,
-        prop1,
-        qc_vec_pop_content_prop,
-        &qc_vec_info
-        );
-
-QC_MKTEST(qc_vec_pop_iter_test,
-        prop1,
-        qc_vec_pop_iter_prop,
-        &qc_vec_info
-        );
+QC_MKTEST_POP(content);
+QC_MKTEST_POP(elem);
+QC_MKTEST_POP(iter);
+QC_MKTEST_POP(len);
 
 QC_MKTEST_ALL(qc_vec_pop_test_all,
         qc_vec_pop_content_test,
         qc_vec_pop_elem_test,
         qc_vec_pop_iter_test,
-        qc_vec_pop_len_test
+        qc_vec_pop_len_test,
         );
