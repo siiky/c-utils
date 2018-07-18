@@ -125,7 +125,7 @@ static enum theft_trial_res qc_vec_append_iter_prop (struct theft * t, void * ar
             prop2,                             \
             qc_vec_append_ ## TEST ## _prop,   \
             &qc_vec_info,                      \
-            &qc_vec_info);
+            &qc_vec_info)
 
 QC_MKTEST_APPEND(content);
 QC_MKTEST_APPEND(iter);

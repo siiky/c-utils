@@ -182,7 +182,7 @@ static enum theft_trial_res qc_vec_swap_remove_iter_prop (struct theft * t, void
             prop2,                                  \
             qc_vec_swap_remove_ ## TEST ## _prop,   \
             &qc_vec_info,                           \
-            &qc_size_t_info);
+            &qc_size_t_info)
 
 QC_MKTEST_SWAP_REMOVE(elem);
 QC_MKTEST_SWAP_REMOVE(iter);

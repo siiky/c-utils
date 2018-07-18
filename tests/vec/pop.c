@@ -96,7 +96,7 @@ static enum theft_trial_res qc_vec_pop_iter_prop (struct theft * t, void * arg1)
     QC_MKTEST(qc_vec_pop_ ## TEST ## _test, \
             prop1,                          \
             qc_vec_pop_ ## TEST ## _prop,   \
-            &qc_vec_info);
+            &qc_vec_info)
 
 QC_MKTEST_POP(content);
 QC_MKTEST_POP(elem);

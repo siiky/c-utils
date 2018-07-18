@@ -88,11 +88,11 @@ static enum theft_trial_res qc_vec_foreach_range_side_effects_prop (struct theft
     size_t to = * (size_t *) arg3;
 
     size_t pre_len = vec->length;
-    vec_foreach_range(vec, qc_vec_foreach_range_do_nothing_func, from, to);
-    bool res = what == pre_len;
+    bool res = vec_foreach_range(vec, qc_vec_foreach_range_do_nothing_func, from, to);
+    bool ret = !res || what == pre_len;
     what = 0;
 
-    return QC_BOOL2TRIAL(res);
+    return QC_BOOL2TRIAL(ret);
 }
 
 #define QC_MKTEST_FOREACH_RANGE(TEST)                 \
@@ -101,7 +101,7 @@ static enum theft_trial_res qc_vec_foreach_range_side_effects_prop (struct theft
             qc_vec_foreach_range_ ## TEST ## _prop,   \
             &qc_vec_info,                             \
             &qc_size_t_info,                          \
-            &qc_size_t_info);
+            &qc_size_t_info)
 
 QC_MKTEST_FOREACH_RANGE(content);
 QC_MKTEST_FOREACH_RANGE(iter);

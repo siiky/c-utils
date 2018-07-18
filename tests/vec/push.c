@@ -105,7 +105,7 @@ static enum theft_trial_res qc_vec_push_iter_prop (struct theft * t, void * arg1
             prop2,                           \
             qc_vec_push_ ## TEST ## _prop,   \
             &qc_vec_info,                    \
-            &qc_int_info);
+            &qc_int_info)
 
 QC_MKTEST_PUSH(content);
 QC_MKTEST_PUSH(iter);

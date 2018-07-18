@@ -154,7 +154,7 @@ static enum theft_trial_res qc_vec_remove_iter_prop (struct theft * t, void * ar
             prop2,                              \
             qc_vec_remove_ ## TEST ## _prop,    \
             &qc_vec_info,                       \
-            &qc_size_t_info);
+            &qc_size_t_info)
 
 QC_MKTEST_REMOVE(elem);
 QC_MKTEST_REMOVE(iter);

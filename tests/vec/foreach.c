@@ -91,7 +91,7 @@ static enum theft_trial_res qc_vec_foreach_side_effects_prop (struct theft * t, 
     QC_MKTEST(qc_vec_foreach_ ## TEST ## _test, \
             prop1,                              \
             qc_vec_foreach_ ## TEST ## _prop,   \
-            &qc_vec_info);
+            &qc_vec_info)
 
 QC_MKTEST_FOREACH(content);
 QC_MKTEST_FOREACH(iter);

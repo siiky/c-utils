@@ -94,7 +94,7 @@ static enum theft_trial_res qc_vec_get_nth_iter_prop (struct theft * t, void * a
             prop2,                              \
             qc_vec_get_nth_ ## TEST ## _prop,   \
             &qc_vec_info,                       \
-            &qc_size_t_info);
+            &qc_size_t_info)
 
 QC_MKTEST_GET_NTH(content);
 QC_MKTEST_GET_NTH(elem);

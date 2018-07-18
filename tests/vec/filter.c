@@ -70,7 +70,7 @@ static enum theft_trial_res qc_vec_filter_iter_prop (struct theft * t, void * ar
     QC_MKTEST(qc_vec_filter_ ## TEST ## _test, \
             prop1,                             \
             qc_vec_filter_ ## TEST ## _prop,   \
-            &qc_vec_info);
+            &qc_vec_info)
 
 QC_MKTEST_FILTER(iter);
 QC_MKTEST_FILTER(len_const_true);
