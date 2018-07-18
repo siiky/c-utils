@@ -89,7 +89,7 @@ struct vec * qc_vec_dup_contents (struct vec * self)
 
 bool qc_vec_search (struct vec * self, int elem, size_t * _i)
 {
-    size_t len = self->length;
+    const size_t len = self->length;
 
     for (size_t i = 0; i < len; i++) {
         if (self->ptr[i] == elem) {
@@ -98,5 +98,6 @@ bool qc_vec_search (struct vec * self, int elem, size_t * _i)
         }
     }
 
+    *_i = len;
     return false;
 }
