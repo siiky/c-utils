@@ -4,6 +4,7 @@ VEC_SRC := \
     vec/elem.c         \
     vec/filter.c       \
     vec/find.c         \
+    vec/foreach.c      \
     vec/get_nth.c      \
     vec/pop.c          \
     vec/push.c         \

@@ -19,8 +19,7 @@ static enum theft_trial_res qc_vec_append_len_prop (struct theft * t, void * arg
 
     struct vec * other_dup = qc_vec_dup_contents(other);
     if (other_dup == NULL) {
-        *vec_dup = vec_free(*vec_dup);
-        free(vec_dup);
+        qc_vec_dup_free(vec_dup);
         return THEFT_TRIAL_SKIP;
     }
 
@@ -37,10 +36,8 @@ static enum theft_trial_res qc_vec_append_len_prop (struct theft * t, void * arg
         pre_len     == pos_vec_len && pos_other_len == 0:
         pre_vec_len == pos_vec_len && pre_other_len == pos_other_len;
 
-    *vec_dup = vec_free(*vec_dup);
-    free(vec_dup);
-    *other_dup = vec_free(*other_dup);
-    free(other_dup);
+    qc_vec_dup_free(vec_dup);
+    qc_vec_dup_free(other_dup);
 
     return QC_BOOL2TRIAL(res);
 }
@@ -58,8 +55,7 @@ static enum theft_trial_res qc_vec_append_content_prop (struct theft * t, void *
 
     struct vec * other_dup = qc_vec_dup_contents(other);
     if (other_dup == NULL) {
-        *vec_dup = vec_free(*vec_dup);
-        free(vec_dup);
+        qc_vec_dup_free(vec_dup);
         return THEFT_TRIAL_SKIP;
     }
 
@@ -74,10 +70,8 @@ static enum theft_trial_res qc_vec_append_content_prop (struct theft * t, void *
         ((memcmp(vec->ptr, vec_dup->ptr, pre_vec_len * sizeof(int)) == 0)
          && (memcmp(other->ptr, other_dup->ptr, pre_other_len * sizeof(int)) == 0));
 
-    *vec_dup = vec_free(*vec_dup);
-    free(vec_dup);
-    *other_dup = vec_free(*other_dup);
-    free(other_dup);
+    qc_vec_dup_free(vec_dup);
+    qc_vec_dup_free(other_dup);
 
     return QC_BOOL2TRIAL(ret);
 }
@@ -95,8 +89,7 @@ static enum theft_trial_res qc_vec_append_iter_prop (struct theft * t, void * ar
 
     struct vec * other_dup = qc_vec_dup_contents(other);
     if (other_dup == NULL) {
-        *vec_dup = vec_free(*vec_dup);
-        free(vec_dup);
+        qc_vec_dup_free(vec_dup);
         return THEFT_TRIAL_SKIP;
     }
 

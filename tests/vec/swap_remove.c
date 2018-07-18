@@ -106,8 +106,7 @@ static enum theft_trial_res qc_vec_swap_remove_left_content_prop (struct theft *
     bool res = idx == 0
         || memcmp(pre, pos, nbytes) == 0;
 
-    *pre_dup = vec_free(*pre_dup);
-    free(pre_dup);
+    qc_vec_dup_free(pre_dup);
 
     return QC_BOOL2TRIAL(res);
 }
@@ -139,8 +138,7 @@ static enum theft_trial_res qc_vec_swap_remove_right_content_prop (struct theft 
     bool res = idx >= pos_len
         || memcmp(pre, pos, nbytes) == 0;
 
-    *pre_dup = vec_free(*pre_dup);
-    free(pre_dup);
+    qc_vec_dup_free(pre_dup);
 
     return QC_BOOL2TRIAL(res);
 }
