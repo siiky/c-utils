@@ -1,4 +1,4 @@
-/* vec - v2018.07.18-2
+/* vec - v2018.07.20-0
  *
  * A vector type inspired by
  *  * Rust's `Vec` type
@@ -581,12 +581,19 @@ VEC_CFG_STATIC VEC_CFG_DATA_TYPE VEC_SWAP_REMOVE (struct VEC_CFG_VEC * self, siz
 VEC_CFG_STATIC bool VEC_INSERT (struct VEC_CFG_VEC * self, size_t index, VEC_CFG_DATA_TYPE element)
 {
     if (self == NULL
-    || index > self->length
-    || !_VEC_INCREASE_CAPACITY(self))
+    || index > self->length)
         return false;
 
-    for (size_t i = self->length; i > index; i--)
-        self->ptr[i] = self->ptr[i - 1];
+    if (index == self->length)
+        return VEC_PUSH(self, element);
+
+    if (!_VEC_INCREASE_CAPACITY(self))
+        return false;
+
+    void * dst = self->ptr + index + 1;
+    void * src = self->ptr + index;
+    size_t nbytes = (self->length - index) * sizeof(VEC_CFG_DATA_TYPE);
+    memmove(dst, src, nbytes);
 
     self->length++;
     self->ptr[index] = element;
