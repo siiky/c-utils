@@ -1,6 +1,7 @@
 #define VEC_CFG_IMPLEMENTATION
 #include "vec.h"
 
+#include <assert.h>
 #include <unused.h>
 
 static enum theft_alloc_res qc_vec_alloc (struct theft * t, void * env, void ** output)
@@ -8,23 +9,26 @@ static enum theft_alloc_res qc_vec_alloc (struct theft * t, void * env, void ** 
     UNUSED(env);
 
     struct vec * vec = malloc(sizeof(struct vec));
-
     if (vec == NULL)
         return THEFT_ALLOC_SKIP;
 
+    vec__clean(vec);
+
     size_t cap = (size_t) theft_random_choice(t, 256);
+
+    if (cap > 0)
+        if (!vec_with_capacity(vec, cap))
+            return free(vec), THEFT_ALLOC_SKIP;
+
     size_t len = (size_t) theft_random_choice(t, cap + 1);
-    if (!vec_with_capacity(vec, cap)) {
-        free(vec);
-        return THEFT_ALLOC_SKIP;
-    }
+    assert(len <= cap);
 
     for (size_t i = 0; i < len; i++)
         vec->ptr[i] = (int) theft_random_bits(t, 32);
 
     vec->length = len;
 
-    vec->idx       = (size_t) theft_random_choice(t, cap);
+    vec->idx       = (size_t) theft_random_choice(t, cap + 1);
     /* suppress conversion from `uint64_t` to `unsigned char : 1` warning */
     vec->iterating = 0x1 & theft_random_bits(t, 1);
     vec->reverse   = 0x1 & theft_random_bits(t, 1);
@@ -66,7 +70,7 @@ const struct theft_type_info qc_vec_info = {
     .print = qc_vec_print,
 };
 
-struct vec * qc_vec_dup_contents (struct vec * self)
+struct vec * qc_vec_dup_contents (const struct vec * self)
 {
     struct vec * ret = malloc(sizeof(struct vec));
 

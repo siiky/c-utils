@@ -1,9 +1,3 @@
-#include <stdbool.h>
-#include <string.h>
-
-#include <common.h>
-#include <unused.h>
-
 #include "vec.h"
 
 static bool qc_vec_filter_const_true_pred (const int * x)

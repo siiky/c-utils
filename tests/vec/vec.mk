@@ -8,6 +8,7 @@ VEC_SRC := \
     vec/foreach_range.c \
     vec/get_nth.c       \
     vec/insert.c        \
+    vec/is_empty.c      \
     vec/pop.c           \
     vec/push.c          \
     vec/qc.c            \

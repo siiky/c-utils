@@ -1,10 +1,4 @@
-#include <stdbool.h>
-#include <string.h>
-
 #include "vec.h"
-
-#include <common.h>
-#include <unused.h>
 
 static enum theft_trial_res qc_vec_pop_len_prop (struct theft * t, void * arg1)
 {

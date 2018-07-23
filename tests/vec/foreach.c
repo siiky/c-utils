@@ -1,9 +1,3 @@
-#include <stdbool.h>
-#include <string.h>
-
-#include <common.h>
-#include <unused.h>
-
 #include "vec.h"
 
 static size_t what = 0;
