@@ -41,8 +41,8 @@ static enum theft_trial_res qc_vec_pop_content_prop (struct theft * t, void * ar
     struct vec * vec = arg1;
 
     size_t pre_len = vec->length;
-    struct vec * pre_dup = NULL;
-    if (pre_len == 0 || (pre_dup = qc_vec_dup_contents(vec)) == NULL)
+    struct vec pre_dup = {0};
+    if (pre_len == 0 || !qc_vec_dup_contents(vec, &pre_dup))
         return THEFT_TRIAL_SKIP;
 
 
@@ -51,9 +51,9 @@ static enum theft_trial_res qc_vec_pop_content_prop (struct theft * t, void * ar
     size_t pos_len = vec->length;
 
     bool ret = pos_len == 0
-        || memcmp(pre_dup->ptr, vec->ptr, pos_len * sizeof(int)) == 0;
+        || memcmp(pre_dup.ptr, vec->ptr, pos_len * sizeof(int)) == 0;
 
-    qc_vec_dup_free(pre_dup);
+    vec_free(pre_dup);
 
     return QC_BOOL2TRIAL(ret);
 }

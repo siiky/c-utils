@@ -81,9 +81,9 @@ static enum theft_trial_res qc_vec_swap_remove_left_content_prop (struct theft *
     struct vec * vec = arg1;
     size_t idx = * (size_t *) arg2;
 
-    struct vec * pre_dup = NULL;
+    struct vec pre_dup = {0};
     size_t pre_len = vec->length;
-    if (pre_len == 0 || (pre_dup = qc_vec_dup_contents(vec)) == NULL)
+    if (pre_len == 0 || !qc_vec_dup_contents(vec, &pre_dup))
         return THEFT_TRIAL_SKIP;
 
     if (idx >= pre_len) {
@@ -93,14 +93,14 @@ static enum theft_trial_res qc_vec_swap_remove_left_content_prop (struct theft *
 
     vec_swap_remove(vec, idx);
 
-    void * pre = pre_dup->ptr;
+    void * pre = pre_dup.ptr;
     void * pos = vec->ptr;
     size_t nbytes = (idx - 1) * sizeof(int);
 
     bool res = idx == 0
         || memcmp(pre, pos, nbytes) == 0;
 
-    qc_vec_dup_free(pre_dup);
+    vec_free(pre_dup);
 
     return QC_BOOL2TRIAL(res);
 }
@@ -112,9 +112,9 @@ static enum theft_trial_res qc_vec_swap_remove_right_content_prop (struct theft 
     struct vec * vec = arg1;
     size_t idx = * (size_t *) arg2;
 
-    struct vec * pre_dup = NULL;
+    struct vec pre_dup = {0};
     size_t pre_len = vec->length;
-    if (pre_len == 0 || (pre_dup = qc_vec_dup_contents(vec)) == NULL)
+    if (pre_len == 0 || !qc_vec_dup_contents(vec, &pre_dup))
         return THEFT_TRIAL_SKIP;
 
     if (idx >= pre_len) {
@@ -125,14 +125,14 @@ static enum theft_trial_res qc_vec_swap_remove_right_content_prop (struct theft 
     vec_swap_remove(vec, idx);
     size_t pos_len = vec->length;
 
-    void * pre = pre_dup->ptr + idx + 1;
+    void * pre = pre_dup.ptr + idx + 1;
     void * pos = vec->ptr + idx + 1;
     size_t nbytes = (pos_len - idx - 1) * sizeof(int);
 
     bool res = idx >= pos_len
         || memcmp(pre, pos, nbytes) == 0;
 
-    qc_vec_dup_free(pre_dup);
+    vec_free(pre_dup);
 
     return QC_BOOL2TRIAL(res);
 }

@@ -31,8 +31,8 @@ static enum theft_trial_res qc_vec_get_nth_content_prop (struct theft * t, void 
     size_t idx = * (size_t *) arg2;
 
     size_t pre_len = vec->length;
-    struct vec * pre_dup = NULL;
-    if (pre_len == 0 || (pre_dup = qc_vec_dup_contents(vec)) == NULL)
+    struct vec dup = {0};
+    if (pre_len == 0 || !qc_vec_dup_contents(vec, &dup))
         return THEFT_TRIAL_SKIP;
 
     if (idx >= pre_len) {
@@ -42,9 +42,9 @@ static enum theft_trial_res qc_vec_get_nth_content_prop (struct theft * t, void 
 
     vec_get_nth(vec, idx);
 
-    bool res = memcmp(vec->ptr, pre_dup->ptr, pre_len * sizeof(int)) == 0;
+    bool res = memcmp(vec->ptr, dup.ptr, pre_len * sizeof(int)) == 0;
 
-    qc_vec_dup_free(pre_dup);
+    vec_free(dup);
 
     return QC_BOOL2TRIAL(res);
 }

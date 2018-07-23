@@ -49,8 +49,8 @@ static enum theft_trial_res qc_vec_push_content_prop (struct theft * t, void * a
     struct vec * vec = arg1;
     int elem = * (int *) arg2;
 
-    struct vec * pre_dup = qc_vec_dup_contents(vec);
-    if (pre_dup == NULL)
+    struct vec pre_dup = {0};
+    if (!qc_vec_dup_contents(vec, &pre_dup))
         return THEFT_TRIAL_SKIP;
 
     size_t pre_len = vec->length;
@@ -62,9 +62,9 @@ static enum theft_trial_res qc_vec_push_content_prop (struct theft * t, void * a
             pre_len:
             pre_cap);
 
-    bool ret = memcmp(pre_dup->ptr, vec->ptr, nbytes) == 0;
+    bool ret = memcmp(pre_dup.ptr, vec->ptr, nbytes) == 0;
 
-    qc_vec_dup_free(pre_dup);
+    vec_free(pre_dup);
 
     return QC_BOOL2TRIAL(ret);
 }

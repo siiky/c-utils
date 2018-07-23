@@ -58,8 +58,8 @@ static enum theft_trial_res qc_vec_foreach_range_content_prop (struct theft * t,
     size_t from = * (size_t *) arg2;
     size_t to = * (size_t *) arg3;
 
-    struct vec * dup = qc_vec_dup_contents(vec);
-    if (dup == NULL)
+    struct vec dup = {0};
+    if (!qc_vec_dup_contents(vec, &dup))
         return THEFT_TRIAL_SKIP;
 
     size_t pre_len = vec->length;
@@ -67,9 +67,9 @@ static enum theft_trial_res qc_vec_foreach_range_content_prop (struct theft * t,
     what = 0;
 
     bool res = pre_len == 0
-        || memcmp(dup->ptr, vec->ptr, pre_len * sizeof(int)) == 0;
+        || memcmp(dup.ptr, vec->ptr, pre_len * sizeof(int)) == 0;
 
-    qc_vec_dup_free(dup);
+    vec_free(dup);
 
     return QC_BOOL2TRIAL(res);
 }

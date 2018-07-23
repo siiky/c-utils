@@ -12,9 +12,9 @@
 
 extern const struct theft_type_info qc_vec_info;
 
-bool         qc_vec_search       (struct vec * self, int elem, size_t * _i);
-size_t       qc_vec_count        (struct vec * self, bool pred (const int *));
-struct vec * qc_vec_dup_contents (const struct vec * self);
-void         qc_vec_dup_free     (struct vec * self);
+bool   qc_vec_dup_contents (const struct vec * self, struct vec * dup);
+bool   qc_vec_search       (struct vec * self, int elem, size_t * _i);
+size_t qc_vec_count        (struct vec * self, bool pred (const int *));
+void   qc_vec_dup_free     (struct vec * self);
 
 #endif /* _VEC_DEFS_H */

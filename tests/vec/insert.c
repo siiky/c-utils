@@ -42,17 +42,17 @@ static enum theft_trial_res qc_vec_insert_left_content_prop (struct theft * t, v
         * (size_t *) arg2 = idx;
     }
 
-    struct vec * dup = qc_vec_dup_contents(vec);
-    if (dup == NULL)
+    struct vec dup = {0};
+    if (!qc_vec_dup_contents(vec, &dup))
         return THEFT_TRIAL_SKIP;
 
     vec_insert(vec, idx, elem);
 
     size_t nbytes = idx * sizeof(int);
     bool res = idx == 0
-        || memcmp(vec->ptr, dup->ptr, nbytes) == 0;
+        || memcmp(vec->ptr, dup.ptr, nbytes) == 0;
 
-    qc_vec_dup_free(dup);
+    vec_free(dup);
 
     return QC_BOOL2TRIAL(res);
 }
@@ -97,8 +97,8 @@ static enum theft_trial_res qc_vec_insert_right_content_prop (struct theft * t, 
     size_t idx = * (size_t *) arg2;
     int elem = * (int *) arg3;
 
-    struct vec * dup = qc_vec_dup_contents(vec);
-    if (dup == NULL)
+    struct vec dup = {0};
+    if (!qc_vec_dup_contents(vec, &dup))
         return THEFT_TRIAL_SKIP;
 
     size_t pre_len = vec->length;
@@ -113,11 +113,11 @@ static enum theft_trial_res qc_vec_insert_right_content_prop (struct theft * t, 
     size_t pos_len = vec->length;
 
     bool res = idx >= pos_len
-        || memcmp(dup->ptr + idx,
+        || memcmp(dup.ptr + idx,
                 vec->ptr + idx + ((succ) ? 1 : 0),
-                (dup->length - idx) * sizeof(int)) == 0;
+                (dup.length - idx) * sizeof(int)) == 0;
 
-    qc_vec_dup_free(dup);
+    vec_free(dup);
 
     return QC_BOOL2TRIAL(res);
 }

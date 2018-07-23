@@ -5,17 +5,17 @@ static enum theft_trial_res qc_vec_iter_content_prop (struct theft * t, void * a
     UNUSED(t);
 
     struct vec * vec = arg1;
-    struct vec * dup = qc_vec_dup_contents(vec);
-    if (dup == NULL)
+    struct vec dup = {0};
+    if (!qc_vec_dup_contents(vec, &dup))
         return THEFT_TRIAL_SKIP;
     size_t len = vec->length;
 
     vec_iter(vec);
 
     bool ret = len == 0
-        || memcmp(vec->ptr, dup->ptr, dup->capacity * sizeof(int)) == 0;
+        || memcmp(vec->ptr, dup.ptr, dup.capacity * sizeof(int)) == 0;
 
-    qc_vec_dup_free(dup);
+    vec_free(dup);
 
     return QC_BOOL2TRIAL(ret);
 }

@@ -33,8 +33,8 @@ static enum theft_trial_res qc_vec_as_mut_slice_content_prop (struct theft * t, 
 
     struct vec * vec = arg1;
 
-    struct vec * pre_dup = qc_vec_dup_contents(vec);
-    if (pre_dup == NULL)
+    struct vec pre_dup = {0};
+    if (!qc_vec_dup_contents(vec, &pre_dup))
         return THEFT_TRIAL_SKIP;
 
     vec_as_mut_slice(vec);
@@ -42,9 +42,9 @@ static enum theft_trial_res qc_vec_as_mut_slice_content_prop (struct theft * t, 
     size_t pos_len = vec->length;
 
     bool ret = pos_len == 0
-        || memcmp(pre_dup->ptr, vec->ptr, pos_len * sizeof(int)) == 0;
+        || memcmp(pre_dup.ptr, vec->ptr, pos_len * sizeof(int)) == 0;
 
-    qc_vec_dup_free(pre_dup);
+    vec_free(pre_dup);
 
     return QC_BOOL2TRIAL(ret);
 }

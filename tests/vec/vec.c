@@ -70,23 +70,19 @@ const struct theft_type_info qc_vec_info = {
     .print = qc_vec_print,
 };
 
-struct vec * qc_vec_dup_contents (const struct vec * self)
+bool qc_vec_dup_contents (const struct vec * self, struct vec * dup)
 {
-    struct vec * ret = malloc(sizeof(struct vec));
+    bool ret = true;
 
-    if (ret != NULL) {
-        memcpy(ret, self, sizeof(struct vec));
+    memcpy(dup, self, sizeof(struct vec));
 
-        size_t nbytes = self->capacity * sizeof(int);
-        ret->ptr = malloc(nbytes);
+    size_t nbytes = self->capacity * sizeof(int);
+    dup->ptr = malloc(nbytes);
 
-        if (ret->ptr != NULL) {
-            memcpy(ret->ptr, self->ptr, nbytes);
-        } else {
-            free(ret);
-            ret = NULL;
-        }
-    }
+    if (dup->ptr != NULL)
+        memcpy(dup->ptr, self->ptr, nbytes);
+    else
+        ret = false;
 
     return ret;
 }
@@ -94,7 +90,6 @@ struct vec * qc_vec_dup_contents (const struct vec * self)
 void qc_vec_dup_free (struct vec * self)
 {
     *self = vec_free(*self);
-    free(self);
 }
 
 bool qc_vec_search (struct vec * self, int elem, size_t * _i)
