@@ -10,6 +10,7 @@ VEC_SRC := \
     vec/insert.c        \
     vec/is_empty.c      \
     vec/iter.c          \
+    vec/itering.c       \
     vec/pop.c           \
     vec/push.c          \
     vec/qc.c            \
