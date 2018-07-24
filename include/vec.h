@@ -1,4 +1,4 @@
-/* vec - v2018.07.20-0
+/* vec - v2018.07.24-0
  *
  * A vector type inspired by
  *  * Rust's `Vec` type
@@ -186,7 +186,7 @@ struct VEC_CFG_VEC {
 #define VEC_AS_MUT_SLICE   VEC_CFG_MAKE_STR(as_mut_slice)
 #define VEC_AS_SLICE       VEC_CFG_MAKE_STR(as_slice)
 #define VEC_BSEARCH        VEC_CFG_MAKE_STR(bsearch)
-#define VEC_CAPACITY       VEC_CFG_MAKE_STR(capacity)
+#define VEC_CAP            VEC_CFG_MAKE_STR(capacity)
 #define VEC_ELEM           VEC_CFG_MAKE_STR(elem)
 #define VEC_FILTER         VEC_CFG_MAKE_STR(filter)
 #define VEC_FIND           VEC_CFG_MAKE_STR(find)
@@ -218,7 +218,7 @@ struct VEC_CFG_VEC {
 #define VEC_SPLIT_OFF      VEC_CFG_MAKE_STR(split_off)
 #define VEC_SWAP_REMOVE    VEC_CFG_MAKE_STR(swap_remove)
 #define VEC_TRUNCATE       VEC_CFG_MAKE_STR(truncate)
-#define VEC_WITH_CAPACITY  VEC_CFG_MAKE_STR(with_capacity)
+#define VEC_WITH_CAP       VEC_CFG_MAKE_STR(with_capacity)
 
 /*==========================================================
  * Function prototypes
@@ -254,10 +254,10 @@ bool                      VEC_SET_NTH        (struct VEC_CFG_VEC * self, size_t 
 bool                      VEC_SHRINK_TO_FIT  (struct VEC_CFG_VEC * self);
 bool                      VEC_SPLIT_OFF      (struct VEC_CFG_VEC * self, struct VEC_CFG_VEC * other, size_t at);
 bool                      VEC_TRUNCATE       (struct VEC_CFG_VEC * self, size_t len);
-bool                      VEC_WITH_CAPACITY  (struct VEC_CFG_VEC * self, size_t capacity);
+bool                      VEC_WITH_CAP       (struct VEC_CFG_VEC * self, size_t capacity);
 const VEC_CFG_DATA_TYPE * VEC_AS_SLICE       (const struct VEC_CFG_VEC * self);
 size_t                    VEC_BSEARCH        (const struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE key, int compar (const void *, const void *));
-size_t                    VEC_CAPACITY       (const struct VEC_CFG_VEC * self);
+size_t                    VEC_CAP            (const struct VEC_CFG_VEC * self);
 size_t                    VEC_FIND           (const struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE element);
 size_t                    VEC_ITER_IDX       (const struct VEC_CFG_VEC * self);
 size_t                    VEC_LEN            (const struct VEC_CFG_VEC * self);
@@ -424,7 +424,7 @@ VEC_CFG_STATIC struct VEC_CFG_VEC VEC_FREE (struct VEC_CFG_VEC self)
  * @param capacity Number of elements to allocate
  * @returns The new vector
  */
-VEC_CFG_STATIC inline bool VEC_WITH_CAPACITY (struct VEC_CFG_VEC * self, size_t capacity)
+VEC_CFG_STATIC inline bool VEC_WITH_CAP (struct VEC_CFG_VEC * self, size_t capacity)
 {
     if (capacity == 0)
         return _VEC_CLEAN(self);
@@ -458,7 +458,7 @@ VEC_CFG_STATIC inline bool VEC_FROM_RAW_PARTS (struct VEC_CFG_VEC * self, VEC_CF
  * @param self The vector
  * @returns The capacity of @a self
  */
-VEC_CFG_STATIC inline size_t VEC_CAPACITY (const struct VEC_CFG_VEC * self)
+VEC_CFG_STATIC inline size_t VEC_CAP (const struct VEC_CFG_VEC * self)
 {
     return (self != NULL) ?
         self->capacity:
@@ -789,7 +789,7 @@ VEC_CFG_STATIC bool VEC_SPLIT_OFF (struct VEC_CFG_VEC * restrict self, struct VE
 
     *other = VEC_FREE(*other);
 
-    bool ret = VEC_WITH_CAPACITY(other, self->length - at + 1);
+    bool ret = VEC_WITH_CAP(other, self->length - at + 1);
 
     if (ret) {
         void * dest = other->ptr;
@@ -1122,7 +1122,7 @@ VEC_CFG_STATIC bool VEC_ITER_REV (struct VEC_CFG_VEC * self, bool rev)
 #undef VEC_AS_MUT_SLICE
 #undef VEC_AS_SLICE
 #undef VEC_BSEARCH
-#undef VEC_CAPACITY
+#undef VEC_CAP
 #undef VEC_ELEM
 #undef VEC_FILTER
 #undef VEC_FIND
@@ -1154,7 +1154,7 @@ VEC_CFG_STATIC bool VEC_ITER_REV (struct VEC_CFG_VEC * self, bool rev)
 #undef VEC_SPLIT_OFF
 #undef VEC_SWAP_REMOVE
 #undef VEC_TRUNCATE
-#undef VEC_WITH_CAPACITY
+#undef VEC_WITH_CAP
 
 /*
  * Other
