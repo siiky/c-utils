@@ -28,7 +28,7 @@ static enum theft_alloc_res qc_vec_alloc (struct theft * t, void * env, void ** 
 
     vec->length = len;
 
-    vec->idx       = (size_t) theft_random_choice(t, cap + 1);
+    vec->idx       = (size_t) theft_random_choice(t, len);
     /* suppress conversion from `uint64_t` to `unsigned char : 1` warning */
     vec->iterating = 0x1 & theft_random_bits(t, 1);
     vec->reverse   = 0x1 & theft_random_bits(t, 1);
@@ -48,20 +48,30 @@ static void qc_vec_print (FILE * f, const void * instance, void * env)
 {
     UNUSED(env);
 
-    const struct vec * vec = (struct vec *) instance;
-    size_t len = vec_len(vec);
+    const struct vec * vec = instance;
 
-    fputc('[', f);
+    fprintf(f,
+            "{\n"
+            "  .length    = %zu,\n"
+            "  .capacity  = %zu,\n"
+            "  .idx       = %zu,\n"
+            "  .iterating = %hu,\n"
+            "  .reverse   = %hu,\n"
+            "  .ptr       = { ",
+            vec->length,
+            vec->capacity,
+            vec->idx,
+            vec->iterating,
+            vec->reverse
+           );
 
     if (!vec_is_empty(vec)) {
-        fprintf(f, " %d", vec_get_nth(vec, 0));
-
-        for (size_t i = 1; i < len; i++) {
-            fprintf(f, ", %d", vec_get_nth(vec, i));
-        }
+        size_t len = vec_len(vec);
+        for (size_t i = 0; i < len; i++)
+            fprintf(f, "%d, ", vec_get_nth(vec, i));
     }
 
-    fprintf(f, " ]");
+    fprintf(f, "},\n}");
 }
 
 const struct theft_type_info qc_vec_info = {

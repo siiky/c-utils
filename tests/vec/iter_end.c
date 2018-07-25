@@ -35,6 +35,8 @@ static enum theft_trial_res qc_vec_iter_end_content_prop (struct theft * t, void
 
     bool ret = memcmp(vec->ptr, dup.ptr, dup.capacity * sizeof(int)) == 0;
 
+    qc_vec_dup_free(&dup);
+
     return QC_BOOL2TRIAL(ret);
 }
 

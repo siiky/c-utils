@@ -53,7 +53,7 @@ static enum theft_trial_res qc_vec_pop_content_prop (struct theft * t, void * ar
     bool ret = pos_len == 0
         || memcmp(pre_dup.ptr, vec->ptr, pos_len * sizeof(int)) == 0;
 
-    vec_free(pre_dup);
+    qc_vec_dup_free(&pre_dup);
 
     return QC_BOOL2TRIAL(ret);
 }

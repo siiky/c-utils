@@ -48,7 +48,7 @@ static enum theft_trial_res qc_vec_find_content_prop (struct theft * t, void * a
     size_t nbytes = pre_len * sizeof(int);
     bool ret = memcmp(pre_dup.ptr, vec->ptr, nbytes) == 0;
 
-    vec_free(pre_dup);
+    qc_vec_dup_free(&pre_dup);
 
     return QC_BOOL2TRIAL(ret);
 }

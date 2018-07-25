@@ -52,7 +52,7 @@ static enum theft_trial_res qc_vec_insert_left_content_prop (struct theft * t, v
     bool res = idx == 0
         || memcmp(vec->ptr, dup.ptr, nbytes) == 0;
 
-    vec_free(dup);
+    qc_vec_dup_free(&dup);
 
     return QC_BOOL2TRIAL(res);
 }
@@ -117,7 +117,7 @@ static enum theft_trial_res qc_vec_insert_right_content_prop (struct theft * t, 
                 vec->ptr + idx + ((succ) ? 1 : 0),
                 (dup.length - idx) * sizeof(int)) == 0;
 
-    vec_free(dup);
+    qc_vec_dup_free(&dup);
 
     return QC_BOOL2TRIAL(res);
 }

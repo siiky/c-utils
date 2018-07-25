@@ -42,7 +42,7 @@ static enum theft_trial_res qc_vec_is_empty_content_prop (struct theft * t, void
     bool ret = res
         || memcmp(vec->ptr, dup.ptr, nbytes) == 0;
 
-    vec_free(dup);
+    qc_vec_dup_free(&dup);
 
     return QC_BOOL2TRIAL(ret);
 }
