@@ -143,23 +143,32 @@ static enum theft_trial_res qc_vec_remove_iter_prop (struct theft * t, void * ar
     return QC_BOOL2TRIAL(res);
 }
 
-#define QC_MKTEST_REMOVE(TEST)                  \
-    QC_MKTEST(qc_vec_remove_ ## TEST ## _test,  \
-            prop2,                              \
-            qc_vec_remove_ ## TEST ## _prop,    \
-            &qc_vec_info,                       \
+#define QC_MKID_FUNC(TEST, TYPE) \
+    QC_MKID_MOD(remove, TEST, TYPE)
+
+#define QC_MKID_PROP(TEST) \
+    QC_MKID_FUNC(TEST, prop)
+
+#define QC_MKID_TEST(TEST) \
+    QC_MKID_FUNC(TEST, test)
+
+#define QC_MKTEST_FUNC(TEST)       \
+    QC_MKTEST(QC_MKID_TEST(TEST),  \
+            prop2,                 \
+            QC_MKID_PROP(TEST),    \
+            &qc_vec_info,          \
             &qc_size_t_info)
 
-QC_MKTEST_REMOVE(elem);
-QC_MKTEST_REMOVE(iter);
-QC_MKTEST_REMOVE(left_content);
-QC_MKTEST_REMOVE(len);
-QC_MKTEST_REMOVE(right_content);
+QC_MKTEST_FUNC(elem);
+QC_MKTEST_FUNC(iter);
+QC_MKTEST_FUNC(left_content);
+QC_MKTEST_FUNC(len);
+QC_MKTEST_FUNC(right_content);
 
 QC_MKTEST_ALL(qc_vec_remove_test_all,
-        qc_vec_remove_elem_test,
-        qc_vec_remove_iter_test,
-        qc_vec_remove_left_content_test,
-        qc_vec_remove_len_test,
-        qc_vec_remove_right_content_test,
+        QC_MKID_TEST(elem),
+        QC_MKID_TEST(iter),
+        QC_MKID_TEST(left_content),
+        QC_MKID_TEST(len),
+        QC_MKID_TEST(right_content),
         );

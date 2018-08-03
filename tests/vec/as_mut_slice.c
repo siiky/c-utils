@@ -73,20 +73,29 @@ static enum theft_trial_res qc_vec_as_mut_slice_iter_prop (struct theft * t, voi
     return QC_BOOL2TRIAL(res);
 }
 
-#define QC_MKTEST_AS_MUT_SLICE(TEST)                 \
-    QC_MKTEST(qc_vec_as_mut_slice_ ## TEST ## _test, \
-            prop1,                                   \
-            qc_vec_as_mut_slice_ ## TEST ## _prop,   \
+#define QC_MKID_FUNC(TEST, TYPE) \
+    QC_MKID_MOD(as_mut_slice, TEST, TYPE)
+
+#define QC_MKID_PROP(TEST) \
+    QC_MKID_FUNC(TEST, prop)
+
+#define QC_MKID_TEST(TEST) \
+    QC_MKID_FUNC(TEST, test)
+
+#define QC_MKTEST_FUNC(TEST)      \
+    QC_MKTEST(QC_MKID_TEST(TEST), \
+            prop1,                \
+            QC_MKID_PROP(TEST),   \
             &qc_vec_info)
 
-QC_MKTEST_AS_MUT_SLICE(content);
-QC_MKTEST_AS_MUT_SLICE(iter);
-QC_MKTEST_AS_MUT_SLICE(len);
-QC_MKTEST_AS_MUT_SLICE(ptr);
+QC_MKTEST_FUNC(content);
+QC_MKTEST_FUNC(iter);
+QC_MKTEST_FUNC(len);
+QC_MKTEST_FUNC(ptr);
 
 QC_MKTEST_ALL(qc_vec_as_mut_slice_test_all,
-        qc_vec_as_mut_slice_content_test,
-        qc_vec_as_mut_slice_iter_test,
-        qc_vec_as_mut_slice_len_test,
-        qc_vec_as_mut_slice_ptr_test,
+        QC_MKID_TEST(content),
+        QC_MKID_TEST(iter),
+        QC_MKID_TEST(len),
+        QC_MKID_TEST(ptr),
         );

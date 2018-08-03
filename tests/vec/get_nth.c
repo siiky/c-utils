@@ -83,19 +83,28 @@ static enum theft_trial_res qc_vec_get_nth_iter_prop (struct theft * t, void * a
     return QC_BOOL2TRIAL(res);
 }
 
-#define QC_MKTEST_GET_NTH(TEST)                 \
-    QC_MKTEST(qc_vec_get_nth_ ## TEST ## _test, \
-            prop2,                              \
-            qc_vec_get_nth_ ## TEST ## _prop,   \
-            &qc_vec_info,                       \
+#define QC_MKID_FUNC(TEST, TYPE) \
+    QC_MKID_MOD(get_nth, TEST, TYPE)
+
+#define QC_MKID_PROP(TEST) \
+    QC_MKID_FUNC(TEST, prop)
+
+#define QC_MKID_TEST(TEST) \
+    QC_MKID_FUNC(TEST, test)
+
+#define QC_MKTEST_FUNC(TEST)      \
+    QC_MKTEST(QC_MKID_TEST(TEST), \
+            prop2,                \
+            QC_MKID_PROP(TEST),   \
+            &qc_vec_info,         \
             &qc_size_t_info)
 
-QC_MKTEST_GET_NTH(content);
-QC_MKTEST_GET_NTH(elem);
-QC_MKTEST_GET_NTH(iter);
+QC_MKTEST_FUNC(content);
+QC_MKTEST_FUNC(elem);
+QC_MKTEST_FUNC(iter);
 
 QC_MKTEST_ALL(qc_vec_get_nth_test_all,
-        qc_vec_get_nth_content_test,
-        qc_vec_get_nth_elem_test,
-        qc_vec_get_nth_iter_test,
+        QC_MKID_TEST(content),
+        QC_MKID_TEST(elem),
+        QC_MKID_TEST(iter),
         );

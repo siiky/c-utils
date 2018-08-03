@@ -17,7 +17,7 @@ bool   qc_vec_search       (struct vec * self, int elem, size_t * _i);
 size_t qc_vec_count        (struct vec * self, bool pred (const int *));
 void   qc_vec_dup_free     (struct vec * self);
 
-#define QC_MKID_VEC(FUNC, TEST, TYPE) \
+#define QC_MKID_MOD(FUNC, TEST, TYPE) \
     QC_MKID(vec, FUNC, TEST, TYPE)
 
 #endif /* _VEC_DEFS_H */

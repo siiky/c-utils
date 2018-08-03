@@ -77,29 +77,29 @@ static enum theft_trial_res qc_vec_map_double_content_prop (struct theft * t, vo
     return _qc_vec_map_content_prop(t, arg1, _map_double);
 }
 
-#define QC_MKID_VEC_MAP(TEST, TYPE) \
-    QC_MKID_VEC(map, TEST, TYPE)
+#define QC_MKID_FUNC(TEST, TYPE) \
+    QC_MKID_MOD(map, TEST, TYPE)
 
-#define QC_MKID_VEC_MAP_PROP(TEST) \
-    QC_MKID_VEC_MAP(TEST, prop)
+#define QC_MKID_PROP(TEST) \
+    QC_MKID_FUNC(TEST, prop)
 
-#define QC_MKID_VEC_MAP_TEST(TEST) \
-    QC_MKID_VEC_MAP(TEST, test)
+#define QC_MKID_TEST(TEST) \
+    QC_MKID_FUNC(TEST, test)
 
-#define QC_MKTEST_MAP(TEST)               \
-    QC_MKTEST(QC_MKID_VEC_MAP_TEST(TEST), \
-            prop1,                        \
-            QC_MKID_VEC_MAP_PROP(TEST),   \
+#define QC_MKTEST_FUNC(TEST)      \
+    QC_MKTEST(QC_MKID_TEST(TEST), \
+            prop1,                \
+            QC_MKID_PROP(TEST),   \
             &qc_vec_info)
 
-QC_MKTEST_MAP(double_content);
-QC_MKTEST_MAP(double_meta);
-QC_MKTEST_MAP(id_content);
-QC_MKTEST_MAP(id_meta);
+QC_MKTEST_FUNC(double_content);
+QC_MKTEST_FUNC(double_meta);
+QC_MKTEST_FUNC(id_content);
+QC_MKTEST_FUNC(id_meta);
 
 QC_MKTEST_ALL(qc_vec_map_test_all,
-        QC_MKID_VEC_MAP_TEST(double_content),
-        QC_MKID_VEC_MAP_TEST(double_meta),
-        QC_MKID_VEC_MAP_TEST(id_content),
-        QC_MKID_VEC_MAP_TEST(id_meta),
+        QC_MKID_TEST(double_content),
+        QC_MKID_TEST(double_meta),
+        QC_MKID_TEST(id_content),
+        QC_MKID_TEST(id_meta),
         );

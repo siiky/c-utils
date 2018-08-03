@@ -63,19 +63,28 @@ static enum theft_trial_res qc_vec_iter_rev_meta_prop (struct theft * t, void * 
     return QC_BOOL2TRIAL(ret);
 }
 
-#define QC_MKTEST_ITER_REV(TEST)                 \
-    QC_MKTEST(qc_vec_iter_rev_ ## TEST ## _test, \
-            prop2,                               \
-            qc_vec_iter_rev_ ## TEST ## _prop,   \
-            &qc_vec_info,                        \
+#define QC_MKID_FUNC(TEST, TYPE) \
+    QC_MKID_MOD(iter_rev, TEST, TYPE)
+
+#define QC_MKID_PROP(TEST) \
+    QC_MKID_FUNC(TEST, prop)
+
+#define QC_MKID_TEST(TEST) \
+    QC_MKID_FUNC(TEST, test)
+
+#define QC_MKTEST_FUNC(TEST)      \
+    QC_MKTEST(QC_MKID_TEST(TEST), \
+            prop2,                \
+            QC_MKID_PROP(TEST),   \
+            &qc_vec_info,         \
             &qc_bool_info)
 
-QC_MKTEST_ITER_REV(content);
-QC_MKTEST_ITER_REV(meta);
-QC_MKTEST_ITER_REV(res);
+QC_MKTEST_FUNC(content);
+QC_MKTEST_FUNC(meta);
+QC_MKTEST_FUNC(res);
 
 QC_MKTEST_ALL(qc_vec_iter_rev_test_all,
-        qc_vec_iter_rev_content_test,
-        qc_vec_iter_rev_meta_test,
-        qc_vec_iter_rev_res_test,
+        QC_MKID_TEST(content),
+        QC_MKID_TEST(meta),
+        QC_MKID_TEST(res),
         );

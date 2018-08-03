@@ -89,22 +89,31 @@ static enum theft_trial_res qc_vec_foreach_range_side_effects_prop (struct theft
     return QC_BOOL2TRIAL(ret);
 }
 
-#define QC_MKTEST_FOREACH_RANGE(TEST)                 \
-    QC_MKTEST(qc_vec_foreach_range_ ## TEST ## _test, \
-            prop3,                                    \
-            qc_vec_foreach_range_ ## TEST ## _prop,   \
-            &qc_vec_info,                             \
-            &qc_size_t_info,                          \
+#define QC_MKID_FUNC(TEST, TYPE) \
+    QC_MKID_MOD(foreach_range, TEST, TYPE)
+
+#define QC_MKID_PROP(TEST) \
+    QC_MKID_FUNC(TEST, prop)
+
+#define QC_MKID_TEST(TEST) \
+    QC_MKID_FUNC(TEST, test)
+
+#define QC_MKTEST_FUNC(TEST)      \
+    QC_MKTEST(QC_MKID_TEST(TEST), \
+            prop3,                \
+            QC_MKID_PROP(TEST),   \
+            &qc_vec_info,         \
+            &qc_size_t_info,      \
             &qc_size_t_info)
 
-QC_MKTEST_FOREACH_RANGE(content);
-QC_MKTEST_FOREACH_RANGE(iter);
-QC_MKTEST_FOREACH_RANGE(len);
-QC_MKTEST_FOREACH_RANGE(side_effects);
+QC_MKTEST_FUNC(content);
+QC_MKTEST_FUNC(iter);
+QC_MKTEST_FUNC(len);
+QC_MKTEST_FUNC(side_effects);
 
 QC_MKTEST_ALL(qc_vec_foreach_range_test_all,
-        qc_vec_foreach_range_content_test,
-        qc_vec_foreach_range_iter_test,
-        qc_vec_foreach_range_len_test,
-        qc_vec_foreach_range_side_effects_test,
+        QC_MKID_TEST(content),
+        QC_MKID_TEST(iter),
+        QC_MKID_TEST(len),
+        QC_MKID_TEST(side_effects),
         );

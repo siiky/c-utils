@@ -148,24 +148,33 @@ static enum theft_trial_res qc_vec_insert_iter_prop (struct theft * t, void * ar
     return QC_BOOL2TRIAL(ret);
 }
 
-#define QC_MKTEST_INSERT(TEST)                 \
-    QC_MKTEST(qc_vec_insert_ ## TEST ## _test, \
-            prop3,                             \
-            qc_vec_insert_ ## TEST ## _prop,   \
-            &qc_vec_info,                      \
-            &qc_size_t_info,                   \
+#define QC_MKID_FUNC(TEST, TYPE) \
+    QC_MKID_MOD(insert, TEST, TYPE)
+
+#define QC_MKID_PROP(TEST) \
+    QC_MKID_FUNC(TEST, prop)
+
+#define QC_MKID_TEST(TEST) \
+    QC_MKID_FUNC(TEST, test)
+
+#define QC_MKTEST_FUNC(TEST)      \
+    QC_MKTEST(QC_MKID_TEST(TEST), \
+            prop3,                \
+            QC_MKID_PROP(TEST),   \
+            &qc_vec_info,         \
+            &qc_size_t_info,      \
             &qc_int_info)
 
-QC_MKTEST_INSERT(elem);
-QC_MKTEST_INSERT(iter);
-QC_MKTEST_INSERT(left_content);
-QC_MKTEST_INSERT(len);
-QC_MKTEST_INSERT(right_content);
+QC_MKTEST_FUNC(elem);
+QC_MKTEST_FUNC(iter);
+QC_MKTEST_FUNC(left_content);
+QC_MKTEST_FUNC(len);
+QC_MKTEST_FUNC(right_content);
 
 QC_MKTEST_ALL(qc_vec_insert_test_all,
-        qc_vec_insert_elem_test,
-        qc_vec_insert_iter_test,
-        qc_vec_insert_left_content_test,
-        qc_vec_insert_len_test,
-        qc_vec_insert_right_content_test,
+        QC_MKID_TEST(elem),
+        QC_MKID_TEST(iter),
+        QC_MKID_TEST(left_content),
+        QC_MKID_TEST(len),
+        QC_MKID_TEST(right_content),
         );

@@ -105,19 +105,29 @@ static enum theft_trial_res qc_vec_append_iter_prop (struct theft * t, void * ar
     return QC_BOOL2TRIAL(res);
 }
 
-#define QC_MKTEST_APPEND(TEST)                 \
-    QC_MKTEST(qc_vec_append_ ## TEST ## _test, \
-            prop2,                             \
-            qc_vec_append_ ## TEST ## _prop,   \
-            &qc_vec_info,                      \
+#define QC_MKID_FUNC(TEST, TYPE) \
+    QC_MKID_MOD(append, TEST, TYPE)
+
+#define QC_MKID_PROP(TEST) \
+    QC_MKID_FUNC(TEST, prop)
+
+#define QC_MKID_TEST(TEST) \
+    QC_MKID_FUNC(TEST, test)
+
+#define QC_MKTEST_FUNC(TEST)      \
+    QC_MKTEST(QC_MKID_TEST(TEST), \
+            prop2,                \
+            QC_MKID_PROP(TEST),   \
+            &qc_vec_info,         \
             &qc_vec_info)
 
-QC_MKTEST_APPEND(content);
-QC_MKTEST_APPEND(iter);
-QC_MKTEST_APPEND(len);
+QC_MKTEST_FUNC(content);
+QC_MKTEST_FUNC(iter);
+QC_MKTEST_FUNC(len);
 
 QC_MKTEST_ALL(qc_vec_append_test_all,
-        qc_vec_append_content_test,
-        qc_vec_append_iter_test,
-        qc_vec_append_len_test,
+        QC_MKID_TEST(content),
+        QC_MKID_TEST(content),
+        QC_MKID_TEST(iter),
+        QC_MKID_TEST(len),
         );

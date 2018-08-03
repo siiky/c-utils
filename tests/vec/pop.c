@@ -86,20 +86,29 @@ static enum theft_trial_res qc_vec_pop_iter_prop (struct theft * t, void * arg1)
     return QC_BOOL2TRIAL(res);
 }
 
-#define QC_MKTEST_POP(TEST)                 \
-    QC_MKTEST(qc_vec_pop_ ## TEST ## _test, \
-            prop1,                          \
-            qc_vec_pop_ ## TEST ## _prop,   \
+#define QC_MKID_FUNC(TEST, TYPE) \
+    QC_MKID_MOD(pop, TEST, TYPE)
+
+#define QC_MKID_PROP(TEST) \
+    QC_MKID_FUNC(TEST, prop)
+
+#define QC_MKID_TEST(TEST) \
+    QC_MKID_FUNC(TEST, test)
+
+#define QC_MKTEST_FUNC(TEST)      \
+    QC_MKTEST(QC_MKID_TEST(TEST), \
+            prop1,                \
+            QC_MKID_PROP(TEST),   \
             &qc_vec_info)
 
-QC_MKTEST_POP(content);
-QC_MKTEST_POP(elem);
-QC_MKTEST_POP(iter);
-QC_MKTEST_POP(len);
+QC_MKTEST_FUNC(content);
+QC_MKTEST_FUNC(elem);
+QC_MKTEST_FUNC(iter);
+QC_MKTEST_FUNC(len);
 
 QC_MKTEST_ALL(qc_vec_pop_test_all,
-        qc_vec_pop_content_test,
-        qc_vec_pop_elem_test,
-        qc_vec_pop_iter_test,
-        qc_vec_pop_len_test,
+        QC_MKID_TEST(content),
+        QC_MKID_TEST(elem),
+        QC_MKID_TEST(iter),
+        QC_MKID_TEST(len),
         );

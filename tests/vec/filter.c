@@ -60,18 +60,27 @@ static enum theft_trial_res qc_vec_filter_iter_prop (struct theft * t, void * ar
     return QC_BOOL2TRIAL(ret);
 }
 
-#define QC_MKTEST_FILTER(TEST)                 \
-    QC_MKTEST(qc_vec_filter_ ## TEST ## _test, \
-            prop1,                             \
-            qc_vec_filter_ ## TEST ## _prop,   \
+#define QC_MKID_FUNC(TEST, TYPE) \
+    QC_MKID_MOD(filter, TEST, TYPE)
+
+#define QC_MKID_PROP(TEST) \
+    QC_MKID_FUNC(TEST, prop)
+
+#define QC_MKID_TEST(TEST) \
+    QC_MKID_FUNC(TEST, test)
+
+#define QC_MKTEST_FUNC(TEST)      \
+    QC_MKTEST(QC_MKID_TEST(TEST), \
+            prop1,                \
+            QC_MKID_PROP(TEST),   \
             &qc_vec_info)
 
-QC_MKTEST_FILTER(iter);
-QC_MKTEST_FILTER(len_const_true);
-QC_MKTEST_FILTER(len_is_even);
+QC_MKTEST_FUNC(iter);
+QC_MKTEST_FUNC(len_const_true);
+QC_MKTEST_FUNC(len_is_even);
 
 QC_MKTEST_ALL(qc_vec_filter_test_all,
-        qc_vec_filter_iter_test,
-        qc_vec_filter_len_const_true_test,
-        qc_vec_filter_len_is_even_test,
+        QC_MKID_TEST(iter),
+        QC_MKID_TEST(len_const_true),
+        QC_MKID_TEST(len_is_even),
         );

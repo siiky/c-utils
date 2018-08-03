@@ -57,18 +57,27 @@ static enum theft_trial_res qc_vec_iter_next_idx_prop (struct theft * t, void * 
     return QC_BOOL2TRIAL(ret);
 }
 
-#define QC_MKTEST_ITER_NEXT(TEST)                 \
-    QC_MKTEST(qc_vec_iter_next_ ## TEST ## _test, \
-            prop1,                                \
-            qc_vec_iter_next_ ## TEST ## _prop,   \
+#define QC_MKID_FUNC(TEST, TYPE) \
+    QC_MKID_MOD(iter_next, TEST, TYPE)
+
+#define QC_MKID_PROP(TEST) \
+    QC_MKID_FUNC(TEST, prop)
+
+#define QC_MKID_TEST(TEST) \
+    QC_MKID_FUNC(TEST, test)
+
+#define QC_MKTEST_FUNC(TEST)      \
+    QC_MKTEST(QC_MKID_TEST(TEST), \
+            prop1,                \
+            QC_MKID_PROP(TEST),   \
             &qc_vec_info)
 
-QC_MKTEST_ITER_NEXT(content);
-QC_MKTEST_ITER_NEXT(idx);
-QC_MKTEST_ITER_NEXT(idx_len);
+QC_MKTEST_FUNC(content);
+QC_MKTEST_FUNC(idx);
+QC_MKTEST_FUNC(idx_len);
 
 QC_MKTEST_ALL(qc_vec_iter_next_test_all,
-        qc_vec_iter_next_content_test,
-        qc_vec_iter_next_idx_len_test,
-        qc_vec_iter_next_idx_test,
+        QC_MKID_TEST(content),
+        QC_MKID_TEST(idx_len),
+        QC_MKID_TEST(idx),
         );

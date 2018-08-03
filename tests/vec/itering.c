@@ -55,18 +55,27 @@ static enum theft_trial_res qc_vec_itering_iter_prop (struct theft * t, void * a
     return QC_BOOL2TRIAL(ret);
 }
 
-#define QC_MKTEST_ITERING(TEST)                 \
-    QC_MKTEST(qc_vec_itering_ ## TEST ## _test, \
-            prop1,                              \
-            qc_vec_itering_ ## TEST ## _prop,   \
+#define QC_MKID_FUNC(TEST, TYPE) \
+    QC_MKID_MOD(itering, TEST, TYPE)
+
+#define QC_MKID_PROP(TEST) \
+    QC_MKID_FUNC(TEST, prop)
+
+#define QC_MKID_TEST(TEST) \
+    QC_MKID_FUNC(TEST, test)
+
+#define QC_MKTEST_FUNC(TEST)      \
+    QC_MKTEST(QC_MKID_TEST(TEST), \
+            prop1,                \
+            QC_MKID_PROP(TEST),   \
             &qc_vec_info)
 
-QC_MKTEST_ITERING(content);
-QC_MKTEST_ITERING(iter);
-QC_MKTEST_ITERING(res);
+QC_MKTEST_FUNC(content);
+QC_MKTEST_FUNC(iter);
+QC_MKTEST_FUNC(res);
 
 QC_MKTEST_ALL(qc_vec_itering_test_all,
-        qc_vec_itering_content_test,
-        qc_vec_itering_iter_test,
-        qc_vec_itering_res_test,
+        QC_MKID_TEST(content),
+        QC_MKID_TEST(iter),
+        QC_MKID_TEST(res),
         );
