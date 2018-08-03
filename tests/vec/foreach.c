@@ -56,12 +56,12 @@ static enum theft_trial_res qc_vec_foreach_content_prop (struct theft * t, void 
     if (!qc_vec_dup_contents(vec, &dup))
         return THEFT_TRIAL_SKIP;
 
-    size_t pre_len = vec->length;
+    size_t pre_cap = vec->capacity;
     vec_foreach(vec, qc_vec_foreach_do_nothing_func);
     what = 0;
 
-    bool res = pre_len == 0
-        || memcmp(dup.ptr, vec->ptr, pre_len * sizeof(int)) == 0;
+    bool res = false
+        || memcmp(dup.ptr, vec->ptr, pre_cap * sizeof(int)) == 0;
 
     qc_vec_dup_free(&dup);
 

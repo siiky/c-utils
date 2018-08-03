@@ -41,6 +41,9 @@
 
 #define QC_BOOL2TRIAL(succ) ((succ) ? THEFT_TRIAL_PASS : THEFT_TRIAL_FAIL)
 
+#define QC_MKID(MOD, FUNC, TEST, TYPE) \
+    qc_ ## MOD ## _ ## FUNC ## _ ## TEST ## _ ## TYPE
+
 #include <theft.h>
 
 extern const struct theft_type_info qc_bool_info;

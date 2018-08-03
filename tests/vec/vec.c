@@ -14,7 +14,7 @@ static enum theft_alloc_res qc_vec_alloc (struct theft * t, void * env, void ** 
 
     vec__clean(vec);
 
-    size_t cap = (size_t) theft_random_choice(t, 256);
+    size_t cap = (size_t) theft_random_choice(t, 1024);
 
     if (cap > 0)
         if (!vec_with_capacity(vec, cap))

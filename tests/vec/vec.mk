@@ -14,6 +14,7 @@ VEC_SRC := \
     vec/iter_next.c     \
     vec/iter_rev.c      \
     vec/itering.c       \
+    vec/map.c           \
     vec/pop.c           \
     vec/push.c          \
     vec/qc.c            \
