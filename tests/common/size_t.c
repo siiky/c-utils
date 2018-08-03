@@ -1,7 +1,5 @@
 #include <theft.h>
 
-#include "size_t.h"
-
 #include <unused.h>
 
 enum theft_alloc_res qc_size_t_alloc (struct theft * t, void * env, void ** output)

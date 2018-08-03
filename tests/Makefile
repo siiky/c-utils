@@ -6,6 +6,7 @@ EXEC := tests
 
 SRC := \
     $(VEC_SRC)      \
+    common/bool.c   \
     common/int.c    \
     common/size_t.c \
     main.c          \

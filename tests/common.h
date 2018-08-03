@@ -42,7 +42,9 @@
 #define QC_BOOL2TRIAL(succ) ((succ) ? THEFT_TRIAL_PASS : THEFT_TRIAL_FAIL)
 
 #include <theft.h>
-#include "common/int.h"
-#include "common/size_t.h"
+
+extern const struct theft_type_info qc_bool_info;
+extern const struct theft_type_info qc_int_info;
+extern const struct theft_type_info qc_size_t_info;
 
 #endif /* _COMMON_H */
