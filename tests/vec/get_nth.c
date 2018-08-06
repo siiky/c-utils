@@ -1,6 +1,19 @@
 #include "vec.h"
 
-static enum theft_trial_res qc_vec_get_nth_elem_prop (struct theft * t, void * arg1, void * arg2)
+#define QC_MKID_PROP(TEST) \
+    QC_MKID_MOD_PROP(get_nth, TEST)
+
+#define QC_MKID_TEST(TEST) \
+    QC_MKID_MOD_TEST(get_nth, TEST)
+
+#define QC_MKTEST_FUNC(TEST)      \
+    QC_MKTEST(QC_MKID_TEST(TEST), \
+            prop2,                \
+            QC_MKID_PROP(TEST),   \
+            &qc_vec_info,         \
+            &qc_size_t_info)
+
+static enum theft_trial_res QC_MKID_PROP(elem) (struct theft * t, void * arg1, void * arg2)
 {
     UNUSED(t);
 
@@ -23,7 +36,7 @@ static enum theft_trial_res qc_vec_get_nth_elem_prop (struct theft * t, void * a
     return QC_BOOL2TRIAL(pre_elem == elem);
 }
 
-static enum theft_trial_res qc_vec_get_nth_content_prop (struct theft * t, void * arg1, void * arg2)
+static enum theft_trial_res QC_MKID_PROP(content) (struct theft * t, void * arg1, void * arg2)
 {
     UNUSED(t);
 
@@ -49,7 +62,7 @@ static enum theft_trial_res qc_vec_get_nth_content_prop (struct theft * t, void 
     return QC_BOOL2TRIAL(res);
 }
 
-static enum theft_trial_res qc_vec_get_nth_iter_prop (struct theft * t, void * arg1, void * arg2)
+static enum theft_trial_res QC_MKID_PROP(iter) (struct theft * t, void * arg1, void * arg2)
 {
     UNUSED(t);
 
@@ -83,27 +96,11 @@ static enum theft_trial_res qc_vec_get_nth_iter_prop (struct theft * t, void * a
     return QC_BOOL2TRIAL(res);
 }
 
-#define QC_MKID_FUNC(TEST, TYPE) \
-    QC_MKID_MOD(get_nth, TEST, TYPE)
-
-#define QC_MKID_PROP(TEST) \
-    QC_MKID_FUNC(TEST, prop)
-
-#define QC_MKID_TEST(TEST) \
-    QC_MKID_FUNC(TEST, test)
-
-#define QC_MKTEST_FUNC(TEST)      \
-    QC_MKTEST(QC_MKID_TEST(TEST), \
-            prop2,                \
-            QC_MKID_PROP(TEST),   \
-            &qc_vec_info,         \
-            &qc_size_t_info)
-
 QC_MKTEST_FUNC(content);
 QC_MKTEST_FUNC(elem);
 QC_MKTEST_FUNC(iter);
 
-QC_MKTEST_ALL(qc_vec_get_nth_test_all,
+QC_MKTEST_ALL(QC_MKID_MOD_ALL(get_nth),
         QC_MKID_TEST(content),
         QC_MKID_TEST(elem),
         QC_MKID_TEST(iter),

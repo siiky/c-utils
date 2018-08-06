@@ -1,6 +1,19 @@
 #include "vec.h"
 
-static enum theft_trial_res qc_vec_remove_len_prop (struct theft * t, void * arg1, void * arg2)
+#define QC_MKID_PROP(TEST) \
+    QC_MKID_MOD_PROP(remove, TEST)
+
+#define QC_MKID_TEST(TEST) \
+    QC_MKID_MOD_TEST(remove, TEST)
+
+#define QC_MKTEST_FUNC(TEST)       \
+    QC_MKTEST(QC_MKID_TEST(TEST),  \
+            prop2,                 \
+            QC_MKID_PROP(TEST),    \
+            &qc_vec_info,          \
+            &qc_size_t_info)
+
+static enum theft_trial_res QC_MKID_PROP(len) (struct theft * t, void * arg1, void * arg2)
 {
     UNUSED(t);
 
@@ -23,7 +36,7 @@ static enum theft_trial_res qc_vec_remove_len_prop (struct theft * t, void * arg
     return QC_BOOL2TRIAL(pre_len == (pos_len + 1));
 }
 
-static enum theft_trial_res qc_vec_remove_elem_prop (struct theft * t, void * arg1, void * arg2)
+static enum theft_trial_res QC_MKID_PROP(elem) (struct theft * t, void * arg1, void * arg2)
 {
     UNUSED(t);
 
@@ -46,7 +59,7 @@ static enum theft_trial_res qc_vec_remove_elem_prop (struct theft * t, void * ar
     return QC_BOOL2TRIAL(pre_elem == elem);
 }
 
-static enum theft_trial_res qc_vec_remove_left_content_prop (struct theft * t, void * arg1, void * arg2)
+static enum theft_trial_res QC_MKID_PROP(left_content) (struct theft * t, void * arg1, void * arg2)
 {
     UNUSED(t);
 
@@ -77,7 +90,7 @@ static enum theft_trial_res qc_vec_remove_left_content_prop (struct theft * t, v
     return QC_BOOL2TRIAL(res);
 }
 
-static enum theft_trial_res qc_vec_remove_right_content_prop (struct theft * t, void * arg1, void * arg2)
+static enum theft_trial_res QC_MKID_PROP(right_content) (struct theft * t, void * arg1, void * arg2)
 {
     UNUSED(t);
 
@@ -109,7 +122,7 @@ static enum theft_trial_res qc_vec_remove_right_content_prop (struct theft * t, 
     return QC_BOOL2TRIAL(res);
 }
 
-static enum theft_trial_res qc_vec_remove_iter_prop (struct theft * t, void * arg1, void * arg2)
+static enum theft_trial_res QC_MKID_PROP(iter) (struct theft * t, void * arg1, void * arg2)
 {
     UNUSED(t);
 
@@ -143,29 +156,13 @@ static enum theft_trial_res qc_vec_remove_iter_prop (struct theft * t, void * ar
     return QC_BOOL2TRIAL(res);
 }
 
-#define QC_MKID_FUNC(TEST, TYPE) \
-    QC_MKID_MOD(remove, TEST, TYPE)
-
-#define QC_MKID_PROP(TEST) \
-    QC_MKID_FUNC(TEST, prop)
-
-#define QC_MKID_TEST(TEST) \
-    QC_MKID_FUNC(TEST, test)
-
-#define QC_MKTEST_FUNC(TEST)       \
-    QC_MKTEST(QC_MKID_TEST(TEST),  \
-            prop2,                 \
-            QC_MKID_PROP(TEST),    \
-            &qc_vec_info,          \
-            &qc_size_t_info)
-
 QC_MKTEST_FUNC(elem);
 QC_MKTEST_FUNC(iter);
 QC_MKTEST_FUNC(left_content);
 QC_MKTEST_FUNC(len);
 QC_MKTEST_FUNC(right_content);
 
-QC_MKTEST_ALL(qc_vec_remove_test_all,
+QC_MKTEST_ALL(QC_MKID_MOD_ALL(remove),
         QC_MKID_TEST(elem),
         QC_MKID_TEST(iter),
         QC_MKID_TEST(left_content),

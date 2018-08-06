@@ -1,13 +1,10 @@
 #include "vec.h"
 
-#define QC_MKID_FUNC(TEST, TYPE) \
-    QC_MKID_MOD(map_range, TEST, TYPE)
-
 #define QC_MKID_PROP(TEST) \
-    QC_MKID_FUNC(TEST, prop)
+    QC_MKID_MOD_PROP(map_range, TEST)
 
 #define QC_MKID_TEST(TEST) \
-    QC_MKID_FUNC(TEST, test)
+    QC_MKID_MOD_TEST(map_range, TEST)
 
 #define QC_MKTEST_FUNC(TEST)      \
     QC_MKTEST(QC_MKID_TEST(TEST), \
@@ -224,7 +221,7 @@ QC_MKTEST_FUNC(id_mapped_content);
 QC_MKTEST_FUNC(id_meta);
 QC_MKTEST_FUNC(id_right_content);
 
-QC_MKTEST_ALL(qc_vec_map_range_test_all,
+QC_MKTEST_ALL(QC_MKID_MOD_ALL(map_range),
         QC_MKID_TEST(double_left_content),
         QC_MKID_TEST(double_mapped_content),
         QC_MKID_TEST(double_meta),

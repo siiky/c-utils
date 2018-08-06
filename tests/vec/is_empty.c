@@ -1,6 +1,18 @@
 #include "vec.h"
 
-static enum theft_trial_res qc_vec_is_empty_iter_prop (struct theft * t, void * arg1)
+#define QC_MKID_PROP(TEST) \
+    QC_MKID_MOD_PROP(is_empty, TEST)
+
+#define QC_MKID_TEST(TEST) \
+    QC_MKID_MOD_TEST(is_empty, TEST)
+
+#define QC_MKTEST_FUNC(TEST)      \
+    QC_MKTEST(QC_MKID_TEST(TEST), \
+            prop1,                \
+            QC_MKID_PROP(TEST),   \
+            &qc_vec_info)
+
+static enum theft_trial_res QC_MKID_PROP(iter) (struct theft * t, void * arg1)
 {
     UNUSED(t);
 
@@ -24,7 +36,7 @@ static enum theft_trial_res qc_vec_is_empty_iter_prop (struct theft * t, void * 
     return QC_BOOL2TRIAL(ret);
 }
 
-static enum theft_trial_res qc_vec_is_empty_content_prop (struct theft * t, void * arg1)
+static enum theft_trial_res QC_MKID_PROP(content) (struct theft * t, void * arg1)
 {
     UNUSED(t);
 
@@ -47,7 +59,7 @@ static enum theft_trial_res qc_vec_is_empty_content_prop (struct theft * t, void
     return QC_BOOL2TRIAL(ret);
 }
 
-static enum theft_trial_res qc_vec_is_empty_len_prop (struct theft * t, void * arg1)
+static enum theft_trial_res QC_MKID_PROP(len) (struct theft * t, void * arg1)
 {
     UNUSED(t);
 
@@ -67,26 +79,11 @@ static enum theft_trial_res qc_vec_is_empty_len_prop (struct theft * t, void * a
     return QC_BOOL2TRIAL(ret);
 }
 
-#define QC_MKID_FUNC(TEST, TYPE) \
-    QC_MKID_MOD(is_empty, TEST, TYPE)
-
-#define QC_MKID_PROP(TEST) \
-    QC_MKID_FUNC(TEST, prop)
-
-#define QC_MKID_TEST(TEST) \
-    QC_MKID_FUNC(TEST, test)
-
-#define QC_MKTEST_FUNC(TEST)      \
-    QC_MKTEST(QC_MKID_TEST(TEST), \
-            prop1,                \
-            QC_MKID_PROP(TEST),   \
-            &qc_vec_info)
-
 QC_MKTEST_FUNC(content);
 QC_MKTEST_FUNC(iter);
 QC_MKTEST_FUNC(len);
 
-QC_MKTEST_ALL(qc_vec_is_empty_test_all,
+QC_MKTEST_ALL(QC_MKID_MOD_ALL(is_empty),
         QC_MKID_TEST(content),
         QC_MKID_TEST(iter),
         QC_MKID_TEST(len),

@@ -44,6 +44,9 @@
 #define QC_MKID(MOD, FUNC, TEST, TYPE) \
     qc_ ## MOD ## _ ## FUNC ## _ ## TEST ## _ ## TYPE
 
+#define QC_MKID_ALL(MOD, FUNC) \
+    qc_ ## MOD ## _ ## FUNC ## _test_all
+
 #include <theft.h>
 
 extern const struct theft_type_info qc_bool_info;

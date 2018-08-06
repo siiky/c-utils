@@ -1,6 +1,18 @@
 #include "vec.h"
 
-static enum theft_trial_res qc_vec_iter_next_content_prop (struct theft * t, void * arg1)
+#define QC_MKID_PROP(TEST) \
+    QC_MKID_MOD_PROP(iter_next, TEST)
+
+#define QC_MKID_TEST(TEST) \
+    QC_MKID_MOD_TEST(iter_next, TEST)
+
+#define QC_MKTEST_FUNC(TEST)      \
+    QC_MKTEST(QC_MKID_TEST(TEST), \
+            prop1,                \
+            QC_MKID_PROP(TEST),   \
+            &qc_vec_info)
+
+static enum theft_trial_res QC_MKID_PROP(content) (struct theft * t, void * arg1)
 {
     UNUSED(t);
     struct vec * vec = arg1;
@@ -21,7 +33,7 @@ static enum theft_trial_res qc_vec_iter_next_content_prop (struct theft * t, voi
     return QC_BOOL2TRIAL(ret);
 }
 
-static enum theft_trial_res qc_vec_iter_next_idx_len_prop (struct theft * t, void * arg1)
+static enum theft_trial_res QC_MKID_PROP(idx_len) (struct theft * t, void * arg1)
 {
     UNUSED(t);
     struct vec * vec = arg1;
@@ -36,7 +48,7 @@ static enum theft_trial_res qc_vec_iter_next_idx_len_prop (struct theft * t, voi
             vec->idx == vec->length);
 }
 
-static enum theft_trial_res qc_vec_iter_next_idx_prop (struct theft * t, void * arg1)
+static enum theft_trial_res QC_MKID_PROP(idx) (struct theft * t, void * arg1)
 {
     UNUSED(t);
     struct vec * vec = arg1;
@@ -57,26 +69,11 @@ static enum theft_trial_res qc_vec_iter_next_idx_prop (struct theft * t, void * 
     return QC_BOOL2TRIAL(ret);
 }
 
-#define QC_MKID_FUNC(TEST, TYPE) \
-    QC_MKID_MOD(iter_next, TEST, TYPE)
-
-#define QC_MKID_PROP(TEST) \
-    QC_MKID_FUNC(TEST, prop)
-
-#define QC_MKID_TEST(TEST) \
-    QC_MKID_FUNC(TEST, test)
-
-#define QC_MKTEST_FUNC(TEST)      \
-    QC_MKTEST(QC_MKID_TEST(TEST), \
-            prop1,                \
-            QC_MKID_PROP(TEST),   \
-            &qc_vec_info)
-
 QC_MKTEST_FUNC(content);
 QC_MKTEST_FUNC(idx);
 QC_MKTEST_FUNC(idx_len);
 
-QC_MKTEST_ALL(qc_vec_iter_next_test_all,
+QC_MKTEST_ALL(QC_MKID_MOD_ALL(iter_next),
         QC_MKID_TEST(content),
         QC_MKID_TEST(idx_len),
         QC_MKID_TEST(idx),

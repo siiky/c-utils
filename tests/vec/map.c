@@ -1,5 +1,17 @@
 #include "vec.h"
 
+#define QC_MKID_PROP(TEST) \
+    QC_MKID_MOD_PROP(map, TEST)
+
+#define QC_MKID_TEST(TEST) \
+    QC_MKID_MOD_TEST(map, TEST)
+
+#define QC_MKTEST_FUNC(TEST)      \
+    QC_MKTEST(QC_MKID_TEST(TEST), \
+            prop1,                \
+            QC_MKID_PROP(TEST),   \
+            &qc_vec_info)
+
 static int _map_id (int elem)
 {
     return elem;
@@ -57,47 +69,32 @@ static enum theft_trial_res _qc_vec_map_content_prop (struct theft * t, void * a
     return QC_BOOL2TRIAL(ret);
 }
 
-static enum theft_trial_res qc_vec_map_id_meta_prop (struct theft * t, void * arg1)
+static enum theft_trial_res QC_MKID_PROP(id_meta) (struct theft * t, void * arg1)
 {
     return _qc_vec_map_meta_prop(t, arg1, _map_id);
 }
 
-static enum theft_trial_res qc_vec_map_double_meta_prop (struct theft * t, void * arg1)
+static enum theft_trial_res QC_MKID_PROP(double_meta) (struct theft * t, void * arg1)
 {
     return _qc_vec_map_meta_prop(t, arg1, _map_double);
 }
 
-static enum theft_trial_res qc_vec_map_id_content_prop (struct theft * t, void * arg1)
+static enum theft_trial_res QC_MKID_PROP(id_content) (struct theft * t, void * arg1)
 {
     return _qc_vec_map_content_prop(t, arg1, _map_id);
 }
 
-static enum theft_trial_res qc_vec_map_double_content_prop (struct theft * t, void * arg1)
+static enum theft_trial_res QC_MKID_PROP(double_content) (struct theft * t, void * arg1)
 {
     return _qc_vec_map_content_prop(t, arg1, _map_double);
 }
-
-#define QC_MKID_FUNC(TEST, TYPE) \
-    QC_MKID_MOD(map, TEST, TYPE)
-
-#define QC_MKID_PROP(TEST) \
-    QC_MKID_FUNC(TEST, prop)
-
-#define QC_MKID_TEST(TEST) \
-    QC_MKID_FUNC(TEST, test)
-
-#define QC_MKTEST_FUNC(TEST)      \
-    QC_MKTEST(QC_MKID_TEST(TEST), \
-            prop1,                \
-            QC_MKID_PROP(TEST),   \
-            &qc_vec_info)
 
 QC_MKTEST_FUNC(double_content);
 QC_MKTEST_FUNC(double_meta);
 QC_MKTEST_FUNC(id_content);
 QC_MKTEST_FUNC(id_meta);
 
-QC_MKTEST_ALL(qc_vec_map_test_all,
+QC_MKTEST_ALL(QC_MKID_MOD_ALL(map),
         QC_MKID_TEST(double_content),
         QC_MKID_TEST(double_meta),
         QC_MKID_TEST(id_content),

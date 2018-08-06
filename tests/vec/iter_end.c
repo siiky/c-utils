@@ -1,6 +1,18 @@
 #include "vec.h"
 
-static enum theft_trial_res qc_vec_iter_end_iter_prop (struct theft * t, void * arg1)
+#define QC_MKID_PROP(TEST) \
+    QC_MKID_MOD_PROP(iter_end, TEST)
+
+#define QC_MKID_TEST(TEST) \
+    QC_MKID_MOD_TEST(iter_end, TEST)
+
+#define QC_MKTEST_FUNC(TEST)      \
+    QC_MKTEST(QC_MKID_TEST(TEST), \
+            prop1,                \
+            QC_MKID_PROP(TEST),   \
+            &qc_vec_info)
+
+static enum theft_trial_res QC_MKID_PROP(iter) (struct theft * t, void * arg1)
 {
     UNUSED(t);
     struct vec * vec = arg1;
@@ -22,7 +34,7 @@ static enum theft_trial_res qc_vec_iter_end_iter_prop (struct theft * t, void * 
     return QC_BOOL2TRIAL(ret);
 }
 
-static enum theft_trial_res qc_vec_iter_end_content_prop (struct theft * t, void * arg1)
+static enum theft_trial_res QC_MKID_PROP(content) (struct theft * t, void * arg1)
 {
     UNUSED(t);
     struct vec * vec = arg1;
@@ -40,7 +52,7 @@ static enum theft_trial_res qc_vec_iter_end_content_prop (struct theft * t, void
     return QC_BOOL2TRIAL(ret);
 }
 
-static enum theft_trial_res qc_vec_iter_end_meta_prop (struct theft * t, void * arg1)
+static enum theft_trial_res QC_MKID_PROP(meta) (struct theft * t, void * arg1)
 {
     UNUSED(t);
     struct vec * vec = arg1;
@@ -56,26 +68,11 @@ static enum theft_trial_res qc_vec_iter_end_meta_prop (struct theft * t, void * 
     return QC_BOOL2TRIAL(ret);
 }
 
-#define QC_MKID_FUNC(TEST, TYPE) \
-    QC_MKID_MOD(iter_end, TEST, TYPE)
-
-#define QC_MKID_PROP(TEST) \
-    QC_MKID_FUNC(TEST, prop)
-
-#define QC_MKID_TEST(TEST) \
-    QC_MKID_FUNC(TEST, test)
-
-#define QC_MKTEST_FUNC(TEST)      \
-    QC_MKTEST(QC_MKID_TEST(TEST), \
-            prop1,                \
-            QC_MKID_PROP(TEST),   \
-            &qc_vec_info)
-
 QC_MKTEST_FUNC(content);
 QC_MKTEST_FUNC(iter);
 QC_MKTEST_FUNC(meta);
 
-QC_MKTEST_ALL(qc_vec_iter_end_test_all,
+QC_MKTEST_ALL(QC_MKID_MOD_ALL(iter_end),
         QC_MKID_TEST(content),
         QC_MKID_TEST(iter),
         QC_MKID_TEST(meta),
