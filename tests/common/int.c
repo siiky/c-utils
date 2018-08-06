@@ -38,3 +38,15 @@ const struct theft_type_info qc_int_info = {
     .free  = qc_int_free,
     .print = qc_int_print,
 };
+
+int qc_int_compar (const void * _a, const void * _b)
+{
+    int a = * (int *) _a;
+    int b = * (int *) _b;
+
+    return (a > b) ?
+        1:
+        (a < b) ?
+        -1:
+        0;
+}

@@ -128,3 +128,15 @@ size_t qc_vec_count (struct vec * self, bool pred (const int *))
 
     return ret;
 }
+
+bool qc_vec_is_sorted (const struct vec * self)
+{
+    bool ret = true;
+
+    size_t len = self->length;
+    if (len > 0)
+        for (size_t i = 1; i < len && ret; i++)
+            ret = qc_int_compar(self->ptr + i - 1, self->ptr + i) <= 0;
+
+    return ret;
+}
