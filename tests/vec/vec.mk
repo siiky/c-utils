@@ -22,5 +22,6 @@ VEC_SRC := \
     vec/qsort.c         \
     vec/remove.c        \
     vec/reserve.c       \
+    vec/set_len.c       \
     vec/swap_remove.c   \
     vec/vec.c           \
