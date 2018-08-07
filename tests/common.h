@@ -39,13 +39,27 @@
         return ret;                                     \
     } bool fname (void)
 
-#define QC_BOOL2TRIAL(succ) ((succ) ? THEFT_TRIAL_PASS : THEFT_TRIAL_FAIL)
+#define QC_BOOL2TRIAL(succ) \
+    ((succ) ? THEFT_TRIAL_PASS : THEFT_TRIAL_FAIL)
 
 #define QC_MKID(MOD, FUNC, TEST, TYPE) \
     qc_ ## MOD ## _ ## FUNC ## _ ## TEST ## _ ## TYPE
 
 #define QC_MKID_ALL(MOD, FUNC) \
     qc_ ## MOD ## _ ## FUNC ## _test_all
+
+#define QC_ARG2VAL(ARGN, TYPE) \
+    (* (TYPE *) arg ## ARGN)
+
+/**
+ * @brief Cast and deref an arg to the correct type, and create a variable
+ *        with that value
+ * @param ARGN The argument number
+ * @param TYPE The type of the variable to be created
+ * @param VAR The name of the variable to be created
+ */
+#define QC_ARG2VAR(ARGN, TYPE, VAR) \
+    TYPE VAR = QC_ARG2VAL(ARGN, TYPE)
 
 #include <theft.h>
 

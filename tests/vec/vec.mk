@@ -23,5 +23,6 @@ VEC_SRC := \
     vec/remove.c        \
     vec/reserve.c       \
     vec/set_len.c       \
+    vec/set_nth.c       \
     vec/swap_remove.c   \
     vec/vec.c           \
