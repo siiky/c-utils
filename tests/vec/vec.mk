@@ -24,5 +24,6 @@ VEC_SRC := \
     vec/reserve.c       \
     vec/set_len.c       \
     vec/set_nth.c       \
+    vec/shrink_to_fit.c \
     vec/swap_remove.c   \
     vec/vec.c           \

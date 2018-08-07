@@ -1,4 +1,4 @@
-/* vec - v2018.08.07-0
+/* vec - v2018.08.07-1
  *
  * A vector type inspired by
  *  * Rust's `Vec` type
@@ -488,7 +488,9 @@ VEC_CFG_STATIC bool VEC_RESERVE (struct VEC_CFG_VEC * self, size_t total)
 VEC_CFG_STATIC bool VEC_SHRINK_TO_FIT (struct VEC_CFG_VEC * self)
 {
     return (self != NULL)
-        && _VEC_CHANGE_CAPACITY(self, self->length);
+        && (self->length == 0
+        || self->length == self->capacity
+        || _VEC_CHANGE_CAPACITY(self, self->length));
 }
 
 /**=========================================================
