@@ -1,4 +1,4 @@
-/* vec - v2018.08.09-0
+/* vec - v2018.08.09-1
  *
  * A vector type inspired by
  *  * Rust's `Vec` type
@@ -218,7 +218,7 @@ struct VEC_CFG_VEC {
 #define VEC_SPLIT_OFF      VEC_CFG_MAKE_STR(split_off)
 #define VEC_SWAP_REMOVE    VEC_CFG_MAKE_STR(swap_remove)
 #define VEC_TRUNCATE       VEC_CFG_MAKE_STR(truncate)
-#define VEC_WITH_CAP       VEC_CFG_MAKE_STR(with_capacity)
+#define VEC_WITH_CAP       VEC_CFG_MAKE_STR(with_cap)
 
 /*==========================================================
  * Function prototypes

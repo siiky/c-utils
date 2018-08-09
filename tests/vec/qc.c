@@ -15,6 +15,7 @@ bool QC_MKID_MOD_ALL(iter_end)      (void);
 bool QC_MKID_MOD_ALL(iter_next)     (void);
 bool QC_MKID_MOD_ALL(iter_rev)      (void);
 bool QC_MKID_MOD_ALL(itering)       (void);
+bool QC_MKID_MOD_ALL(len)           (void);
 bool QC_MKID_MOD_ALL(map)           (void);
 bool QC_MKID_MOD_ALL(map_range)     (void);
 bool QC_MKID_MOD_ALL(pop)           (void);
@@ -28,6 +29,7 @@ bool QC_MKID_MOD_ALL(shrink_to_fit) (void);
 bool QC_MKID_MOD_ALL(split_off)     (void);
 bool QC_MKID_MOD_ALL(swap_remove)   (void);
 bool QC_MKID_MOD_ALL(truncate)      (void);
+bool QC_MKID_MOD_ALL(with_cap)      (void);
 
 QC_MKTEST_ALL(qc_vec_test_all,
         QC_MKID_MOD_ALL(append),
@@ -45,6 +47,7 @@ QC_MKTEST_ALL(qc_vec_test_all,
         QC_MKID_MOD_ALL(iter_next),
         QC_MKID_MOD_ALL(iter_rev),
         QC_MKID_MOD_ALL(itering),
+        QC_MKID_MOD_ALL(len),
         QC_MKID_MOD_ALL(map),
         QC_MKID_MOD_ALL(map_range),
         QC_MKID_MOD_ALL(pop),
@@ -58,4 +61,5 @@ QC_MKTEST_ALL(qc_vec_test_all,
         QC_MKID_MOD_ALL(split_off),
         QC_MKID_MOD_ALL(swap_remove),
         QC_MKID_MOD_ALL(truncate),
+        QC_MKID_MOD_ALL(with_cap),
         );

@@ -14,6 +14,7 @@ VEC_SRC := \
     vec/iter_next.c     \
     vec/iter_rev.c      \
     vec/itering.c       \
+    vec/len.c           \
     vec/map.c           \
     vec/map_range.c     \
     vec/pop.c           \
@@ -29,3 +30,4 @@ VEC_SRC := \
     vec/swap_remove.c   \
     vec/truncate.c      \
     vec/vec.c           \
+    vec/with_cap.c      \
