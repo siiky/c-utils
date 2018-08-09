@@ -27,6 +27,7 @@ bool QC_MKID_MOD_ALL(set_nth)       (void);
 bool QC_MKID_MOD_ALL(shrink_to_fit) (void);
 bool QC_MKID_MOD_ALL(split_off)     (void);
 bool QC_MKID_MOD_ALL(swap_remove)   (void);
+bool QC_MKID_MOD_ALL(truncate)      (void);
 
 QC_MKTEST_ALL(qc_vec_test_all,
         QC_MKID_MOD_ALL(append),
@@ -56,4 +57,5 @@ QC_MKTEST_ALL(qc_vec_test_all,
         QC_MKID_MOD_ALL(shrink_to_fit),
         QC_MKID_MOD_ALL(split_off),
         QC_MKID_MOD_ALL(swap_remove),
+        QC_MKID_MOD_ALL(truncate),
         );

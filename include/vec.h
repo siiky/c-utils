@@ -1,4 +1,4 @@
-/* vec - v2018.08.07-1
+/* vec - v2018.08.09-0
  *
  * A vector type inspired by
  *  * Rust's `Vec` type
@@ -372,13 +372,10 @@ static inline bool _VEC_CLEAN (struct VEC_CFG_VEC * self)
  */
 static inline bool _VEC_INCREASE_CAPACITY (struct VEC_CFG_VEC * self)
 {
-    if (self->length < self->capacity)
-        return true;
-
-    /* new_cap = (cap * 1.5) + 1 */
-    size_t new_cap = self->capacity + (self->capacity >> 1) + 1;
-
-    return _VEC_CHANGE_CAPACITY(self, new_cap);
+    return self->length < self->capacity
+        ||  _VEC_CHANGE_CAPACITY(self,
+                /* new_cap = (cap * 1.5) + 1 */
+                self->capacity + (self->capacity >> 1) + 1);
 }
 
 /**=========================================================
@@ -389,17 +386,16 @@ static inline bool _VEC_INCREASE_CAPACITY (struct VEC_CFG_VEC * self)
  */
 static inline bool _VEC_DECREASE_CAPACITY (struct VEC_CFG_VEC * self)
 {
-    /* more than half of the capacity in use? */
-    if (self->capacity == 1 || self->length >= (self->capacity >> 1))
-        return true;
-
-    /*
-     * len * 2   ~ cap
-     * len * 1.5 ~ cap * 0.75
-     * len * 1.5 ~ new_cap
-     */
-    size_t new_cap = self->length + (self->length >> 1) + 1;
-    return _VEC_CHANGE_CAPACITY(self, new_cap);
+    return self->capacity <= 1
+        /* more than half of the capacity in use? */
+        || self->length >= (self->capacity >> 1)
+        || _VEC_CHANGE_CAPACITY(self,
+                /*
+                 * len * 2   ~ cap
+                 * len * 1.5 ~ cap * 0.75
+                 * len * 1.5 ~ new_cap
+                 */
+                self->length + (self->length >> 1) + 1);
 }
 
 /**=========================================================
@@ -508,6 +504,8 @@ VEC_CFG_STATIC bool VEC_TRUNCATE (struct VEC_CFG_VEC * self, size_t len)
         VEC_FREE_RANGE(self, len, self->length);
         self->length = len;
     }
+
+    _VEC_DECREASE_CAPACITY(self);
 
     return true;
 }

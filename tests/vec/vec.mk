@@ -27,4 +27,5 @@ VEC_SRC := \
     vec/shrink_to_fit.c \
     vec/split_off.c     \
     vec/swap_remove.c   \
+    vec/truncate.c      \
     vec/vec.c           \
