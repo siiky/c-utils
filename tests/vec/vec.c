@@ -102,7 +102,7 @@ void qc_vec_dup_free (struct vec * self)
     *self = vec_free(*self);
 }
 
-bool qc_vec_search (struct vec * self, int elem, size_t * _i)
+bool qc_vec_search (const struct vec * self, int elem, size_t * _i)
 {
     const size_t len = self->length;
 

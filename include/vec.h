@@ -880,8 +880,10 @@ VEC_CFG_STATIC inline bool VEC_ELEM (const struct VEC_CFG_VEC * self, VEC_CFG_DA
 VEC_CFG_STATIC size_t VEC_BSEARCH (const struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE elem, int compar (const void *, const void *))
 {
     assert(self != NULL);
-    assert(self->ptr != NULL);
     assert(compar != NULL);
+
+    if (self->ptr == NULL || self->length == 0)
+        return self->length;
 
     const void * base = self->ptr;
     size_t nmemb = self->length;
