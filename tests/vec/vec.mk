@@ -1,6 +1,7 @@
 VEC_SRC := \
     vec/append.c        \
     vec/as_mut_slice.c  \
+    vec/as_slice.c      \
     vec/elem.c          \
     vec/filter.c        \
     vec/find.c          \

@@ -1,10 +1,10 @@
 #include "vec.h"
 
 #define QC_MKID_PROP(TEST) \
-    QC_MKID_MOD_PROP(as_mut_slice, TEST)
+    QC_MKID_MOD_PROP(as_slice, TEST)
 
 #define QC_MKID_TEST(TEST) \
-    QC_MKID_MOD_TEST(as_mut_slice, TEST)
+    QC_MKID_MOD_TEST(as_slice, TEST)
 
 #define QC_MKTEST_FUNC(TEST)      \
     QC_MKTEST(QC_MKID_TEST(TEST), \
@@ -19,7 +19,7 @@ static enum theft_trial_res QC_MKID_PROP(ptr) (struct theft * t, void * arg1)
     struct vec * vec = arg1;
 
     int * pre_ptr = vec->ptr;
-    int * res  = vec_as_mut_slice(vec);
+    const int * res  = vec_as_slice(vec);
 
     return QC_BOOL2TRIAL(pre_ptr == res);
 }
@@ -34,7 +34,7 @@ static enum theft_trial_res QC_MKID_PROP(content) (struct theft * t, void * arg1
     if (!qc_vec_dup_contents(vec, &pre_dup))
         return THEFT_TRIAL_SKIP;
 
-    vec_as_mut_slice(vec);
+    vec_as_slice(vec);
 
     size_t pos_len = vec->length;
 
@@ -58,7 +58,7 @@ static enum theft_trial_res QC_MKID_PROP(meta) (struct theft * t, void * arg1)
     unsigned char pre_iterating = vec->iterating;
     unsigned char pre_reverse = vec->reverse;
 
-    vec_as_mut_slice(vec);
+    vec_as_slice(vec);
 
     size_t pos_cap = vec->capacity;
     size_t pos_idx = vec->idx;
@@ -80,7 +80,7 @@ QC_MKTEST_FUNC(content);
 QC_MKTEST_FUNC(meta);
 QC_MKTEST_FUNC(ptr);
 
-QC_MKTEST_ALL(QC_MKID_MOD_ALL(as_mut_slice),
+QC_MKTEST_ALL(QC_MKID_MOD_ALL(as_slice),
         QC_MKID_TEST(content),
         QC_MKID_TEST(meta),
         QC_MKID_TEST(ptr),

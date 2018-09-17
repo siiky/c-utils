@@ -2,6 +2,7 @@
 
 bool QC_MKID_MOD_ALL(append)        (void);
 bool QC_MKID_MOD_ALL(as_mut_slice)  (void);
+bool QC_MKID_MOD_ALL(as_slice)      (void);
 bool QC_MKID_MOD_ALL(elem)          (void);
 bool QC_MKID_MOD_ALL(filter)        (void);
 bool QC_MKID_MOD_ALL(find)          (void);
@@ -34,6 +35,7 @@ bool QC_MKID_MOD_ALL(with_cap)      (void);
 QC_MKTEST_ALL(qc_vec_test_all,
         QC_MKID_MOD_ALL(append),
         QC_MKID_MOD_ALL(as_mut_slice),
+        QC_MKID_MOD_ALL(as_slice),
         QC_MKID_MOD_ALL(elem),
         QC_MKID_MOD_ALL(filter),
         QC_MKID_MOD_ALL(find),
