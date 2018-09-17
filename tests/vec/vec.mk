@@ -3,11 +3,13 @@ VEC_SRC := \
     vec/as_mut_slice.c  \
     vec/as_slice.c      \
     vec/bsearch.c       \
+    vec/cap.c           \
     vec/elem.c          \
     vec/filter.c        \
     vec/find.c          \
     vec/foreach.c       \
     vec/foreach_range.c \
+    vec/free.c          \
     vec/get_nth.c       \
     vec/insert.c        \
     vec/is_empty.c      \
@@ -17,7 +19,6 @@ VEC_SRC := \
     vec/iter_rev.c      \
     vec/itering.c       \
     vec/len.c           \
-    vec/cap.c           \
     vec/map.c           \
     vec/map_range.c     \
     vec/pop.c           \
