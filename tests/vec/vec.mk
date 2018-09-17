@@ -17,6 +17,7 @@ VEC_SRC := \
     vec/iter_rev.c      \
     vec/itering.c       \
     vec/len.c           \
+    vec/cap.c           \
     vec/map.c           \
     vec/map_range.c     \
     vec/pop.c           \

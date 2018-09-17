@@ -186,7 +186,7 @@ struct VEC_CFG_VEC {
 #define VEC_AS_MUT_SLICE   VEC_CFG_MAKE_STR(as_mut_slice)
 #define VEC_AS_SLICE       VEC_CFG_MAKE_STR(as_slice)
 #define VEC_BSEARCH        VEC_CFG_MAKE_STR(bsearch)
-#define VEC_CAP            VEC_CFG_MAKE_STR(capacity)
+#define VEC_CAP            VEC_CFG_MAKE_STR(cap)
 #define VEC_ELEM           VEC_CFG_MAKE_STR(elem)
 #define VEC_FILTER         VEC_CFG_MAKE_STR(filter)
 #define VEC_FIND           VEC_CFG_MAKE_STR(find)
