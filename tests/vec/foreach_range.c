@@ -25,9 +25,10 @@ static void _do_nothing (const int x)
 static enum theft_trial_res QC_MKID_PROP(len) (struct theft * t, void * arg1, void * arg2, void * arg3)
 {
     UNUSED(t);
+
     struct vec * vec = arg1;
-    size_t from = * (size_t *) arg2;
-    size_t to = * (size_t *) arg3;
+    QC_ARG2VAR(2, size_t, from);
+    QC_ARG2VAR(3, size_t, to);
 
     size_t pre_len = vec->length;
     vec_foreach_range(vec, _do_nothing, from, to);
@@ -42,24 +43,15 @@ static enum theft_trial_res QC_MKID_PROP(iter) (struct theft * t, void * arg1, v
     UNUSED(t);
 
     struct vec * vec = arg1;
-    size_t from = * (size_t *) arg2;
-    size_t to = * (size_t *) arg3;
+    QC_ARG2VAR(2, size_t, from);
+    QC_ARG2VAR(3, size_t, to);
 
-    size_t pre_idx = vec->idx;
-    unsigned char pre_iterating = vec->iterating;
-    unsigned char pre_reverse = vec->reverse;
+    struct vec cpy = *vec;
 
     vec_foreach_range(vec, _do_nothing, from, to);
     what = 0;
 
-    size_t pos_idx = vec->idx;
-    unsigned char pos_iterating = vec->iterating;
-    unsigned char pos_reverse = vec->reverse;
-
-    bool ret = true
-        && pre_iterating == pos_iterating
-        && pre_reverse   == pos_reverse
-        && pre_idx       == pos_idx;
+    bool ret = memcmp(vec, &cpy, sizeof(struct vec)) == 0;
 
     return QC_BOOL2TRIAL(ret);
 }
@@ -69,8 +61,8 @@ static enum theft_trial_res QC_MKID_PROP(content) (struct theft * t, void * arg1
     UNUSED(t);
 
     struct vec * vec = arg1;
-    size_t from = * (size_t *) arg2;
-    size_t to = * (size_t *) arg3;
+    QC_ARG2VAR(2, size_t, from);
+    QC_ARG2VAR(3, size_t, to);
 
     struct vec dup = {0};
     if (!qc_vec_dup_contents(vec, &dup))
@@ -91,9 +83,10 @@ static enum theft_trial_res QC_MKID_PROP(content) (struct theft * t, void * arg1
 static enum theft_trial_res QC_MKID_PROP(side_effects) (struct theft * t, void * arg1, void * arg2, void * arg3)
 {
     UNUSED(t);
+
     struct vec * vec = arg1;
-    size_t from = * (size_t *) arg2;
-    size_t to = * (size_t *) arg3;
+    QC_ARG2VAR(2, size_t, from);
+    QC_ARG2VAR(3, size_t, to);
 
     size_t pre_len = vec->length;
     bool res = vec_foreach_range(vec, _do_nothing, from, to);

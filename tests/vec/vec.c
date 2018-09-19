@@ -108,12 +108,14 @@ bool qc_vec_search (const struct vec * self, int elem, size_t * _i)
 
     for (size_t i = 0; i < len; i++) {
         if (self->ptr[i] == elem) {
-            *_i = i;
+            if (_i != NULL)
+                *_i = i;
             return true;
         }
     }
 
-    *_i = len;
+    if (_i != NULL)
+        *_i = len;
     return false;
 }
 

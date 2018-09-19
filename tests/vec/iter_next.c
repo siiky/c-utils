@@ -15,6 +15,7 @@
 static enum theft_trial_res QC_MKID_PROP(content) (struct theft * t, void * arg1)
 {
     UNUSED(t);
+
     struct vec * vec = arg1;
 
     if (!vec->iterating)
@@ -36,6 +37,7 @@ static enum theft_trial_res QC_MKID_PROP(content) (struct theft * t, void * arg1
 static enum theft_trial_res QC_MKID_PROP(idx_len) (struct theft * t, void * arg1)
 {
     UNUSED(t);
+
     struct vec * vec = arg1;
 
     if (!vec->iterating)
@@ -51,6 +53,7 @@ static enum theft_trial_res QC_MKID_PROP(idx_len) (struct theft * t, void * arg1
 static enum theft_trial_res QC_MKID_PROP(idx) (struct theft * t, void * arg1)
 {
     UNUSED(t);
+
     struct vec * vec = arg1;
 
     if (!vec->iterating)

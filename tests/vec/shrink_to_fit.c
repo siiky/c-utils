@@ -15,6 +15,7 @@
 static enum theft_trial_res QC_MKID_PROP(meta) (struct theft * t, void * arg1)
 {
     UNUSED(t);
+
     struct vec * vec = arg1;
 
     bool pre_itering = vec->iterating;
@@ -45,6 +46,7 @@ static enum theft_trial_res QC_MKID_PROP(meta) (struct theft * t, void * arg1)
 static enum theft_trial_res QC_MKID_PROP(content) (struct theft * t, void * arg1)
 {
     UNUSED(t);
+
     struct vec * vec = arg1;
 
     struct vec dup = {0};

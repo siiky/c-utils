@@ -45,8 +45,7 @@
 #define QC_MKID(MOD, FUNC, TEST, TYPE) \
     qc_ ## MOD ## _ ## FUNC ## _ ## TEST ## _ ## TYPE
 
-#define QC_MKID_ALL(MOD, FUNC) \
-    qc_ ## MOD ## _ ## FUNC ## _test_all
+#define QC_MKID_ALL(MOD, FUNC) QC_MKID(MOD, FUNC, test, all)
 
 #define QC_ARG2VAL(ARGN, TYPE) \
     (* (TYPE *) arg ## ARGN)

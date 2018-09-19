@@ -25,28 +25,14 @@ static int _map_double (int elem)
 static enum theft_trial_res _qc_vec_map_meta_prop (struct theft * t, void * arg1, int (*f) (int))
 {
     UNUSED(t);
+
     struct vec * vec = arg1;
 
-    bool pre_itering = vec->iterating;
-    size_t pre_cap = vec->capacity;
-    size_t pre_idx = vec->idx;
-    size_t pre_len = vec->length;
-    size_t pre_rev = vec->reverse;
+    struct vec cpy = *vec;
 
     vec_map(vec, f);
 
-    bool pos_itering = vec->iterating;
-    size_t pos_cap = vec->capacity;
-    size_t pos_idx = vec->idx;
-    size_t pos_len = vec->length;
-    size_t pos_rev = vec->reverse;
-
-    bool ret = true
-        && pre_cap == pos_cap
-        && pre_idx == pos_idx
-        && pre_itering == pos_itering
-        && pre_len == pos_len
-        && pre_rev == pos_rev;
+    bool ret = memcmp(vec, &cpy, sizeof(struct vec)) == 0;
 
     return QC_BOOL2TRIAL(ret);
 }
@@ -54,6 +40,7 @@ static enum theft_trial_res _qc_vec_map_meta_prop (struct theft * t, void * arg1
 static enum theft_trial_res _qc_vec_map_content_prop (struct theft * t, void * arg1, int (*f) (int))
 {
     UNUSED(t);
+
     struct vec * vec = arg1;
 
     struct vec dup = {0};

@@ -15,31 +15,14 @@
 static enum theft_trial_res QC_MKID_PROP(meta) (struct theft * t, void * arg1)
 {
     UNUSED(t);
+
     struct vec * vec = arg1;
 
-    bool pre_iter = vec->iterating;
-    bool pre_rev = vec->reverse;
-    int * pre_ptr = vec->ptr;
-    size_t pre_cap = vec->capacity;
-    size_t pre_idx = vec->idx;
-    size_t pre_len = vec->length;
+    struct vec cpy = *vec;
 
     vec_cap(vec);
 
-    bool pos_iter = vec->iterating;
-    bool pos_rev = vec->reverse;
-    int * pos_ptr = vec->ptr;
-    size_t pos_cap = vec->capacity;
-    size_t pos_idx = vec->idx;
-    size_t pos_len = vec->length;
-
-    bool ret = true
-        && pre_cap == pos_cap
-        && pre_idx == pos_idx
-        && pre_iter == pos_iter
-        && pre_len == pos_len
-        && pre_ptr == pos_ptr
-        && pre_rev == pos_rev;
+    bool ret = memcmp(vec, &cpy, sizeof(struct vec)) == 0;
 
     return QC_BOOL2TRIAL(ret);
 }
@@ -47,6 +30,7 @@ static enum theft_trial_res QC_MKID_PROP(meta) (struct theft * t, void * arg1)
 static enum theft_trial_res QC_MKID_PROP(res) (struct theft * t, void * arg1)
 {
     UNUSED(t);
+
     struct vec * vec = arg1;
 
     size_t cap = vec->capacity;
@@ -59,6 +43,7 @@ static enum theft_trial_res QC_MKID_PROP(res) (struct theft * t, void * arg1)
 static enum theft_trial_res QC_MKID_PROP(content) (struct theft * t, void * arg1)
 {
     UNUSED(t);
+
     struct vec * vec = arg1;
 
     struct vec dup = {0};

@@ -23,6 +23,7 @@ static void _do_nothing (const int x)
 static enum theft_trial_res QC_MKID_PROP(len) (struct theft * t, void * arg1)
 {
     UNUSED(t);
+
     struct vec * vec = arg1;
 
     size_t pre_len = vec->length;
@@ -33,27 +34,18 @@ static enum theft_trial_res QC_MKID_PROP(len) (struct theft * t, void * arg1)
     return QC_BOOL2TRIAL(pre_len == pos_len);
 }
 
-static enum theft_trial_res QC_MKID_PROP(iter) (struct theft * t, void * arg1)
+static enum theft_trial_res QC_MKID_PROP(meta) (struct theft * t, void * arg1)
 {
     UNUSED(t);
 
     struct vec * vec = arg1;
 
-    size_t pre_idx = vec->idx;
-    unsigned char pre_iterating = vec->iterating;
-    unsigned char pre_reverse = vec->reverse;
+    struct vec cpy = *vec;
 
     vec_foreach(vec, _do_nothing);
     what = 0;
 
-    size_t pos_idx = vec->idx;
-    unsigned char pos_iterating = vec->iterating;
-    unsigned char pos_reverse = vec->reverse;
-
-    bool ret = true
-        && pre_iterating == pos_iterating
-        && pre_reverse   == pos_reverse
-        && pre_idx       == pos_idx;
+    bool ret = memcmp(vec, &cpy, sizeof(struct vec)) == 0;
 
     return QC_BOOL2TRIAL(ret);
 }
@@ -83,6 +75,7 @@ static enum theft_trial_res QC_MKID_PROP(content) (struct theft * t, void * arg1
 static enum theft_trial_res QC_MKID_PROP(side_effects) (struct theft * t, void * arg1)
 {
     UNUSED(t);
+
     struct vec * vec = arg1;
 
     size_t pre_len = vec->length;
@@ -94,13 +87,13 @@ static enum theft_trial_res QC_MKID_PROP(side_effects) (struct theft * t, void *
 }
 
 QC_MKTEST_FUNC(content);
-QC_MKTEST_FUNC(iter);
+QC_MKTEST_FUNC(meta);
 QC_MKTEST_FUNC(len);
 QC_MKTEST_FUNC(side_effects);
 
 QC_MKTEST_ALL(QC_MKID_MOD_ALL(foreach),
         QC_MKID_TEST(content),
-        QC_MKID_TEST(iter),
+        QC_MKID_TEST(meta),
         QC_MKID_TEST(len),
         QC_MKID_TEST(side_effects),
         );

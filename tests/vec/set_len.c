@@ -18,7 +18,7 @@ static enum theft_trial_res QC_MKID_PROP(content) (struct theft * t, void * arg1
     UNUSED(t);
 
     struct vec * vec = arg1;
-    size_t len = * (size_t *) arg2;
+    QC_ARG2VAR(2, size_t, len);
 
     struct vec dup = {0};
     if (!qc_vec_dup_contents(vec, &dup))
@@ -38,7 +38,7 @@ static enum theft_trial_res QC_MKID_PROP(meta) (struct theft * t, void * arg1, v
     UNUSED(t);
 
     struct vec * vec = arg1;
-    size_t len = * (size_t *) arg2;
+    QC_ARG2VAR(2, size_t, len);
 
     bool pre_itering = vec->iterating;
     size_t pre_idx = vec->idx;
@@ -63,7 +63,7 @@ static enum theft_trial_res QC_MKID_PROP(len) (struct theft * t, void * arg1, vo
     UNUSED(t);
 
     struct vec * vec = arg1;
-    size_t len = * (size_t *) arg2;
+    QC_ARG2VAR(2, size_t, len);
 
     vec_set_len(vec, len);
 

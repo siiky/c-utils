@@ -19,15 +19,15 @@ static enum theft_trial_res QC_MKID_PROP(len) (struct theft * t, void * arg1, vo
     UNUSED(t);
 
     struct vec * vec = arg1;
-    size_t idx = * (size_t *) arg2;
-    int elem = * (int *) arg3;
+    QC_ARG2VAR(2, size_t, idx);
+    QC_ARG2VAR(3, int, elem);
 
     size_t pre_len = vec->length;
     if (idx > pre_len) {
         idx = (pre_len > 0) ?
             idx % pre_len:
             0;
-        * (size_t *) arg2 = idx;
+        QC_ARG2VAL(2, size_t) = idx;
     }
 
     bool succ = vec_insert(vec, idx, elem);
@@ -45,15 +45,15 @@ static enum theft_trial_res QC_MKID_PROP(left_content) (struct theft * t, void *
     UNUSED(t);
 
     struct vec * vec = arg1;
-    size_t idx = * (size_t *) arg2;
-    int elem = * (int *) arg3;
+    QC_ARG2VAR(2, size_t, idx);
+    QC_ARG2VAR(3, int, elem);
 
     size_t pre_len = vec->length;
     if (idx > pre_len) {
         idx = (pre_len > 0) ?
             idx % pre_len:
             0;
-        * (size_t *) arg2 = idx;
+        QC_ARG2VAL(2, size_t) = idx;
     }
 
     struct vec dup = {0};
@@ -76,15 +76,15 @@ static enum theft_trial_res QC_MKID_PROP(elem) (struct theft * t, void * arg1, v
     UNUSED(t);
 
     struct vec * vec = arg1;
-    size_t idx = * (size_t *) arg2;
-    int elem = * (int *) arg3;
+    QC_ARG2VAR(2, size_t, idx);
+    QC_ARG2VAR(3, int, elem);
 
     size_t pre_len = vec->length;
     if (idx > pre_len) {
         idx = (pre_len > 0) ?
             idx % pre_len:
             0;
-        * (size_t *) arg2 = idx;
+        QC_ARG2VAL(2, size_t) = idx;
     }
 
     int pre_elem = (idx < pre_len) ?
@@ -108,8 +108,8 @@ static enum theft_trial_res QC_MKID_PROP(right_content) (struct theft * t, void 
     UNUSED(t);
 
     struct vec * vec = arg1;
-    size_t idx = * (size_t *) arg2;
-    int elem = * (int *) arg3;
+    QC_ARG2VAR(2, size_t, idx);
+    QC_ARG2VAR(3, int, elem);
 
     struct vec dup = {0};
     if (!qc_vec_dup_contents(vec, &dup))
@@ -120,7 +120,7 @@ static enum theft_trial_res QC_MKID_PROP(right_content) (struct theft * t, void 
         idx = (pre_len > 0) ?
             idx % pre_len:
             0;
-        * (size_t *) arg2 = idx;
+        QC_ARG2VAL(2, size_t) = idx;
     }
 
     bool succ = vec_insert(vec, idx, elem);
@@ -141,8 +141,8 @@ static enum theft_trial_res QC_MKID_PROP(iter) (struct theft * t, void * arg1, v
     UNUSED(t);
 
     struct vec * vec = arg1;
-    size_t idx = * (size_t *) arg2;
-    int elem = * (int *) arg3;
+    QC_ARG2VAR(2, size_t, idx);
+    QC_ARG2VAR(3, int, elem);
 
     size_t pre_idx = vec->idx;
     unsigned char pre_iterating = vec->iterating;

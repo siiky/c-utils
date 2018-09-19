@@ -52,26 +52,11 @@ static enum theft_trial_res QC_MKID_PROP(meta) (struct theft * t, void * arg1)
 
     struct vec * vec = arg1;
 
-    bool pre_iterating = vec->iterating;
-    bool pre_reverse = vec->reverse;
-    size_t pre_cap = vec->capacity;
-    size_t pre_idx = vec->idx;
-    size_t pre_len = vec->length;
+    struct vec cpy = *vec;
 
     vec_as_slice(vec);
 
-    bool pos_iterating = vec->iterating;
-    bool pos_reverse = vec->reverse;
-    size_t pos_cap = vec->capacity;
-    size_t pos_idx = vec->idx;
-    size_t pos_len = vec->length;
-
-    bool res = true
-        && pre_cap       == pos_cap
-        && pre_idx       == pos_idx
-        && pre_iterating == pos_iterating
-        && pre_len       == pos_len
-        && pre_reverse   == pos_reverse;
+    bool res = memcmp(vec, &cpy, sizeof(struct vec)) == 0;
 
     return QC_BOOL2TRIAL(res);
 }

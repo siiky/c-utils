@@ -26,6 +26,7 @@ static bool _is_even (const int * x)
 static enum theft_trial_res QC_MKID_PROP(len_const_true) (struct theft * t, void * arg1)
 {
     UNUSED(t);
+
     struct vec * vec = arg1;
 
     size_t pre_len = vec->length;

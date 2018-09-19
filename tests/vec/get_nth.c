@@ -26,7 +26,7 @@ static enum theft_trial_res QC_MKID_PROP(elem) (struct theft * t, void * arg1, v
 
     if (idx >= pre_len) {
         idx = idx % pre_len;
-        * (size_t *) arg2 = idx;
+        QC_ARG2VAL(2, size_t) = idx;
     }
 
     int pre_elem = vec->ptr[idx];
@@ -50,7 +50,7 @@ static enum theft_trial_res QC_MKID_PROP(content) (struct theft * t, void * arg1
 
     if (idx >= pre_len) {
         idx = idx % pre_len;
-        * (size_t *) arg2 = idx;
+        QC_ARG2VAL(2, size_t) = idx;
     }
 
     vec_get_nth(vec, idx);
@@ -62,7 +62,7 @@ static enum theft_trial_res QC_MKID_PROP(content) (struct theft * t, void * arg1
     return QC_BOOL2TRIAL(res);
 }
 
-static enum theft_trial_res QC_MKID_PROP(iter) (struct theft * t, void * arg1, void * arg2)
+static enum theft_trial_res QC_MKID_PROP(meta) (struct theft * t, void * arg1, void * arg2)
 {
     UNUSED(t);
 
@@ -75,33 +75,24 @@ static enum theft_trial_res QC_MKID_PROP(iter) (struct theft * t, void * arg1, v
 
     if (idx >= pre_len) {
         idx = idx % pre_len;
-        * (size_t *) arg2 = idx;
+        QC_ARG2VAL(2, size_t) = idx;
     }
 
-    size_t pre_idx = vec->idx;
-    unsigned char pre_iterating = vec->iterating;
-    unsigned char pre_reverse = vec->reverse;
+    struct vec cpy = *vec;
 
     vec_get_nth(vec, idx);
 
-    size_t pos_idx = vec->idx;
-    unsigned char pos_iterating = vec->iterating;
-    unsigned char pos_reverse = vec->reverse;
-
-    bool res = true
-        && pre_iterating == pos_iterating
-        && pre_reverse   == pos_reverse
-        && pre_idx       == pos_idx;
+    bool res = memcmp(vec, &cpy, sizeof(struct vec)) == 0;
 
     return QC_BOOL2TRIAL(res);
 }
 
 QC_MKTEST_FUNC(content);
 QC_MKTEST_FUNC(elem);
-QC_MKTEST_FUNC(iter);
+QC_MKTEST_FUNC(meta);
 
 QC_MKTEST_ALL(QC_MKID_MOD_ALL(get_nth),
         QC_MKID_TEST(content),
         QC_MKID_TEST(elem),
-        QC_MKID_TEST(iter),
+        QC_MKID_TEST(meta),
         );

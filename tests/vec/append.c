@@ -25,7 +25,6 @@ static enum theft_trial_res QC_MKID_PROP(len) (struct theft * t, void * arg1, vo
         return THEFT_TRIAL_SKIP;
 
     struct vec other_dup = {0};
-
     if (!qc_vec_dup_contents(other, &other_dup)) {
         qc_vec_dup_free(&vec_dup);
         return THEFT_TRIAL_SKIP;

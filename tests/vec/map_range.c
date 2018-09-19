@@ -27,14 +27,15 @@ static int _map_double (int elem)
 static enum theft_trial_res _qc_vec_map_range_meta_prop (struct theft * t, void * arg1, int (*f) (int), void * arg2, void * arg3)
 {
     UNUSED(t);
+
     struct vec * vec = arg1;
-    size_t from = * (size_t *) arg2;
-    size_t to = * (size_t *) arg3;
+    QC_ARG2VAR(2, size_t, from);
+    QC_ARG2VAR(3, size_t, to);
 
     if (to > vec->length) {
         to = to % (vec->length + 1);
 
-        * (size_t *) arg3 = to;
+        QC_ARG2VAL(3, size_t) = to;
     }
 
     if (from >= to) {
@@ -42,26 +43,14 @@ static enum theft_trial_res _qc_vec_map_range_meta_prop (struct theft * t, void 
             from % to:
             0;
 
-        * (size_t *) arg2 = from;
+        QC_ARG2VAL(2, size_t) = from;
     }
 
-    bool pre_itering = vec->iterating;
-    size_t pre_cap = vec->capacity;
-    size_t pre_idx = vec->idx;
-    size_t pre_len = vec->length;
+    struct vec cpy = *vec;
 
     vec_map_range(vec, f, from, to);
 
-    bool pos_itering = vec->iterating;
-    size_t pos_cap = vec->capacity;
-    size_t pos_idx = vec->idx;
-    size_t pos_len = vec->length;
-
-    bool ret = true
-        && pre_cap == pos_cap
-        && pre_idx == pos_idx
-        && pre_itering == pos_itering
-        && pre_len == pos_len;
+    bool ret = memcmp(vec, &cpy, sizeof(struct vec)) == 0;
 
     return QC_BOOL2TRIAL(ret);
 }
@@ -69,14 +58,15 @@ static enum theft_trial_res _qc_vec_map_range_meta_prop (struct theft * t, void 
 static enum theft_trial_res _qc_vec_map_range_mapped_content_prop (struct theft * t, void * arg1, int (*f) (int), void * arg2, void * arg3)
 {
     UNUSED(t);
+
     struct vec * vec = arg1;
-    size_t from = * (size_t *) arg2;
-    size_t to = * (size_t *) arg3;
+    QC_ARG2VAR(2, size_t, from);
+    QC_ARG2VAR(3, size_t, to);
 
     if (to > vec->length) {
         to = to % (vec->length + 1);
 
-        * (size_t *) arg3 = to;
+        QC_ARG2VAL(3, size_t) = to;
     }
 
     if (from >= to) {
@@ -84,7 +74,7 @@ static enum theft_trial_res _qc_vec_map_range_mapped_content_prop (struct theft 
             from % to:
             0;
 
-        * (size_t *) arg2 = from;
+        QC_ARG2VAL(2, size_t) = from;
     }
 
     struct vec dup = {0};
@@ -105,14 +95,15 @@ static enum theft_trial_res _qc_vec_map_range_mapped_content_prop (struct theft 
 static enum theft_trial_res _qc_vec_map_range_left_content_prop (struct theft * t, void * arg1, int (*f) (int), void * arg2, void * arg3)
 {
     UNUSED(t);
+
     struct vec * vec = arg1;
-    size_t from = * (size_t *) arg2;
-    size_t to = * (size_t *) arg3;
+    QC_ARG2VAR(2, size_t, from);
+    QC_ARG2VAR(3, size_t, to);
 
     if (to > vec->length) {
         to = to % (vec->length + 1);
 
-        * (size_t *) arg3 = to;
+        QC_ARG2VAL(3, size_t) = to;
     }
 
     if (from >= to) {
@@ -120,7 +111,7 @@ static enum theft_trial_res _qc_vec_map_range_left_content_prop (struct theft * 
             from % to:
             0;
 
-        * (size_t *) arg2 = from;
+        QC_ARG2VAL(2, size_t) = from;
     }
 
     struct vec dup = {0};
@@ -140,14 +131,15 @@ static enum theft_trial_res _qc_vec_map_range_left_content_prop (struct theft * 
 static enum theft_trial_res _qc_vec_map_range_right_content_prop (struct theft * t, void * arg1, int (*f) (int), void * arg2, void * arg3)
 {
     UNUSED(t);
+
     struct vec * vec = arg1;
-    size_t from = * (size_t *) arg2;
-    size_t to = * (size_t *) arg3;
+    QC_ARG2VAR(2, size_t, from);
+    QC_ARG2VAR(3, size_t, to);
 
     if (to > vec->length) {
         to = to % (vec->length + 1);
 
-        * (size_t *) arg3 = to;
+        QC_ARG2VAL(3, size_t) = to;
     }
 
     if (from >= to) {
@@ -155,7 +147,7 @@ static enum theft_trial_res _qc_vec_map_range_right_content_prop (struct theft *
             from % to:
             0;
 
-        * (size_t *) arg2 = from;
+        QC_ARG2VAL(2, size_t) = from;
     }
 
     struct vec dup = {0};

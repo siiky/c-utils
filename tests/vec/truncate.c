@@ -17,6 +17,7 @@
 static enum theft_trial_res QC_MKID_PROP(meta) (struct theft * t, void * arg1, void * arg2)
 {
     UNUSED(t);
+
     struct vec * vec = arg1;
     QC_ARG2VAR(2, size_t, len);
 
@@ -55,6 +56,7 @@ static enum theft_trial_res QC_MKID_PROP(meta) (struct theft * t, void * arg1, v
 static enum theft_trial_res QC_MKID_PROP(content) (struct theft * t, void * arg1, void * arg2)
 {
     UNUSED(t);
+
     struct vec * vec = arg1;
     QC_ARG2VAR(2, size_t, len);
 
@@ -81,6 +83,7 @@ static enum theft_trial_res QC_MKID_PROP(content) (struct theft * t, void * arg1
 static enum theft_trial_res QC_MKID_PROP(oob_meta) (struct theft * t, void * arg1, void * arg2)
 {
     UNUSED(t);
+
     struct vec * vec = arg1;
     QC_ARG2VAR(2, size_t, len);
 
@@ -111,6 +114,7 @@ static enum theft_trial_res QC_MKID_PROP(oob_meta) (struct theft * t, void * arg
 static enum theft_trial_res QC_MKID_PROP(oob_content) (struct theft * t, void * arg1, void * arg2)
 {
     UNUSED(t);
+
     struct vec * vec = arg1;
     QC_ARG2VAR(2, size_t, len);
 

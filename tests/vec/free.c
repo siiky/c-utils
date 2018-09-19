@@ -18,11 +18,15 @@ static enum theft_trial_res QC_MKID_PROP(all) (struct theft * t, void * arg1)
 
     struct vec * vec = arg1;
 
+    struct vec dup = {0};
+    if (!qc_vec_dup_contents(vec, &dup))
+        return THEFT_TRIAL_SKIP;
+
     struct vec empty = {0};
 
-    *vec = vec_free(*vec);
+    dup = vec_free(dup);
 
-    bool ret = memcmp(vec, &empty, sizeof(struct vec)) == 0;
+    bool ret = memcmp(&dup, &empty, sizeof(struct vec)) == 0;
 
     return QC_BOOL2TRIAL(ret);
 }
