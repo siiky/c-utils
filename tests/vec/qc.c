@@ -11,6 +11,7 @@ bool QC_MKID_MOD_ALL(find)          (void);
 bool QC_MKID_MOD_ALL(foreach)       (void);
 bool QC_MKID_MOD_ALL(foreach_range) (void);
 bool QC_MKID_MOD_ALL(free)          (void);
+bool QC_MKID_MOD_ALL(free_range)    (void);
 bool QC_MKID_MOD_ALL(get_nth)       (void);
 bool QC_MKID_MOD_ALL(insert)        (void);
 bool QC_MKID_MOD_ALL(is_empty)      (void);
@@ -47,6 +48,7 @@ QC_MKTEST_ALL(qc_vec_test_all,
         QC_MKID_MOD_ALL(foreach),
         QC_MKID_MOD_ALL(foreach_range),
         QC_MKID_MOD_ALL(free),
+        QC_MKID_MOD_ALL(free_range),
         QC_MKID_MOD_ALL(get_nth),
         QC_MKID_MOD_ALL(insert),
         QC_MKID_MOD_ALL(is_empty),

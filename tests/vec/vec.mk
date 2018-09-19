@@ -10,6 +10,7 @@ VEC_SRC := \
     vec/foreach.c       \
     vec/foreach_range.c \
     vec/free.c          \
+    vec/free_range.c    \
     vec/get_nth.c       \
     vec/insert.c        \
     vec/is_empty.c      \
