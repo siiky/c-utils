@@ -17,6 +17,7 @@ bool QC_MKID_MOD_ALL(insert)        (void);
 bool QC_MKID_MOD_ALL(is_empty)      (void);
 bool QC_MKID_MOD_ALL(iter)          (void);
 bool QC_MKID_MOD_ALL(iter_end)      (void);
+bool QC_MKID_MOD_ALL(iter_idx)      (void);
 bool QC_MKID_MOD_ALL(iter_next)     (void);
 bool QC_MKID_MOD_ALL(iter_rev)      (void);
 bool QC_MKID_MOD_ALL(itering)       (void);
@@ -54,6 +55,7 @@ QC_MKTEST_ALL(qc_vec_test_all,
         QC_MKID_MOD_ALL(is_empty),
         QC_MKID_MOD_ALL(iter),
         QC_MKID_MOD_ALL(iter_end),
+        QC_MKID_MOD_ALL(iter_idx),
         QC_MKID_MOD_ALL(iter_next),
         QC_MKID_MOD_ALL(iter_rev),
         QC_MKID_MOD_ALL(itering),
