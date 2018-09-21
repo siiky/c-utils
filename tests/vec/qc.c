@@ -1,41 +1,42 @@
 #include "vec.h"
 
-bool QC_MKID_MOD_ALL(append)        (void);
-bool QC_MKID_MOD_ALL(as_mut_slice)  (void);
-bool QC_MKID_MOD_ALL(as_slice)      (void);
-bool QC_MKID_MOD_ALL(bsearch)       (void);
-bool QC_MKID_MOD_ALL(cap)           (void);
-bool QC_MKID_MOD_ALL(elem)          (void);
-bool QC_MKID_MOD_ALL(filter)        (void);
-bool QC_MKID_MOD_ALL(find)          (void);
-bool QC_MKID_MOD_ALL(foreach)       (void);
-bool QC_MKID_MOD_ALL(foreach_range) (void);
-bool QC_MKID_MOD_ALL(free)          (void);
-bool QC_MKID_MOD_ALL(free_range)    (void);
-bool QC_MKID_MOD_ALL(get_nth)       (void);
-bool QC_MKID_MOD_ALL(insert)        (void);
-bool QC_MKID_MOD_ALL(is_empty)      (void);
-bool QC_MKID_MOD_ALL(iter)          (void);
-bool QC_MKID_MOD_ALL(iter_end)      (void);
-bool QC_MKID_MOD_ALL(iter_idx)      (void);
-bool QC_MKID_MOD_ALL(iter_next)     (void);
-bool QC_MKID_MOD_ALL(iter_rev)      (void);
-bool QC_MKID_MOD_ALL(itering)       (void);
-bool QC_MKID_MOD_ALL(len)           (void);
-bool QC_MKID_MOD_ALL(map)           (void);
-bool QC_MKID_MOD_ALL(map_range)     (void);
-bool QC_MKID_MOD_ALL(pop)           (void);
-bool QC_MKID_MOD_ALL(push)          (void);
-bool QC_MKID_MOD_ALL(qsort)         (void);
-bool QC_MKID_MOD_ALL(remove)        (void);
-bool QC_MKID_MOD_ALL(reserve)       (void);
-bool QC_MKID_MOD_ALL(set_len)       (void);
-bool QC_MKID_MOD_ALL(set_nth)       (void);
-bool QC_MKID_MOD_ALL(shrink_to_fit) (void);
-bool QC_MKID_MOD_ALL(split_off)     (void);
-bool QC_MKID_MOD_ALL(swap_remove)   (void);
-bool QC_MKID_MOD_ALL(truncate)      (void);
-bool QC_MKID_MOD_ALL(with_cap)      (void);
+bool QC_MKID_MOD_ALL(append)         (void);
+bool QC_MKID_MOD_ALL(as_mut_slice)   (void);
+bool QC_MKID_MOD_ALL(as_slice)       (void);
+bool QC_MKID_MOD_ALL(bsearch)        (void);
+bool QC_MKID_MOD_ALL(cap)            (void);
+bool QC_MKID_MOD_ALL(elem)           (void);
+bool QC_MKID_MOD_ALL(filter)         (void);
+bool QC_MKID_MOD_ALL(find)           (void);
+bool QC_MKID_MOD_ALL(foreach)        (void);
+bool QC_MKID_MOD_ALL(foreach_range)  (void);
+bool QC_MKID_MOD_ALL(free)           (void);
+bool QC_MKID_MOD_ALL(free_range)     (void);
+bool QC_MKID_MOD_ALL(from_raw_parts) (void);
+bool QC_MKID_MOD_ALL(get_nth)        (void);
+bool QC_MKID_MOD_ALL(insert)         (void);
+bool QC_MKID_MOD_ALL(is_empty)       (void);
+bool QC_MKID_MOD_ALL(iter)           (void);
+bool QC_MKID_MOD_ALL(iter_end)       (void);
+bool QC_MKID_MOD_ALL(iter_idx)       (void);
+bool QC_MKID_MOD_ALL(iter_next)      (void);
+bool QC_MKID_MOD_ALL(iter_rev)       (void);
+bool QC_MKID_MOD_ALL(itering)        (void);
+bool QC_MKID_MOD_ALL(len)            (void);
+bool QC_MKID_MOD_ALL(map)            (void);
+bool QC_MKID_MOD_ALL(map_range)      (void);
+bool QC_MKID_MOD_ALL(pop)            (void);
+bool QC_MKID_MOD_ALL(push)           (void);
+bool QC_MKID_MOD_ALL(qsort)          (void);
+bool QC_MKID_MOD_ALL(remove)         (void);
+bool QC_MKID_MOD_ALL(reserve)        (void);
+bool QC_MKID_MOD_ALL(set_len)        (void);
+bool QC_MKID_MOD_ALL(set_nth)        (void);
+bool QC_MKID_MOD_ALL(shrink_to_fit)  (void);
+bool QC_MKID_MOD_ALL(split_off)      (void);
+bool QC_MKID_MOD_ALL(swap_remove)    (void);
+bool QC_MKID_MOD_ALL(truncate)       (void);
+bool QC_MKID_MOD_ALL(with_cap)       (void);
 
 QC_MKTEST_ALL(qc_vec_test_all,
         QC_MKID_MOD_ALL(append),
@@ -50,6 +51,7 @@ QC_MKTEST_ALL(qc_vec_test_all,
         QC_MKID_MOD_ALL(foreach_range),
         QC_MKID_MOD_ALL(free),
         QC_MKID_MOD_ALL(free_range),
+        QC_MKID_MOD_ALL(from_raw_parts),
         QC_MKID_MOD_ALL(get_nth),
         QC_MKID_MOD_ALL(insert),
         QC_MKID_MOD_ALL(is_empty),

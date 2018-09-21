@@ -5,11 +5,12 @@ CC := cc
 EXEC := tests
 
 SRC := \
-    $(VEC_SRC)      \
-    common/bool.c   \
-    common/int.c    \
-    common/size_t.c \
-    main.c          \
+    $(VEC_SRC)        \
+    common/bool.c     \
+    common/int.c      \
+    common/size_t.c   \
+    common/void_ptr.c \
+    main.c            \
 
 OBJS := $(SRC:.c=.o)
 

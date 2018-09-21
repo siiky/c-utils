@@ -65,6 +65,7 @@
 extern const struct theft_type_info qc_bool_info;
 extern const struct theft_type_info qc_int_info;
 extern const struct theft_type_info qc_size_t_info;
+extern const struct theft_type_info qc_void_ptr_info;
 
 #include "common/int.h"
 
