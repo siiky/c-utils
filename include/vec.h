@@ -1,4 +1,4 @@
-/* vec - v2018.08.09-1
+/* vec - v2018.10.02-0
  *
  * A vector type inspired by
  *  * Rust's `Vec` type
@@ -560,13 +560,13 @@ VEC_CFG_STATIC VEC_CFG_DATA_TYPE VEC_SWAP_REMOVE (struct VEC_CFG_VEC * self, siz
     assert(!VEC_IS_EMPTY(self));
     assert(index < self->length);
 
-    if (index == self->length - 1)
-        return VEC_POP(self);
+    /* Swap last with index */
+    VEC_CFG_DATA_TYPE tmp = self->ptr[index];
+    self->ptr[index] = self->ptr[self->length - 1];
+    self->ptr[self->length - 1] = tmp;
 
-    VEC_CFG_DATA_TYPE ret = self->ptr[index];
-    self->ptr[index] = VEC_POP(self);
-
-    return ret;
+    /* return last (ex-index) */
+    return VEC_POP(self);
 }
 
 /**=========================================================
@@ -618,10 +618,10 @@ VEC_CFG_STATIC VEC_CFG_DATA_TYPE VEC_REMOVE (struct VEC_CFG_VEC * self, size_t i
     self->length--;
 
     if (self->length > 0) {
-        void * dst = self->ptr + index;
-        void * src = self->ptr + index + 1;
+        VEC_CFG_DATA_TYPE * dst = self->ptr + index;
+        VEC_CFG_DATA_TYPE * src = self->ptr + index + 1;
         size_t size = sizeof(VEC_CFG_DATA_TYPE);
-        size_t nmemb = self->length - index + 1;
+        size_t nmemb = self->length - index;
         memmove(dst, src, size * nmemb);
     }
 
