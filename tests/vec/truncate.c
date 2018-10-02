@@ -76,6 +76,8 @@ static enum theft_trial_res QC_MKID_PROP(content) (struct theft * t, void * arg1
 
     bool ret = memcmp(vec->ptr, dup.ptr, vec->length * sizeof(int)) == 0;
 
+    qc_vec_dup_free(&dup);
+
     return QC_BOOL2TRIAL(ret);
 }
 
@@ -125,6 +127,8 @@ static enum theft_trial_res QC_MKID_PROP(oob_content) (struct theft * t, void * 
     vec_truncate(vec, len);
 
     bool ret = memcmp(vec->ptr, dup.ptr, vec->length * sizeof(int)) == 0;
+
+    qc_vec_dup_free(&dup);
 
     return QC_BOOL2TRIAL(ret);
 }
