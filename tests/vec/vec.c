@@ -42,6 +42,7 @@ static void qc_vec_free (void * instance, void * env)
     UNUSED(env);
     struct vec * vec = (struct vec *) instance;
     *vec = vec_free(*vec);
+    free(vec);
 }
 
 static void qc_vec_print (FILE * f, const void * instance, void * env)
