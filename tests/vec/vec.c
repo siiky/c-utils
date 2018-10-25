@@ -40,7 +40,7 @@ static enum theft_alloc_res qc_vec_alloc (struct theft * t, void * env, void ** 
 static void qc_vec_free (void * instance, void * env)
 {
     UNUSED(env);
-    struct vec * vec = (struct vec *) instance;
+    struct vec * vec = instance;
     *vec = vec_free(*vec);
     free(vec);
 }

@@ -8,29 +8,35 @@
 
 #define QC_MKTEST_FUNC(TEST)      \
     QC_MKTEST(QC_MKID_TEST(TEST), \
-            prop2,                \
+            prop1,                \
             QC_MKID_PROP(TEST),   \
-            &qc_vec_info,         \
             &qc_size_t_info)
 
-static enum theft_trial_res QC_MKID_PROP(meta) (struct theft * t, void * arg1, void * arg2)
+static enum theft_trial_res QC_MKID_PROP(meta) (struct theft * t, void * arg1)
 {
     UNUSED(t);
 
-    struct vec * vec = arg1;
-    QC_ARG2VAR(2, size_t, capacity);
+    QC_ARG2VAR(1, size_t, capacity);
 
-    qc_vec_dup_free(vec);
+    {
+        capacity = capacity % 41;
+        QC_ARG2VAL(1, size_t) = capacity;
+    }
+
+    struct vec _vec = {0};
+    struct vec * vec = &_vec;
 
     bool res = vec_with_cap(vec, capacity);
 
     bool ret = !res
-        || (vec->ptr != NULL
+        || ((capacity == 0 || vec->ptr != NULL)
                 && vec->capacity == capacity
                 && vec->idx == 0
                 && vec->iterating == 0
                 && vec->length == 0
                 && vec->reverse == 0);
+
+    qc_vec_dup_free(vec);
 
     return QC_BOOL2TRIAL(ret);
 }
