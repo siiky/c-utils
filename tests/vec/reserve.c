@@ -13,6 +13,12 @@
             &qc_vec_info,         \
             &qc_size_t_info)
 
+#define _QC_PRE()                      \
+    do {                               \
+        total = total % 1024;          \
+        QC_ARG2VAL(2, size_t) = total; \
+    } while (0)
+
 static enum theft_trial_res QC_MKID_PROP(capacity) (struct theft * t, void * arg1, void * arg2)
 {
     UNUSED(t);
@@ -20,9 +26,11 @@ static enum theft_trial_res QC_MKID_PROP(capacity) (struct theft * t, void * arg
     struct vec * vec = arg1;
     QC_ARG2VAR(2, size_t, total);
 
+    _QC_PRE();
+
     bool res = vec_reserve(vec, total);
 
-    bool ret = !res || vec->capacity == total;
+    bool ret = !res || vec->capacity >= total;
 
     return QC_BOOL2TRIAL(ret);
 }
@@ -33,6 +41,8 @@ static enum theft_trial_res QC_MKID_PROP(cap_len) (struct theft * t, void * arg1
 
     struct vec * vec = arg1;
     QC_ARG2VAR(2, size_t, total);
+
+    _QC_PRE();
 
     vec_reserve(vec, total);
 
@@ -51,6 +61,8 @@ static enum theft_trial_res QC_MKID_PROP(content) (struct theft * t, void * arg1
     struct vec dup = {0};
     if (!qc_vec_dup_contents(vec, &dup))
         return THEFT_TRIAL_SKIP;
+
+    _QC_PRE();
 
     vec_reserve(vec, total);
 
@@ -72,6 +84,8 @@ static enum theft_trial_res QC_MKID_PROP(meta) (struct theft * t, void * arg1, v
     bool pre_rev = vec->reverse;
     size_t pre_idx = vec->idx;
     size_t pre_len = vec->length;
+
+    _QC_PRE();
 
     vec_reserve(vec, total);
 

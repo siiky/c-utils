@@ -57,12 +57,14 @@ libtheft: theft
 	@echo "### BUILDING THEFT ###"
 	cd theft && make
 
-VALGRIND_LOG := valgrind.log
+DATE := $(shell date +"%Y%m%d-%H%M")
+VALGRIND_LOG := valgrind-$(DATE).log
+EXEC_OUT := $(EXEC)-$(DATE).out
 valgrind: $(EXEC)
-	valgrind --log-file=$(VALGRIND_LOG) --leak-check=full -v ./$(EXEC)
+	valgrind --log-file=$(VALGRIND_LOG) --track-origins=yes --leak-check=full -v ./$(EXEC) > $(EXEC_OUT)
 
 clean:
-	$(RM) $(OBJS) $(EXEC) $(VALGRIND_LOG)
+	$(RM) $(OBJS) $(EXEC) valgrind-*.log $(EXEC)-*.out
 
 clean_all: clean
 	cd theft/ && make clean

@@ -14,14 +14,12 @@ static enum theft_alloc_res qc_vec_alloc (struct theft * t, void * env, void ** 
 
     vec__clean(vec);
 
-    size_t cap = (size_t) theft_random_choice(t, 1024);
+    size_t cap = theft_random_choice(t, 512);
 
-    if (cap > 0)
-        if (!vec_with_cap(vec, cap))
-            return free(vec), THEFT_ALLOC_SKIP;
+    if (cap > 0 && !vec_with_cap(vec, cap))
+        return free(vec), THEFT_ALLOC_SKIP;
 
     size_t len = (size_t) theft_random_choice(t, cap + 1);
-    assert(len <= cap);
 
     for (size_t i = 0; i < len; i++)
         vec->ptr[i] = (int) theft_random_bits(t, 32);
@@ -135,11 +133,8 @@ size_t qc_vec_count (struct vec * self, bool pred (const int *))
 bool qc_vec_is_sorted (const struct vec * self)
 {
     bool ret = true;
-
     size_t len = self->length;
-    if (len > 0)
-        for (size_t i = 1; i < len && ret; i++)
-            ret = qc_int_compar(self->ptr + i - 1, self->ptr + i) <= 0;
-
+    for (size_t i = 1; ret && i < len; i++)
+        ret = qc_int_compar(self->ptr + i - 1, self->ptr + i) <= 0;
     return ret;
 }
