@@ -1,4 +1,4 @@
-/* vec - v2018.10.02-0
+/* vec - v2018.10.26-0
  *
  * A vector type inspired by
  *  * Rust's `Vec` type
@@ -471,7 +471,6 @@ VEC_CFG_STATIC inline size_t VEC_CAP (const struct VEC_CFG_VEC * self)
 VEC_CFG_STATIC bool VEC_RESERVE (struct VEC_CFG_VEC * self, size_t total)
 {
     return (self != NULL)
-        && total >= self->length
         && ((self->capacity >= total) || _VEC_CHANGE_CAPACITY(self, total));
 }
 
