@@ -1,4 +1,4 @@
-/* vec - v2018.10.26-0
+/* vec - v2018.10.26-1
  *
  * A vector type inspired by
  *  * Rust's `Vec` type
@@ -876,7 +876,7 @@ VEC_CFG_STATIC inline bool VEC_ELEM (const struct VEC_CFG_VEC * self, VEC_CFG_DA
  * @returns The index of an occurrence of @a element, or, if @a element
  *          does not exist, the length of @a self
  */
-VEC_CFG_STATIC size_t VEC_BSEARCH (const struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE elem, int compar (const void *, const void *))
+VEC_CFG_STATIC size_t VEC_BSEARCH (const struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE key, int compar (const void *, const void *))
 {
     assert(self != NULL);
     assert(compar != NULL);
@@ -888,7 +888,7 @@ VEC_CFG_STATIC size_t VEC_BSEARCH (const struct VEC_CFG_VEC * self, VEC_CFG_DATA
     size_t nmemb = self->length;
     size_t size = sizeof(VEC_CFG_DATA_TYPE);
 
-    VEC_CFG_DATA_TYPE * found = bsearch(&elem, base, nmemb, size, compar);
+    VEC_CFG_DATA_TYPE * found = bsearch(&key, base, nmemb, size, compar);
     return (found != NULL) ?
         (size_t) (found - self->ptr):
         self->length;
