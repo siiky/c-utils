@@ -30,11 +30,11 @@ OPT := -g
 CFLAGS := $(OPT) $(FLAGS)
 
 HEADERS := \
-    ii_map.h \
+    map.h \
 
 SRC := \
-    ii_map.c \
-    main.c   \
+    main.c \
+    map.c  \
 
 OBJS := $(SRC:.c=.o)
 
