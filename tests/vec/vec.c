@@ -1,9 +1,6 @@
 #define VEC_CFG_IMPLEMENTATION
 #include "vec.h"
 
-#include <assert.h>
-#include <unused.h>
-
 static enum theft_alloc_res qc_vec_alloc (struct theft * t, void * env, void ** output)
 {
     UNUSED(env);
@@ -19,7 +16,7 @@ static enum theft_alloc_res qc_vec_alloc (struct theft * t, void * env, void ** 
     if (cap > 0 && !vec_with_cap(vec, cap))
         return free(vec), THEFT_ALLOC_SKIP;
 
-    size_t len = (size_t) theft_random_choice(t, cap + 1);
+    size_t len = theft_random_choice(t, cap + 1);
 
     for (size_t i = 0; i < len; i++)
         vec->ptr[i] = (int) theft_random_bits(t, 32);
