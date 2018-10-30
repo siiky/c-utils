@@ -1,4 +1,5 @@
 #include "vec/qc.h"
+#include "map/qc.h"
 
 #include <stdlib.h>
 
@@ -6,6 +7,7 @@ int main (void)
 {
     bool (*tests[]) (void) = {
         qc_vec_test_all,
+        qc_map_test_all,
     };
 
     size_t ntests = sizeof(tests) / sizeof(*tests);

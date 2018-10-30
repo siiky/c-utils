@@ -1,10 +1,12 @@
 include vec/vec.mk
+include map/map.mk
 
 CC := cc
 
 EXEC := tests
 
 SRC := \
+    $(MAP_SRC)        \
     $(VEC_SRC)        \
     common/bool.c     \
     common/int.c      \
