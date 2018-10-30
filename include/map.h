@@ -1,4 +1,4 @@
-/* map - v2018.06.09-1
+/* map - v2018.10.30-0
 */
 
 /*
@@ -296,11 +296,10 @@ static bool _MAP_INSERT_SORTED (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE
             return false;
 
         /* move entries to the right */
-        if (i < len) {
-            void * src = &self->map[tblidx].entries[i];
-            void * dst = &self->map[tblidx].entries[i + 1];
-            memmove(dst, src, sizeof(*self->map[tblidx].entries) * (len - i));
-        }
+        if (i < len)
+            memmove(&self->map[tblidx].entries[i],
+                    &self->map[tblidx].entries[i + 1],
+                    sizeof(*self->map[tblidx].entries) * (len - i));
     }
 
     self->map[tblidx].entries[i].hash = hash;
@@ -393,13 +392,9 @@ MAP_CFG_STATIC bool MAP_REMOVE (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE
     MAP_CFG_VALUE_DTOR(self->map[tblidx].entries[i].value);
 #endif /* MAP_CFG_VALUE_DTOR */
 
-    {
-        unsigned int len = self->map[tblidx].length;
-        unsigned int size = sizeof(*self->map[tblidx].entries) * (len - i - 1);
-        void * dst = self->map[tblidx].entries + i;
-        void * src = self->map[tblidx].entries + i + 1;
-        memmove(dst, src, size);
-    }
+    memmove(&self->map[tblidx].entries[i],
+            &self->map[tblidx].entries[i + 1],
+            sizeof(*self->map[tblidx].entries) * (self->map[tblidx].length - i - 1));
 
     _MAP_DECREASE_CAPACITY(self, tblidx);
 
@@ -420,8 +415,7 @@ MAP_CFG_STATIC bool MAP_WITH_SIZE (struct MAP_CFG_MAP * self, unsigned int size)
     if (ret) {
         self->lc_is_valid = false;
         self->size = size;
-        size *= sizeof(*self->map);
-        memset(self->map, 0, size);
+        memset(self->map, 0, size * sizeof(*self->map));
     }
 
     return ret;
@@ -450,9 +444,7 @@ MAP_CFG_STATIC struct MAP_CFG_MAP MAP_FREE (struct MAP_CFG_MAP self)
         MAP_CFG_FREE(self.map);
     }
 
-    memset(&self, 0, sizeof(struct MAP_CFG_MAP));
-
-    return self;
+    return (struct MAP_CFG_MAP) {0};
 }
 
 /*==========================================================
