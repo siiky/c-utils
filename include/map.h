@@ -1,4 +1,4 @@
-/* map - v2018.10.30-0
+/* map - v2018.11.04-0
 */
 
 /*
@@ -116,9 +116,9 @@ struct MAP_CFG_MAP        MAP_FREE      (struct MAP_CFG_MAP self);
 
 #ifdef MAP_CFG_IMPLEMENTATION
 
-#define _MAP_DECREASE_CAPACITY MAP_CFG_MAKE_STR(_decrease_length)
+#define _MAP_DECREASE_CAPACITY MAP_CFG_MAKE_STR(_decrease_capacity)
 #define _MAP_ENTRY_CMP         MAP_CFG_MAKE_STR(_entry_cmp)
-#define _MAP_INCREASE_CAPACITY MAP_CFG_MAKE_STR(_increase_length)
+#define _MAP_INCREASE_CAPACITY MAP_CFG_MAKE_STR(_increase_capacity)
 #define _MAP_INSERT_SORTED     MAP_CFG_MAKE_STR(_insert_sorted)
 #define _MAP_SEARCH            MAP_CFG_MAKE_STR(_search)
 
@@ -187,9 +187,8 @@ static bool _MAP_DECREASE_CAPACITY (struct MAP_CFG_MAP * self, unsigned int tbli
     if (self->map[tblidx].length == self->map[tblidx].capacity)
         return true;
 
-    void * entries = self->map[tblidx].entries;
     unsigned int cap = self->map[tblidx].length;
-    entries = MAP_CFG_REALLOC(entries,
+    void * entries = MAP_CFG_REALLOC(self->map[tblidx].entries,
             sizeof(*self->map[tblidx].entries) * cap);
     bool ret = entries != NULL;
 
@@ -206,9 +205,8 @@ static bool _MAP_INCREASE_CAPACITY (struct MAP_CFG_MAP * self, unsigned int tbli
     if (self->map[tblidx].length < self->map[tblidx].capacity)
         return true;
 
-    void * entries = self->map[tblidx].entries;
     unsigned int cap = self->map[tblidx].capacity + 1;
-    entries = MAP_CFG_REALLOC(entries,
+    void * entries = MAP_CFG_REALLOC(self->map[tblidx].entries,
             sizeof(*self->map[tblidx].entries) * cap);
     bool ret = entries != NULL;
 
@@ -425,20 +423,22 @@ MAP_CFG_STATIC struct MAP_CFG_MAP MAP_FREE (struct MAP_CFG_MAP self)
 {
     if (self.map != NULL) {
         for (unsigned int i = 0; i < self.size; i++) {
+            if (self.map[i].entries != NULL) {
 
 # if defined(MAP_CFG_VALUE_DTOR) || defined(MAP_CFG_KEY_DTOR)
-            for (unsigned int j = 0; j < self.map[i].length; j++) {
+                for (unsigned int j = 0; j < self.map[i].length; j++) {
 #  ifdef MAP_CFG_VALUE_DTOR
-                MAP_CFG_VALUE_DTOR(self.map[i].entries[j].value);
+                    MAP_CFG_VALUE_DTOR(self.map[i].entries[j].value);
 #  endif /* MAP_CFG_VALUE_DTOR */
 
 #  ifdef MAP_CFG_KEY_DTOR
-                MAP_CFG_KEY_DTOR(self.map[i].entries[j].key);
+                    MAP_CFG_KEY_DTOR(self.map[i].entries[j].key);
 #  endif /* MAP_CFG_KEY_DTOR */
-            }
+                }
 # endif /* MAP_CFG_VALUE_DTOR || MAP_CFG_KEY_DTOR */
 
-            MAP_CFG_FREE(self.map[i].entries);
+                MAP_CFG_FREE(self.map[i].entries);
+            }
         }
 
         MAP_CFG_FREE(self.map);
