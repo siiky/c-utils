@@ -1,4 +1,4 @@
-/* vec - v2018.10.26-1
+/* vec - v2018.11.04-0
  *
  * A vector type inspired by
  *  * Rust's `Vec` type
@@ -280,7 +280,6 @@ struct VEC_CFG_VEC        VEC_FREE           (struct VEC_CFG_VEC self);
  * <string.h>
  *  memcpy()
  *  memmove()
- *  memset()
  */
 #include <assert.h>
 #include <stdlib.h>
@@ -358,7 +357,7 @@ static inline bool _VEC_CHANGE_CAPACITY (struct VEC_CFG_VEC * self, size_t cap)
  */
 static inline bool _VEC_CLEAN (struct VEC_CFG_VEC * self)
 {
-    memset(self, 0, sizeof(struct VEC_CFG_VEC));
+    *self = (struct VEC_CFG_VEC) {0};
     return true;
 }
 
