@@ -45,7 +45,7 @@ void * ftr_force (struct ftr * self);
  * @return `false` if either @a self or @a proc is NULL,
  *         `true` otherwise
  */
-bool   ftr_delay (struct ftr * self, void * (* proc) (void *), void * args)
+bool ftr_delay (struct ftr * self, void * (* proc) (void *), void * args)
 {
     if (self == NULL || proc == NULL)
         return false;

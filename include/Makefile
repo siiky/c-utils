@@ -2,8 +2,10 @@ DEST=/usr/local/include/utils
 
 HEADERS=\
 	common.h    \
+	ftr.h       \
 	ifjmp.h     \
 	ifnotnull.h \
+	map.h       \
 	unused.h    \
 	utils.h     \
 	vec.h       \
