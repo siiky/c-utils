@@ -1,7 +1,7 @@
 include vec/vec.mk
 include map/map.mk
 
-CC := cc
+CC := musl-gcc
 
 EXEC := tests
 
@@ -34,6 +34,8 @@ CFLAGS := \
     -Wall        \
     -Wconversion \
     -Wextra      \
+    -ggdb        \
+    -static      \
 
 all: $(EXEC)
 
@@ -57,7 +59,7 @@ theft:
 
 libtheft: theft
 	@echo "### BUILDING THEFT ###"
-	cd theft && make
+	cd theft && make CC=$(CC)
 
 DATE := $(shell date +"%Y%m%d-%H%M")
 VALGRIND_LOG := valgrind-$(DATE).log
