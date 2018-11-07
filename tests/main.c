@@ -97,7 +97,7 @@ static const struct mod TESTS[] = {
 };
 #undef _
 
-static const size_t NTESTS = sizeof(TESTS) / sizeof(TESTS[0]);
+static const size_t NTESTS = sizeof(TESTS) / sizeof(*TESTS);
 
 #define match(ACTION, CMD) \
     (strcmp(argv[1], CMD) == 0) ? ACTION

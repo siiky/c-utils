@@ -7,10 +7,13 @@
 #include <common.h>
 #include <unused.h>
 
-extern const struct theft_type_info qc_map_info;
+struct map;
 
-int          qc_map_int_cmp  (const int k1, const int k2);
-unsigned int qc_map_int_hash (const int k);
+bool qc_map_contains      (const struct map * map, int key);
+int  qc_map_random_in     (const struct map * map, int k);
+int  qc_map_random_not_in (const struct map * map, int k);
+
+extern const struct theft_type_info qc_map_info;
 
 #define QC_MKID_MOD_TEST(FUNC, TEST) \
     QC_MKID(map, FUNC, TEST, test)
@@ -25,6 +28,4 @@ unsigned int qc_map_int_hash (const int k);
 
 #define MAP_CFG_KEY_DATA_TYPE int
 #define MAP_CFG_VALUE_DATA_TYPE int
-#define MAP_CFG_KEY_CMP qc_map_int_cmp
-#define MAP_CFG_HASH_FUNC qc_map_int_hash
 #include <map.h>

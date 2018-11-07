@@ -40,7 +40,7 @@ CFLAGS := \
 all: $(EXEC)
 
 test: all
-	./$(EXEC)
+	./$(EXEC) $(TEST_ARGS)
 
 $(EXEC): $(OBJS)
 	$(CC) -o $@ $(OBJS) $(CFLAGS)
@@ -62,10 +62,10 @@ libtheft: theft
 	cd theft && make CC=$(CC)
 
 DATE := $(shell date +"%Y%m%d-%H%M")
-VALGRIND_LOG := valgrind-$(DATE).log
-EXEC_OUT := $(EXEC)-$(DATE).out
+VALGRIND_LOG := valgrind-$(DATE)-$(CC).log
+EXEC_OUT := $(EXEC)-$(DATE)-$(CC).out
 valgrind: $(EXEC)
-	valgrind --log-file=$(VALGRIND_LOG) --track-origins=yes --leak-check=full -v ./$(EXEC) > $(EXEC_OUT)
+	valgrind --log-file=$(VALGRIND_LOG) --track-origins=yes --leak-check=full -v ./$(EXEC) $(TEST_ARGS) > $(EXEC_OUT)
 
 clean:
 	$(RM) $(OBJS) $(EXEC) valgrind-*.log $(EXEC)-*.out
