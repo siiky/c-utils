@@ -108,6 +108,11 @@ bool strm_next (struct strm * self)
     return ret;
 }
 
+bool strm_shrink (struct strm * self)
+{
+    return vec_shrink_to_fit(&self->pipeline);
+}
+
 void * strm_head (const struct strm * self)
 {
     return (self != NULL) ?

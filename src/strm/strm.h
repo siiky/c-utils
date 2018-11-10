@@ -27,12 +27,12 @@ struct strm {
     struct vec pipeline;
 };
 
-
 bool   strm_filter   (struct strm * self, bool (* filter) (void *));
 bool   strm_free     (struct strm * self);
 bool   strm_init     (struct strm * self, void * (* mknext) (void *), void * head_pre);
 bool   strm_map      (struct strm * self, void * (* map) (void *));
 bool   strm_next     (struct strm * self);
+bool   strm_shrink   (struct strm * self);
 void * strm_head     (const struct strm * self);
 void * strm_head_pre (const struct strm * self);
 

@@ -45,7 +45,7 @@ int main (void)
                 || !strm_map(&strm, mult3)
                 || !strm_filter(&strm, is_even)
                 || !strm_map(&strm, mult2)
-                || !vec_shrink_to_fit(&strm.pipeline)
+                || !strm_shrink(&strm)
            ) return EXIT_FAILURE;
 
         for (strm_next(&strm); /* create the first elem in the stream */
@@ -71,13 +71,13 @@ int main (void)
                 || !strm_map(&strm1, mult3)
                 || !strm_filter(&strm1, is_even)
                 || !strm_map(&strm1, mult2)
-                || !vec_shrink_to_fit(&strm1.pipeline)
+                || !strm_shrink(&strm1)
                 /* strm2: map (*2) . filter even . map (*3) $ [1..] */
                 || !strm_init(&strm2, succ, (void *) 1) /* enumerate from 1 */
                 || !strm_map(&strm2, mult3)
                 || !strm_filter(&strm2, is_even)
                 || !strm_map(&strm2, mult2)
-                || !vec_shrink_to_fit(&strm2.pipeline)
+                || !strm_shrink(&strm2)
            ) return EXIT_FAILURE;
 
         for (strm_next(&strm1), strm_next(&strm2);
