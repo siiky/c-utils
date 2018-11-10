@@ -69,7 +69,6 @@ bool strm_free (struct strm * self)
 {
     if (self == NULL)
         return false;
-
     self->pipeline = vec_free(self->pipeline);
     return strm__clean(self);
 }
@@ -79,7 +78,6 @@ bool strm_init (struct strm * self, void * (* mknext) (void *), void * head_pre)
     return true
         && self != NULL
         && mknext != NULL
-        && vec__clean(&self->pipeline)
         && strm__clean(self)
         && ftr_delay(&self->ftr, mknext, head_pre)
         && (self->ftr.done = true)
@@ -100,12 +98,8 @@ bool strm_next (struct strm * self)
     if (self == NULL)
         return false;
 
-    bool ret = false;
-
-    while (!ret)
-        ret = strm__next(self);
-
-    return ret;
+    while (!strm__next(self));
+    return true;
 }
 
 bool strm_shrink (struct strm * self)
