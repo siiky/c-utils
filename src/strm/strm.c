@@ -10,12 +10,23 @@
  * Private functions
  =========================================================*/
 
+/**
+ * @brief Clean a stream
+ * @param self The stream
+ * @returns `true`
+ */
 static bool strm__clean (struct strm * self)
 {
     *self = (struct strm) {0};
     return true;
 }
 
+/**
+ * @brief Pass the next element through the pipeline
+ * @param self The stream
+ * @returns `true` if everything went well and the element comming
+ *          out the pipeline is valid (i.e., not filtered)
+ */
 static bool strm__next (struct strm * self)
 {
     bool ret = true;
@@ -45,6 +56,12 @@ static bool strm__next (struct strm * self)
     return ret;
 }
 
+/**
+ * @brief Add a new pipe to the end of the pipeline
+ * @param self The stream
+ * @param func The pipe to add to the pipeline
+ * @returns `true` if the pipe was successfully added to the pipeline
+ */
 static bool strm__pipeline_push (struct strm * self, struct strm_func func)
 {
     return true
@@ -57,6 +74,12 @@ static bool strm__pipeline_push (struct strm * self, struct strm_func func)
  * Public functions
  =========================================================*/
 
+/**
+ * @brief Add a filter to a stream's pipeline
+ * @param self The stream
+ * @param filter The filter pipe to add
+ * @returns `true` if the pipe was successfully added to the pipeline
+ */
 bool strm_filter (struct strm * self, bool (* filter) (void *))
 {
     return strm__pipeline_push(self, (struct strm_func) {
@@ -65,6 +88,11 @@ bool strm_filter (struct strm * self, bool (* filter) (void *))
             });
 }
 
+/**
+ * @brief Free a stream
+ * @param self The stream
+ * @returns `false` if @a self is `NULL`, `true` otherwise
+ */
 bool strm_free (struct strm * self)
 {
     if (self == NULL)
@@ -73,6 +101,13 @@ bool strm_free (struct strm * self)
     return strm__clean(self);
 }
 
+/**
+ * @brief Initialize a stream
+ * @param self The stream
+ * @param mknext The generator function (how to get the next element)
+ * @param head_pre The starting element
+ * @returns `true` if it successfully initialized the stream
+ */
 bool strm_init (struct strm * self, void * (* mknext) (void *), void * head_pre)
 {
     return true
@@ -85,6 +120,12 @@ bool strm_init (struct strm * self, void * (* mknext) (void *), void * head_pre)
         && (self->head_pre = head_pre, true);
 }
 
+/**
+ * @brief Add a map to a stream's pipeline
+ * @param self The stream
+ * @param filter The map pipe to add
+ * @returns `true` if the pipe was successfully added to the pipeline
+ */
 bool strm_map (struct strm * self, void * (* map) (void *))
 {
     return strm__pipeline_push(self, (struct strm_func) {
@@ -93,20 +134,36 @@ bool strm_map (struct strm * self, void * (* map) (void *))
             });
 }
 
+/**
+ * @brief Get the next element in the stream
+ * @param self The stream
+ * @returns `false` if @a self is `NULL`, `true` otherwise
+ */
 bool strm_next (struct strm * self)
 {
     if (self == NULL)
         return false;
-
     while (!strm__next(self));
     return true;
 }
 
+/**
+ * @brief Minimize memory used by the pipeline
+ * @param self The stream
+ * @returns `true` if the operation was successful
+ */
 bool strm_shrink (struct strm * self)
 {
     return vec_shrink_to_fit(&self->pipeline);
 }
 
+/**
+ * @brief Get the head of the stream (after passing through the
+ *        pipeline)
+ * @param self The stream
+ * @returns `NULL` if @a self is `NULL`, the head of the stream
+ *          otherwise
+ */
 void * strm_head (const struct strm * self)
 {
     return (self != NULL) ?
@@ -114,6 +171,13 @@ void * strm_head (const struct strm * self)
         NULL;
 }
 
+/**
+ * @brief Get the element used to generate the head of the stream
+ *        (before passing through the pipeline)
+ * @param self The stream
+ * @returns `NULL` if @a self is `NULL`, the element used to generate
+ *          the head of the stream otherwise
+ */
 void * strm_head_pre (const struct strm * self)
 {
     return (self != NULL) ?
