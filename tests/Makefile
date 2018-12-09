@@ -1,20 +1,29 @@
 include vec/vec.mk
 include map/map.mk
 
+# NOTE: CC must be the same used to build CHICKEN
 CC := musl-gcc
+CSC := csc
+CSCFLAGS := \
+    -L -Ltheft/build/ \
+    -L -ltheft        \
+    -lfa2             \
+    -static           \
 
 EXEC := tests
 
-SRC := \
+C_SRC := \
     $(MAP_SRC)        \
     $(VEC_SRC)        \
     common/bool.c     \
     common/int.c      \
     common/size_t.c   \
     common/void_ptr.c \
-    main.c            \
 
-OBJS := $(SRC:.c=.o)
+CHICKEN_SRC := \
+    main.scm   \
+
+OBJS := $(C_SRC:.c=.o) $(CHICKEN_SRC:.scm=.o)
 
 INCS := \
     -I.           \
@@ -25,7 +34,7 @@ LIBS := \
     -Ltheft/build/ \
     -ltheft        \
 
-OPTS := -Og -g
+OPTS := -Og -g -ggdb
 
 CFLAGS := \
     $(INCS)      \
@@ -34,7 +43,6 @@ CFLAGS := \
     -Wall        \
     -Wconversion \
     -Wextra      \
-    -ggdb        \
     -static      \
 
 all: $(EXEC)
@@ -43,7 +51,10 @@ test: all
 	./$(EXEC) $(TEST_ARGS)
 
 $(EXEC): $(OBJS)
-	$(CC) -o $@ $(OBJS) $(CFLAGS)
+	$(CSC) $(CSCFLAGS) -o $(EXEC) $(OBJS)
+
+%.o: %.scm
+	$(CSC) $(CSCFLAGS) -o $@ -c $<
 
 %.o: %.c
 	$(CC) $(CFLAGS) -o $@ -c $<

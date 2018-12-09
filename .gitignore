@@ -39,3 +39,5 @@ mkmakefile
 tests/theft/
 tests/tests
 src/map/map
+*.patch
+main.link
