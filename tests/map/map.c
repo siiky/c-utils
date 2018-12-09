@@ -177,11 +177,33 @@ bool qc_map_contains (const struct map * map, int k)
     return qc_map_lsearch(map, k, h, tblidx, &i);
 }
 
-#define QC_MAP_RANDOM(FNAME, PRED) \
-    int FNAME (const struct map * map, int k) { \
-        while (PRED) k++;                       \
-        return k;                               \
-    } int FNAME (const struct map * map, int k)
+int qc_map_random_in (struct theft * t, const struct map * map)
+{
+    int ret = 0;
 
-QC_MAP_RANDOM(qc_map_random_in,     !qc_map_contains(map, k));
-QC_MAP_RANDOM(qc_map_random_not_in, qc_map_contains(map, k));
+    /*
+     * Create a random "index" and look for the corresponding key.
+     * For obvious reasons, the map cant be empty!
+     */
+    unsigned k = (unsigned) theft_random_choice(t, qc_map_cardinal(map)) + 1;
+    for (unsigned tblidx = 0; k > 0 && tblidx < map->size; tblidx++)
+        for (unsigned i = 0; k > 0 && i < map->table[tblidx].length; i++, k--)
+            ret = map->table[tblidx].entries[i].key;
+
+    return ret;
+}
+
+int qc_map_random_not_in (const struct map * map, int k)
+{
+    while (qc_map_contains(map, k))
+        k++;
+    return k;
+}
+
+unsigned qc_map_cardinal (const struct map * map)
+{
+    unsigned ret = 0;
+    for (unsigned tblidx = 0; tblidx < map->size; tblidx++)
+        ret += map->table[tblidx].length;
+    return ret;
+}

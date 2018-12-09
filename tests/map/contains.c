@@ -40,11 +40,13 @@ static enum theft_trial_res QC_MKID_PROP(res_not_in) (struct theft * t, void * a
 
 static enum theft_trial_res QC_MKID_PROP(res_in) (struct theft * t, void * arg1, void * arg2)
 {
-    UNUSED(t);
-
     struct map * map = arg1;
     QC_ARG2VAR(2, int, key);
-    key = qc_map_random_in(map, key);
+
+    if (qc_map_cardinal(map) == 0)
+        return THEFT_TRIAL_SKIP;
+
+    key = qc_map_random_in(t, map);
     QC_ARG2VAL(2, int) = key;
     return QC_BOOL2TRIAL(map_contains(map, key));
 }

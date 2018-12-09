@@ -9,9 +9,10 @@
 
 struct map;
 
-bool qc_map_contains      (const struct map * map, int key);
-int  qc_map_random_in     (const struct map * map, int k);
-int  qc_map_random_not_in (const struct map * map, int k);
+bool     qc_map_contains      (const struct map * map, int key);
+int      qc_map_random_in     (struct theft * t, const struct map * map);
+int      qc_map_random_not_in (const struct map * map, int k);
+unsigned qc_map_cardinal      (const struct map * map);
 
 extern const struct theft_type_info qc_map_info;
 
