@@ -8,6 +8,8 @@ unsigned qc_map_int_hash (const int k);
 
 #include <ifnotnull.h>
 
+#include <assert.h>
+
 static bool qc_map_insert  (struct map * self, int key, int value, unsigned hash, unsigned tblidx);
 static bool qc_map_lsearch (const struct map * self, int key, unsigned hash, unsigned tblidx, unsigned * _i);
 static void qc_map_free    (void * instance, void * env);
@@ -167,6 +169,16 @@ static bool qc_map_insert (struct map * self, int key, int value, unsigned hash,
     self->lc_idx = i;
 
     return true;
+}
+
+int qc_map_get (const struct map * map, int k)
+{
+    unsigned h = qc_map_int_hash(k);
+    unsigned tblidx = h % map->size;
+    unsigned i;
+    bool exists = qc_map_lsearch(map, k, h, tblidx, &i);
+    assert(exists);
+    return map->table[tblidx].entries[i].value;
 }
 
 bool qc_map_contains (const struct map * map, int k)
