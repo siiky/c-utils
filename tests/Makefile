@@ -30,15 +30,10 @@ INCS := \
     -I../include/ \
     -Itheft/inc/  \
 
-LIBS := \
-    -Ltheft/build/ \
-    -ltheft        \
-
 OPTS := -Og -g -ggdb
 
 CFLAGS := \
     $(INCS)      \
-    $(LIBS)      \
     $(OPTS)      \
     -Wall        \
     -Wconversion \
@@ -79,7 +74,7 @@ valgrind: $(EXEC)
 	valgrind --log-file=$(VALGRIND_LOG) --track-origins=yes --leak-check=full -v ./$(EXEC) $(TEST_ARGS) > $(EXEC_OUT)
 
 clean:
-	$(RM) $(OBJS) $(EXEC) valgrind-*.log $(EXEC)-*.out
+	$(RM) $(OBJS) $(EXEC) valgrind-*.log $(EXEC)-*.out *.link
 
 clean_all: clean
 	cd theft/ && make clean
