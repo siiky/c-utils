@@ -1,4 +1,4 @@
-/* map - v2018.11.07-1
+/* map - v2018.12.09-0
  *
  * A Hash Map type inspired by
  *  * [stb](https://github.com/nothings/stb)
@@ -114,13 +114,13 @@ struct MAP_CFG_MAP {
  *
  * RETURN TYPE            FUNCTION NAME PARAMETER LIST
  *==========================================================*/
-MAP_CFG_VALUE_DATA_TYPE * MAP_GET       (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key);
-bool                      MAP_ADD       (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key, MAP_CFG_VALUE_DATA_TYPE value);
-bool                      MAP_CONTAINS  (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key);
-bool                      MAP_NEW       (struct MAP_CFG_MAP * self);
-bool                      MAP_REMOVE    (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key);
-bool                      MAP_WITH_SIZE (struct MAP_CFG_MAP * self, unsigned int size);
-struct MAP_CFG_MAP        MAP_FREE      (struct MAP_CFG_MAP self);
+MAP_CFG_VALUE_DATA_TYPE MAP_GET       (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key);
+bool                    MAP_ADD       (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key, MAP_CFG_VALUE_DATA_TYPE value);
+bool                    MAP_CONTAINS  (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key);
+bool                    MAP_NEW       (struct MAP_CFG_MAP * self);
+bool                    MAP_REMOVE    (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key);
+bool                    MAP_WITH_SIZE (struct MAP_CFG_MAP * self, unsigned int size);
+struct MAP_CFG_MAP      MAP_FREE      (struct MAP_CFG_MAP self);
 
 #ifdef MAP_CFG_IMPLEMENTATION
 
@@ -153,6 +153,9 @@ struct MAP_CFG_MAP        MAP_FREE      (struct MAP_CFG_MAP self);
 # endif /* MAP_CFG_STATIC */
 
 /*
+ * <assert.h>
+ *  assert()
+ *
  * <stdlib.h>
  *  calloc()
  *  free()
@@ -163,6 +166,7 @@ struct MAP_CFG_MAP        MAP_FREE      (struct MAP_CFG_MAP self);
  *  memmove()
  *  memset()
  */
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -320,10 +324,11 @@ static bool _MAP_INSERT_SORTED (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE
     return true;
 }
 
-MAP_CFG_STATIC MAP_CFG_VALUE_DATA_TYPE * MAP_GET (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key)
+MAP_CFG_STATIC MAP_CFG_VALUE_DATA_TYPE MAP_GET (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key)
 {
-    if (self == NULL || self->size < 3 || self->table == NULL)
-        return NULL;
+    assert(self != NULL);
+    assert(self->size >= 3);
+    assert(self->table != NULL);
 
     unsigned int hash = MAP_CFG_HASH_FUNC(key);
     unsigned int tblidx = hash % self->size;
@@ -331,9 +336,8 @@ MAP_CFG_STATIC MAP_CFG_VALUE_DATA_TYPE * MAP_GET (struct MAP_CFG_MAP * self, MAP
 
     bool exists = _MAP_SEARCH(self, key, hash, tblidx, &i);
 
-    return (exists) ?
-        &self->table[tblidx].entries[i].value:
-        NULL;
+    assert(exists);
+    return self->table[tblidx].entries[i].value;
 }
 
 /**
@@ -411,7 +415,7 @@ MAP_CFG_STATIC bool MAP_REMOVE (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE
 
 MAP_CFG_STATIC bool MAP_WITH_SIZE (struct MAP_CFG_MAP * self, unsigned int size)
 {
-    if (size < 3)
+    if (self == NULL || self->size < 3)
         return false;
 
     self->table = MAP_CFG_CALLOC(size, sizeof(*self->table));
