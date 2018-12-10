@@ -1,4 +1,4 @@
-/* map - v2018.12.09-0
+/* map - v2018.12.10-0
  *
  * A Hash Map type inspired by
  *  * [stb](https://github.com/nothings/stb)
@@ -415,7 +415,7 @@ MAP_CFG_STATIC bool MAP_REMOVE (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE
 
 MAP_CFG_STATIC bool MAP_WITH_SIZE (struct MAP_CFG_MAP * self, unsigned int size)
 {
-    if (self == NULL || self->size < 3)
+    if (self == NULL || size < 3)
         return false;
 
     self->table = MAP_CFG_CALLOC(size, sizeof(*self->table));
