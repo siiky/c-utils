@@ -3,12 +3,12 @@
 
 #include <stdio.h>
 
-bool ivec_init (struct ivec * self, size_t capacity)
+bool ivec_init (struct ivec * self, size_t cap)
 {
-    bool ret = ivec_with_capacity(self, capacity);
+    bool ret = ivec_with_cap(self, cap);
 
     if (ret)
-        for (size_t i = 1; i <= capacity; i++)
+        for (size_t i = 1; i <= cap; i++)
             ivec_push(self, rand() % 0x100000000);
 
     return ret;

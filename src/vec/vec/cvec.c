@@ -8,12 +8,12 @@ char char_dtor (char elem)
     return elem;
 }
 
-bool cvec_init (struct cvec * self, size_t capacity)
+bool cvec_init (struct cvec * self, size_t cap)
 {
-    bool ret = cvec_with_capacity(self, capacity);
+    bool ret = cvec_with_cap(self, cap);
 
     if (ret)
-        for (size_t i = 1; i <= capacity; i++)
+        for (size_t i = 1; i <= cap; i++)
             cvec_push(self, rand() % 256);
 
     return ret;

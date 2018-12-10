@@ -19,9 +19,9 @@
         struct ivec * : ivec_init           \
         )((vec), (size))
 
-#define vec_capacity(vec) _Generic((vec), \
-        struct cvec * : cvec_capacity,    \
-        struct ivec * : ivec_capacity     \
+#define vec_cap(vec) _Generic((vec), \
+        struct cvec * : cvec_cap,    \
+        struct ivec * : ivec_cap     \
         )(vec)
 
 #define vec_len(vec) _Generic((vec), \
