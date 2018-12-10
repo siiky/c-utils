@@ -27,9 +27,9 @@ void map_print_all_elements (const struct map * self)
     unsigned int size = self->size;
 
     for (unsigned int l = 0; l < size; l++) {
-        unsigned int len = self->map[l].length;
+        unsigned int len = self->table[l].length;
 
-#define _(F) (self->map[l].entries[i].F)
+#define _(F) (self->table[l].entries[i].F)
         for (unsigned int i = 0; i < len; i++)
             printf("L:%u\tI:%u\tH:%u\tK:%u\tV:%u\n",
                     l, i, _(hash), _(key), _(value));

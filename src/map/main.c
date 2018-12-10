@@ -13,11 +13,8 @@ int main (void)
         return !0;
 
     bool succ = true;
-
-    for (unsigned int i = 0; i < MAP_NELEMS; i++) {
-        bool tmp = map_add(&map, i, i);
-        succ = succ && tmp;
-    }
+    for (unsigned int i = 0; i < MAP_NELEMS; i++)
+        succ = map_add(&map, i, i) && succ;
 
     for (unsigned int i = 0; i < MAP_NELEMS; i++)
         if (map_contains(&map, i))
