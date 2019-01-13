@@ -1,42 +1,45 @@
+#include <stddef.h>
+
+#define FTR_CFG_ARGS_TYPE size_t
+#define FTR_CFG_RET_TYPE size_t
+#define FTR_CFG_FTR my_ftr
 #define _FTR_H_IMPLEMENTATION
 #include "ftr.h"
 
 #include <unistd.h>
 
-#include <stddef.h>
 #include <stdio.h>
 
-void * sleep_secs (void * args)
+size_t sleep_secs (size_t secs)
 {
-    size_t secs = (size_t) args;
     sleep((unsigned) secs);
-    return (void *) args;
+    return secs;
 }
 
 #define NFTR 10
 int main (void)
 {
-    struct ftr ftr[NFTR] = {0};
+    struct my_ftr ftr[NFTR] = {0};
     for (unsigned i = 0; i < NFTR; i++)
-        ftr_clean(ftr + i);
+        my_ftr_clean(ftr + i);
 
     for (unsigned i = 0; i < NFTR; i++) {
         printf("Creating future #%u\n", i);
-        ftr_delay(ftr + i,
+        my_ftr_delay(ftr + i,
                 sleep_secs,
-                (void *) ((size_t) (NFTR - i)));
+                NFTR - i);
     }
 
     for (unsigned i = 0; i < NFTR; i++) {
-        printf("Forcing future #%u\n", i);
-        size_t s = (size_t) ftr_force(ftr + i);
-        printf("Future #%u returned %zu\n", i, s);
+        printf("Forcing future #%u... ", i);
+        fflush(stdout);
+        printf("returned %zu\n", my_ftr_force(ftr + i));
     }
 
     for (unsigned i = 0; i < NFTR; i++) {
-        printf("Forcing future #%u again\n", i);
-        size_t s = (size_t) ftr_force(ftr + i);
-        printf("Future #%u returned %zu\n", i, s);
+        printf("Forcing future #%u again... ", i);
+        fflush(stdout);
+        printf("returned %zu\n", my_ftr_force(ftr + i));
     }
 
     return 0;
