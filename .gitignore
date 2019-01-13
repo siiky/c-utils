@@ -40,3 +40,5 @@ tests/theft/
 tests/tests
 src/map/map
 src/ftr/ftr
+*.patch
+main.link

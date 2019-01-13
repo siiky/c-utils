@@ -1,4 +1,4 @@
-#include "ii_map.h"
+#include "map.h"
 
 #include <stdio.h>
 
@@ -7,23 +7,20 @@
 
 int main (void)
 {
-    struct ii_map map;
+    struct map map;
 
-    if (!ii_map_with_size(&map, MAP_SIZE))
+    if (!map_with_size(&map, MAP_SIZE))
         return !0;
 
     bool succ = true;
-
-    for (unsigned int i = 0; i < MAP_NELEMS; i++) {
-        bool tmp = ii_map_add(&map, i, i);
-        succ = succ && tmp;
-    }
+    for (unsigned int i = 0; i < MAP_NELEMS; i++)
+        succ = map_add(&map, i, i) && succ;
 
     for (unsigned int i = 0; i < MAP_NELEMS; i++)
-        if (ii_map_contains(&map, i))
-            ii_map_remove(&map, i);
+        if (map_contains(&map, i))
+            map_remove(&map, i);
 
-    map = ii_map_free(map);
+    map = map_free(map);
 
     puts((succ) ? "yay" : "nay");
     return 0;
