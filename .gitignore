@@ -38,7 +38,8 @@ mkheader
 mkmakefile
 tests/theft/
 tests/tests
-src/map/map
 src/ftr/ftr
+src/map/map
+src/strm/strm
 *.patch
 main.link
