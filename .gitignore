@@ -38,6 +38,7 @@ mkheader
 mkmakefile
 tests/theft/
 tests/tests
+src/bs/bs
 src/ftr/ftr
 src/map/map
 src/strm/strm
