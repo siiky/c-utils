@@ -4,15 +4,19 @@
 
 #include "mkutils.h"
 
-const char * FNAME = "./Makefile";
-const char * TXTFMT =
+const char * FNAME = "Makefile";
+const char * TXTFMT1 =
 "CC := musl-gcc\n"
 "#CC := cc\n"
 "DEST := ~/bin\n"
 "EXEC := %s\n"
-"INCLUDE := -Iincude/\n"
+"INCLUDE := -Iinclude/ -I/usr/local/include/\n"
 "HEADERS :=\n"
-"SRC := main.c\n"
+"SRC := \\\n"
+;
+
+const char * TXTFMT2 =
+"\n"
 "OBJS := $(SRC:.c=.o)\n"
 "\n"
 "OPT := -Og -g\n"
@@ -25,14 +29,14 @@ const char * TXTFMT =
 "    -flto        \\\n"
 "    -pedantic    \\\n"
 "    -static      \\\n"
-"    -std=c11     \\\n"
+"    -std=c18     \\\n"
 "\n"
 "all: $(EXEC)\n"
 "\n"
 "$(EXEC): $(OBJS)\n"
 "\t$(CC) $(CFLAGS) $(OBJS) -o $(EXEC)\n"
 "\n"
-"strip: $(EXEC)"
+"strip: $(EXEC)\n"
 "\tstrip -s $(EXEC)\n"
 "\n"
 "install: all\n"
@@ -58,7 +62,7 @@ int main (int argc, char ** argv)
     int ret = 0;
     FILE * f = NULL;
 
-    ABORT(ko, argc != 2, "%s [PROG_NAME]\n", argv[0]);
+    ABORT(ko, argc < 2, "Usage: %s PROG_NAME [SRC]...\n", argv[0]);
 
     ABORT(ko, file_exists(FNAME),
           "File already exists, aborting!");
@@ -67,7 +71,14 @@ int main (int argc, char ** argv)
     ABORT(ko, f == NULL,
           "Could not open file for writing, aborting!");
 
-    ABORT(ko, fprintf(f, TXTFMT, argv[1]) < 0,
+    ABORT(ko, fprintf(f, TXTFMT1, argv[1]) < 0,
+          "An error occurred while writing to file!");
+
+    for (int i = 2; i < argc; i++)
+        ABORT(ko, fprintf(f, "    %s \\\n", argv[i]) < 0,
+              "An error occurred while writing to file!");
+
+    ABORT(ko, fprintf(f, TXTFMT2) < 0,
           "An error occurred while writing to file!");
 
 ret:

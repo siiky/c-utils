@@ -12,7 +12,7 @@ SRC := \
     mkheader.c   \
     mkmakefile.c \
 
-EXEC := $(SRC:.c=)
+EXECS := $(SRC:.c=)
 
 OPT := -Og -g
 
@@ -27,18 +27,19 @@ CFLAGS := \
     -static      \
     -std=c11     \
 
-all: $(EXEC)
+all: $(EXECS)
 
 %: %.c
 	$(CC) $(CFLAGS) $< -o $@
 
-strip: $(EXEC)	strip -s $(EXEC)
+strip: $(EXECS)
+	strip -s $(EXECS)
 
-install: all
-	install -m 0700 $(EXEC) -t $(DEST)
+install: $(EXECS)
+	install -m 0700 $(EXECS) -t $(DEST)
 
 clean:
-	$(RM) $(OBJS) $(EXEC)
+	$(RM) $(EXECS)
 
 check: $(SRC) $(HEADERS)
 	cppcheck --std=c11 -f --language=c --enable=all $(INCLUDE) $(SRC) $(HEADERS)

@@ -59,7 +59,7 @@ ko:
 
 int main (int argc, char ** argv)
 {
-   ABORT(ko, argc < 2, "%s [HEADER]...\n", argv[0]);
+   ABORT(ko, argc < 2, "Usage:\n\t%s HEADER...\n", argv[0]);
     int ret = 0;
 
     for (int i = 1; i < argc; i++)
