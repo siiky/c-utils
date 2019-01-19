@@ -1,4 +1,4 @@
-/* map - v2018.12.10-0
+/* map - v2019.01.19-0
  *
  * A Hash Map type inspired by
  *  * [stb](https://github.com/nothings/stb)
@@ -114,11 +114,11 @@ struct MAP_CFG_MAP {
  *
  * RETURN TYPE            FUNCTION NAME PARAMETER LIST
  *==========================================================*/
-MAP_CFG_VALUE_DATA_TYPE MAP_GET       (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key);
-bool                    MAP_ADD       (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key, MAP_CFG_VALUE_DATA_TYPE value);
-bool                    MAP_CONTAINS  (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key);
+MAP_CFG_VALUE_DATA_TYPE MAP_GET       (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key);
+bool                    MAP_ADD       (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key, const MAP_CFG_VALUE_DATA_TYPE value);
+bool                    MAP_CONTAINS  (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key);
 bool                    MAP_NEW       (struct MAP_CFG_MAP * self);
-bool                    MAP_REMOVE    (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key);
+bool                    MAP_REMOVE    (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key);
 bool                    MAP_WITH_SIZE (struct MAP_CFG_MAP * self, unsigned int size);
 struct MAP_CFG_MAP      MAP_FREE      (struct MAP_CFG_MAP self);
 
@@ -230,7 +230,7 @@ static bool _MAP_INCREASE_CAPACITY (struct MAP_CFG_MAP * self, unsigned int tbli
     return ret;
 }
 
-static inline int _MAP_ENTRY_CMP (unsigned int ha, MAP_CFG_KEY_DATA_TYPE ka, unsigned int hb, MAP_CFG_KEY_DATA_TYPE kb)
+static inline int _MAP_ENTRY_CMP (unsigned int ha, const MAP_CFG_KEY_DATA_TYPE ka, unsigned int hb, const MAP_CFG_KEY_DATA_TYPE kb)
 {
     return (ha < hb) ?
         -1:
@@ -239,7 +239,7 @@ static inline int _MAP_ENTRY_CMP (unsigned int ha, MAP_CFG_KEY_DATA_TYPE ka, uns
         MAP_CFG_KEY_CMP(ka, kb);
 }
 
-static bool _MAP_SEARCH (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key, unsigned int hash, unsigned int tblidx, unsigned int * _i)
+static bool _MAP_SEARCH (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key, unsigned int hash, unsigned int tblidx, unsigned int * _i)
 {
     bool ret = false;
     unsigned int i = 0;
@@ -294,7 +294,7 @@ out:
     return ret;
 }
 
-static bool _MAP_INSERT_SORTED (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key, MAP_CFG_VALUE_DATA_TYPE value, unsigned int hash, unsigned int tblidx)
+static bool _MAP_INSERT_SORTED (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key, const MAP_CFG_VALUE_DATA_TYPE value, unsigned int hash, unsigned int tblidx)
 {
     unsigned int i = 0;
     unsigned int len = self->table[tblidx].length;
@@ -324,7 +324,7 @@ static bool _MAP_INSERT_SORTED (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE
     return true;
 }
 
-MAP_CFG_STATIC MAP_CFG_VALUE_DATA_TYPE MAP_GET (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key)
+MAP_CFG_STATIC MAP_CFG_VALUE_DATA_TYPE MAP_GET (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key)
 {
     assert(self != NULL);
     assert(self->size >= 3);
@@ -353,7 +353,7 @@ MAP_CFG_STATIC MAP_CFG_VALUE_DATA_TYPE MAP_GET (struct MAP_CFG_MAP * self, MAP_C
  *          This function fails (returns `false`) if @a self isn't
  *          valid, or it wasn't possible to get space for the new entry
  */
-MAP_CFG_STATIC bool MAP_ADD (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key, MAP_CFG_VALUE_DATA_TYPE value)
+MAP_CFG_STATIC bool MAP_ADD (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key, const MAP_CFG_VALUE_DATA_TYPE value)
 {
     if (self == NULL || self->size < 3 || self->table == NULL)
         return false;
@@ -364,7 +364,7 @@ MAP_CFG_STATIC bool MAP_ADD (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE ke
     return _MAP_INSERT_SORTED(self, key, value, hash, tblidx);
 }
 
-MAP_CFG_STATIC bool MAP_CONTAINS (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key)
+MAP_CFG_STATIC bool MAP_CONTAINS (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key)
 {
     if (self == NULL || self->size < 3 || self->table == NULL)
         return false;
@@ -381,7 +381,7 @@ MAP_CFG_STATIC bool MAP_NEW (struct MAP_CFG_MAP * self)
     return MAP_WITH_SIZE(self, MAP_CFG_DEFAULT_SIZE);
 }
 
-MAP_CFG_STATIC bool MAP_REMOVE (struct MAP_CFG_MAP * self, MAP_CFG_KEY_DATA_TYPE key)
+MAP_CFG_STATIC bool MAP_REMOVE (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key)
 {
     if (self == NULL || self->size < 3 || self->table == NULL)
         return false;
