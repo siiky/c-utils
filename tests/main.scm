@@ -8,15 +8,21 @@
   )
 
 #>
+#include "bs/qc.h"
 #include "map/qc.h"
 #include "vec/qc.h"
 <#
 
+(define bs-test-all  `(bs  . ,(foreign-lambda bool "qc_bs_test_all")))
 (define map-test-all `(map . ,(foreign-lambda bool "qc_map_test_all")))
 (define vec-test-all `(vec . ,(foreign-lambda bool "qc_vec_test_all")))
 
 (define *TESTS*
-  `(,map-test-all ,vec-test-all))
+  `(
+    ,bs-test-all
+    ,map-test-all
+    ,vec-test-all
+    ))
 
 (define (usage cmd)
   (print

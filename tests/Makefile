@@ -1,5 +1,6 @@
-include vec/vec.mk
+include bs/bs.mk
 include map/map.mk
+include vec/vec.mk
 
 # NOTE: CC must be the same used to build CHICKEN
 CC := musl-gcc
@@ -13,6 +14,7 @@ CSCFLAGS := \
 EXEC := tests
 
 C_SRC := \
+    $(BS_SRC)         \
     $(MAP_SRC)        \
     $(VEC_SRC)        \
     common/bool.c     \
