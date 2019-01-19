@@ -11,7 +11,7 @@
 
 int main (int argc, char ** argv)
 {
-    struct bs bs[1];
+    struct bs bs[1] = {0};
     unsigned nbits = (argc > 1) ?
         (unsigned) atoi(argv[1]):
         1000;
@@ -30,6 +30,20 @@ int main (int argc, char ** argv)
         for (unsigned i = 0; i < nbits; i++)
             bs_get(bs, i);
         bs_print(bs);
+
+        struct bs clone[1] = {0};
+        if (bs_clone(bs, clone)) {
+            printf("cmp = %d\n", bs_cmp(bs, clone));
+
+            bs_flip(clone, clone->nbits - 1);
+            printf("cmp = %d\n", bs_cmp(bs, clone));
+
+            bs_flip(clone, clone->nbits - 1);
+            bs_flip(clone, clone->nbits - 2);
+            printf("cmp = %d\n", bs_cmp(bs, clone));
+
+            bs_free(clone);
+        }
 
         bs_free(bs);
     }

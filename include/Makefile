@@ -1,6 +1,7 @@
 DEST=/usr/local/include/utils
 
 HEADERS=\
+	bs.h        \
 	common.h    \
 	ftr.h       \
 	ifjmp.h     \
