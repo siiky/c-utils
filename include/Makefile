@@ -7,6 +7,7 @@ HEADERS=\
 	ifjmp.h     \
 	ifnotnull.h \
 	map.h       \
+	tralloc.h   \
 	unused.h    \
 	utils.h     \
 	vec.h       \
