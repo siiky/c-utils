@@ -131,28 +131,20 @@ void _trdeinit (void);
 #endif /* _TRALLOC_H */
 
 #ifdef TRALLOC_CFG_IMPLEMENTATION
-/* strdup() is not in C11 */
-#define _XOPEN_SOURCE 500
 /*
  * <stdlib.h>
  *  calloc()
  *  free()
  *  malloc()
  *  realloc()
- *
- * <string.h>
- *  strdup()
  */
 #include <stdlib.h>
-#include <string.h>
-
-#include <utils/ifnotnull.h>
 
 struct trs {
     /* file where this block of memory was allocated */
-    char * file;
+    const char * file;
     /* function where this block of memory was allocated */
-    char * func;
+    const char * func;
     /* line where this block of memory was allocated */
     unsigned short line;
 
@@ -169,18 +161,16 @@ static int trs_cmp (struct trs a, struct trs b)
 
 static struct trs _trs_free (struct trs self)
 {
-    ifnotnull(self.file, free);
-    ifnotnull(self.func, free);
-    ifnotnull(self.ptr, free);
-
+    if (self.ptr)
+        free(self.ptr);
     return (struct trs) {0};
 }
 
 static struct trs _trs_new (size_t size, void * ptr, const char * file, const char * func, unsigned short line)
 {
     return (struct trs) {
-        .file = (file != NULL) ? strdup(file) : NULL,
-        .func = (func != NULL) ? strdup(func) : NULL,
+        .file = file,
+        .func = func,
         .line = line,
         .size = size,
         .ptr = ptr,
@@ -199,28 +189,20 @@ static struct trs_vec trvec[1] = {0};
 
 static void * _tradd_new_entry (size_t size, void * ptr, const char * file, const char * func, unsigned short line)
 {
-    if (ptr != NULL) {
-        struct trs trs = _trs_new(size, ptr, file, func, line);
-        trs_push(trvec, trs);
-    }
-
+    if (ptr)
+        trs_push(trvec, _trs_new(size, ptr, file, func, line));
     return ptr;
 }
 
 void * _trcalloc (size_t nmemb, size_t size, const char * file, const char * func, unsigned short line)
 {
-    return _tradd_new_entry(size * nmemb,
-            calloc(nmemb, size),
-            file,
-            func,
-            line);
+    return _tradd_new_entry(size * nmemb, calloc(nmemb, size), file, func, line);
 }
 
 void _trfree (void * ptr)
 {
-    if (ptr != NULL) {
-        struct trs tmp = _trs_new(0, ptr, NULL, NULL, 0);
-        size_t idx = trs_find(trvec, tmp);
+    if (ptr) {
+        size_t idx = trs_find(trvec, _trs_new(0, ptr, NULL, NULL, 0));
 
         if (idx < trs_len(trvec)) /* ptr was found */
             _trs_free(trs_swap_remove(trvec, idx));
@@ -229,35 +211,8 @@ void _trfree (void * ptr)
 
 void * _trmalloc (size_t size, const char * file, const char * func, unsigned short line)
 {
-    return _tradd_new_entry(size,
-            malloc(size),
-            file,
-            func,
-            line);
+    return _tradd_new_entry(size, malloc(size), file, func, line);
 }
-
-#define _trupdate_field(trs, field)                    \
-    do {                                               \
-        /* new is empty, free old */                   \
-        if (field == NULL) {                           \
-            ifnotnull(trs.field, free);                \
-            trs.field = NULL;                          \
-            break;                                     \
-        }                                              \
-        /* old is empty, dup new */                    \
-        if (trs.field == NULL) {                       \
-            trs.field = strdup(field);                 \
-            break;                                     \
-        }                                              \
-        /*                                             \
-         * old is not empty and is different from new, \
-         * free old and dup new                        \
-         */                                            \
-        if (strcmp(field, trs.field) != 0) {           \
-            free(trs.field);                           \
-            trs.field = strdup(field);                 \
-        }                                              \
-    } while (0)
 
 void * _trrealloc (void * ptr, size_t size, const char * file, const char * func, unsigned short line)
 {
@@ -265,7 +220,7 @@ void * _trrealloc (void * ptr, size_t size, const char * file, const char * func
      * calling realloc(ptr, size) where ptr == NULL is equivalent
      * to calling malloc(size)
      */
-    if (ptr == NULL)
+    if (!ptr)
         return _trmalloc(size, file, func, line);
 
     /*
@@ -284,47 +239,26 @@ void * _trrealloc (void * ptr, size_t size, const char * file, const char * func
 
     /* ptr should already be in trvec */
     {
-        struct trs tmp = _trs_new(0, ptr, NULL, NULL, 0);
-        idx = trs_find(trvec, tmp);
+        idx = trs_find(trvec, _trs_new(0, ptr, NULL, NULL, 0));
         elem = idx < trs_len(trvec);
     }
 
     ret = realloc(ptr, size);
 
-    if (elem) { /* ptr is in trvec */
-        /*
-         * get the entry for ptr, update it and put it back in trvec
-         */
-
-        struct trs trs = trs_get_nth(trvec, idx);
-
-        /* update the file and func fields if they differ from the old ones */
-        _trupdate_field(trs, file);
-        _trupdate_field(trs, func);
-
-        trs.line = line;
-
-        if (ret != NULL) { /* allocation was successful */
-            trs.ptr  = ret;
-            trs.size = size;
-        }
-
-        trs_set_nth(trvec, idx, trs);
-    } else if (ret != NULL) { /* ptr not in trvec but allocation was successful */
-        /*
-         * create a new entry, similar to _trmalloc()
-         */
-        _tradd_new_entry(size, ret, file, func, line);
+    if (ret) { /* allocation was successful */
+        if (elem) /* ptr is in trvec */
+            trs_set_nth(trvec, idx, _trs_new(size, ret, file, func, line));
+        else /* ptr not in trvec */
+            _tradd_new_entry(size, ret, file, func, line);
     }
 
     return ret;
 }
-#undef _trupdate_field
 
 bool _trfprint (FILE * stream)
 {
     bool ret = trs_is_empty(trvec);
-    if (stream != NULL && !ret) {
+    if (stream && !ret) {
         size_t total = 0;
 
         for (trs_iter(trvec); trs_itering(trvec); trs_iter_next(trvec)) {

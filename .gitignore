@@ -32,15 +32,18 @@
 *.dSYM/
 *.su
 
-c-utils-install.sh
-cvec
-mkheader
-mkmakefile
-tests/theft/
+tests/main.link
 tests/tests
+tests/theft/
+
 src/bs/bs
 src/ftr/ftr
 src/map/map
+src/mk/mkheader
+src/mk/mkmakefile
 src/strm/strm
+src/tralloc/trace.txt
+src/tralloc/tralloc
+src/vec/cvec
+
 *.patch
-main.link
