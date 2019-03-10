@@ -36,14 +36,14 @@ tests/main.link
 tests/tests
 tests/theft/
 
-src/bs/bs
-src/ftr/ftr
-src/map/map
+examples/bs/bs
+examples/ftr/ftr
+examples/map/map
+examples/strm/strm
+examples/tralloc/trace.txt
+examples/tralloc/tralloc
+examples/vec/cvec
 src/mk/mkheader
 src/mk/mkmakefile
-src/strm/strm
-src/tralloc/trace.txt
-src/tralloc/tralloc
-src/vec/cvec
 
 *.patch

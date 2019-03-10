@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-#define MAP_SIZE   1000
+#define MAP_SIZE   1009
 #define MAP_NELEMS 1000000
 
 int main (void)
