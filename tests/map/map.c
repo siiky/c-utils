@@ -6,7 +6,7 @@ unsigned qc_map_int_hash (const int k);
 #define MAP_CFG_KEY_CMP qc_map_int_cmp
 #include "map.h"
 
-#include <ifnotnull.h>
+#include <utils/ifnotnull.h>
 
 #include <assert.h>
 
@@ -29,9 +29,6 @@ static enum theft_alloc_res qc_map_alloc (struct theft * t, void * env, void ** 
         map->table = calloc(map->size, sizeof(*map->table));
         if (map->table == NULL)
             return free(map), THEFT_ALLOC_SKIP;
-
-        for (unsigned i = 0; i < map->size; i ++)
-            map->table[i] = (typeof(*map->table)) {0};
     }
 
     { /* Fill map */

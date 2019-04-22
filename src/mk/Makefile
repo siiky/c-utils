@@ -3,10 +3,9 @@ CC := musl-gcc
 
 DEST := ~/bin
 
-INCLUDE := \
-    -I../../include/ \
+INCLUDE := -I../../include/
 
-HEADERS :=
+HEADERS := mkutils.h
 
 SRC := \
     mkheader.c   \
@@ -14,18 +13,31 @@ SRC := \
 
 EXECS := $(SRC:.c=)
 
-OPT := -Og -g
+OPT := -Os
 
 CFLAGS := \
-    $(INCLUDE)   \
-    $(OPT)       \
-    -Wall        \
-    -Wconversion \
-    -Wextra      \
-    -flto        \
-    -pedantic    \
-    -static      \
-    -std=c11     \
+	$(INCLUDE)                            \
+	$(OPT)                                \
+	-Wall                                 \
+	-Wcast-align                          \
+	-Wcast-qual                           \
+	-Wconversion                          \
+	-Werror-implicit-function-declaration \
+	-Wextra                               \
+	-Winit-self                           \
+	-Wpointer-arith                       \
+	-Wshadow                              \
+	-Wstrict-prototypes                   \
+	-Wundef                               \
+	-Wuninitialized                       \
+	-Wunreachable-code                    \
+	-Wwrite-strings                       \
+	-flto                                 \
+	-fno-common                           \
+	-march=native                         \
+	-pedantic                             \
+	-static                               \
+	-std=c18                              \
 
 all: $(EXECS)
 

@@ -3,7 +3,7 @@
 
 #define VEC_CFG_DATA_TYPE int
 #define VEC_CFG_VEC ivec
-#include <vec.h>
+#include <utils/vec.h>
 
 bool ivec_init  (struct ivec * self, size_t capacity);
 void ivec_print (struct ivec * vec);

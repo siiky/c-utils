@@ -5,7 +5,7 @@
 #include <string.h>
 
 #include <common.h>
-#include <unused.h>
+#include <utils/unused.h>
 
 struct map;
 
@@ -30,4 +30,4 @@ extern const struct theft_type_info qc_map_info;
 
 #define MAP_CFG_KEY_DATA_TYPE int
 #define MAP_CFG_VALUE_DATA_TYPE int
-#include <map.h>
+#include <utils/map.h>

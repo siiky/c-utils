@@ -3,7 +3,7 @@
 
 #define TRALLOC_CFG_TRACE
 #define TRALLOC_CFG_IMPLEMENTATION
-#include <tralloc.h>
+#include <utils/tralloc.h>
 
 static void * g_trash = NULL;
 

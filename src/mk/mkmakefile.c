@@ -6,8 +6,8 @@
 
 const char * FNAME = "Makefile";
 const char * TXTFMT1 =
-"CC := musl-gcc\n"
-"#CC := cc\n"
+"#CC := musl-gcc\n"
+"CC := cc\n"
 "DEST := ~/bin\n"
 "EXEC := %s\n"
 "INCLUDE := -Iinclude/ -I/usr/local/include/\n"
@@ -21,15 +21,28 @@ const char * TXTFMT2 =
 "\n"
 "OPT := -Og -g\n"
 "CFLAGS := \\\n"
-"    $(INCLUDE)   \\\n"
-"    $(OPT)       \\\n"
-"    -Wall        \\\n"
-"    -Wconversion \\\n"
-"    -Wextra      \\\n"
-"    -flto        \\\n"
-"    -pedantic    \\\n"
-"    -static      \\\n"
-"    -std=c18     \\\n"
+"\t$(INCLUDE)                            \\\n"
+"\t$(OPT)                                \\\n"
+"\t-Wall                                 \\\n"
+"\t-Wcast-align                          \\\n"
+"\t-Wcast-qual                           \\\n"
+"\t-Wconversion                          \\\n"
+"\t-Werror-implicit-function-declaration \\\n"
+"\t-Wextra                               \\\n"
+"\t-Winit-self                           \\\n"
+"\t-Wpointer-arith                       \\\n"
+"\t-Wshadow                              \\\n"
+"\t-Wstrict-prototypes                   \\\n"
+"\t-Wundef                               \\\n"
+"\t-Wuninitialized                       \\\n"
+"\t-Wunreachable-code                    \\\n"
+"\t-Wwrite-strings                       \\\n"
+"\t-flto                                 \\\n"
+"\t-fno-common                           \\\n"
+"\t-march=native                         \\\n"
+"\t-pedantic                             \\\n"
+"\t-static                               \\\n"
+"\t-std=c18                              \\\n"
 "\n"
 "all: $(EXEC)\n"
 "\n"
@@ -65,21 +78,21 @@ int main (int argc, char ** argv)
     ABORT(ko, argc < 2, "Usage: %s PROG_NAME [SRC]...\n", argv[0]);
 
     ABORT(ko, file_exists(FNAME),
-          "File already exists, aborting!");
+            "File already exists, aborting!");
 
     f = fopen(FNAME, "w");
     ABORT(ko, f == NULL,
-          "Could not open file for writing, aborting!");
+            "Could not open file for writing, aborting!");
 
     ABORT(ko, fprintf(f, TXTFMT1, argv[1]) < 0,
-          "An error occurred while writing to file!");
+            "An error occurred while writing to file!");
 
     for (int i = 2; i < argc; i++)
-        ABORT(ko, fprintf(f, "    %s \\\n", argv[i]) < 0,
-              "An error occurred while writing to file!");
+        ABORT(ko, fprintf(f, "\t%s \\\n", argv[i]) < 0,
+                "An error occurred while writing to file!");
 
     ABORT(ko, fprintf(f, TXTFMT2) < 0,
-          "An error occurred while writing to file!");
+            "An error occurred while writing to file!");
 
 ret:
     ifnotnull(f, fclose);

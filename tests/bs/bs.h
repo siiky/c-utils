@@ -1,10 +1,10 @@
-#include <bs.h>
+#include <utils/bs.h>
 
 #ifndef _BS_DEFS_H
 #define _BS_DEFS_H
 
 #include <common.h>
-#include <unused.h>
+#include <utils/unused.h>
 
 #include <string.h>
 

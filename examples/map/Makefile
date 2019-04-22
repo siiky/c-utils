@@ -23,18 +23,20 @@ FLAGS := \
     -march=native                         \
     -pedantic                             \
     -static                               \
-    -std=c11                              \
+    -std=c18                              \
 
-OPT := -g
+OPT := -g -O3
 
 CFLAGS := $(OPT) $(FLAGS)
 
 HEADERS := \
-    map.h \
+    map.h     \
+    tralloc.h \
 
 SRC := \
-    main.c \
-    map.c  \
+    main.c    \
+    map.c     \
+    tralloc.c \
 
 OBJS := $(SRC:.c=.o)
 

@@ -3,8 +3,7 @@ CC := musl-gcc
 DEST := ~/bin
 EXEC := tralloc
 INCLUDE := \
-    -I../../include/      \
-    -I/usr/local/include/ \
+    -I../../include/ \
 
 HEADERS := ../../include/tralloc.h
 SRC := \

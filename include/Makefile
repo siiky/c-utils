@@ -1,16 +1,16 @@
 DEST=/usr/local/include/utils
 
 HEADERS=\
-	bs.h        \
-	common.h    \
-	ftr.h       \
-	ifjmp.h     \
-	ifnotnull.h \
-	map.h       \
-	tralloc.h   \
-	unused.h    \
-	utils.h     \
-	vec.h       \
+	utils/bs.h        \
+	utils/common.h    \
+	utils/ftr.h       \
+	utils/ifjmp.h     \
+	utils/ifnotnull.h \
+	utils/map.h       \
+	utils/tralloc.h   \
+	utils/unused.h    \
+	utils/utils.h     \
+	utils/vec.h       \
 
 all: $(HEADERS)
 	@echo "run 'make install' to install"

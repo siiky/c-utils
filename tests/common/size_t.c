@@ -1,6 +1,6 @@
 #include <theft.h>
 
-#include <unused.h>
+#include <utils/unused.h>
 
 enum theft_alloc_res qc_size_t_alloc (struct theft * t, void * env, void ** output)
 {
@@ -25,7 +25,7 @@ void qc_size_t_free (void * instance, void * env)
 void qc_size_t_print (FILE * f, const void * instance, void * env)
 {
     UNUSED(env);
-    size_t x = * (size_t *) instance;
+    size_t x = * (const size_t *) instance;
     fprintf(f, "%zu", x);
 }
 

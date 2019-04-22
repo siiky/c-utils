@@ -1,6 +1,6 @@
 #include <theft.h>
 
-#include <unused.h>
+#include <utils/unused.h>
 
 enum theft_alloc_res qc_bool_alloc (struct theft * t, void * env, void ** output)
 {
@@ -25,7 +25,7 @@ void qc_bool_free (void * instance, void * env)
 void qc_bool_print (FILE * f, const void * instance, void * env)
 {
     UNUSED(env);
-    bool x = * (bool *) instance;
+    bool x = * (const bool *) instance;
     fputs((x) ? "true" : "false", f);
 }
 

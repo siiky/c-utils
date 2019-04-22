@@ -1,6 +1,6 @@
 #include <theft.h>
 
-#include <unused.h>
+#include <utils/unused.h>
 
 enum theft_alloc_res qc_void_ptr_alloc (struct theft * t, void * env, void ** output)
 {

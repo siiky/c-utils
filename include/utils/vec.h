@@ -1,4 +1,4 @@
-/* vec - v2018.11.04-0
+/* vec - v2019.04.22-0
  *
  * A vector type inspired by
  *  * Rust's `Vec` type
@@ -6,8 +6,8 @@
  *  * [sort](https://github.com/swenson/sort)
  *
  * The most up to date version of this file can be found at
- * `include/vec.h` on [siiky/c-utils](https://github.com/siiky/c-utils)
- * More usage examples can be found at `src/vec` on the link above
+ * `include/utils/vec.h` on [siiky/c-utils](https://github.com/siiky/c-utils)
+ * More usage examples can be found at `examples/vec` on the link above
  *
  * # TODO
  *
@@ -114,7 +114,7 @@ int main (void)
 
     return 0;
 }
-# endif
+# endif /* EXAMPLE */
 
 /*
  * <stdbool.h>

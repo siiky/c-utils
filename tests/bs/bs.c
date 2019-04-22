@@ -43,7 +43,7 @@ static void qc_bs_print (FILE * f, const void * instance, void * env)
             "  .bytes = %p,\n"
             "  .nbits = %u,\n"
             "}\n",
-            bs->bytes,
+            (void*) bs->bytes,
             bs->nbits);
 }
 

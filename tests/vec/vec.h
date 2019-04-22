@@ -1,5 +1,5 @@
 #define VEC_CFG_DATA_TYPE int
-#include <vec.h>
+#include <utils/vec.h>
 
 #ifndef _VEC_DEFS_H
 #define _VEC_DEFS_H
@@ -8,7 +8,7 @@
 #include <string.h>
 
 #include <common.h>
-#include <unused.h>
+#include <utils/unused.h>
 
 extern const struct theft_type_info qc_vec_info;
 

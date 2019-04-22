@@ -2,7 +2,7 @@ CC=musl-gcc
 #CC=cc
 EXEC=cvec
 
-FLAGS=-std=c11 -static -Wall -Wextra -pedantic -flto -I../../include/
+FLAGS=-std=c18 -static -Wall -Wextra -pedantic -flto -I../../include/
 CFLAGS=$(FLAGS) -Og -g
 
 HEADERS := \

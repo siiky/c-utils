@@ -2,12 +2,13 @@ include bs/bs.mk
 include map/map.mk
 include vec/vec.mk
 
-# NOTE: CC must be the same used to build CHICKEN
-CC := musl-gcc
+# NOTE: CC must be the same used to build CHICKEN and Theft
+CC := cc
 CSC := csc
 CSCFLAGS := \
     -L -Ltheft/build/ \
     -L -ltheft        \
+    -L -static        \
     -lfa2             \
     -static           \
 
@@ -22,8 +23,7 @@ C_SRC := \
     common/size_t.c   \
     common/void_ptr.c \
 
-CHICKEN_SRC := \
-    main.scm   \
+CHICKEN_SRC := main.scm
 
 OBJS := $(C_SRC:.c=.o) $(CHICKEN_SRC:.scm=.o)
 
@@ -35,12 +35,29 @@ INCS := \
 OPTS := -Og -g -ggdb
 
 CFLAGS := \
-    $(INCS)      \
-    $(OPTS)      \
-    -Wall        \
-    -Wconversion \
-    -Wextra      \
-    -static      \
+    $(INCS)                               \
+    $(OPTS)                               \
+    -Wall                                 \
+    -Wcast-align                          \
+    -Wcast-qual                           \
+    -Wconversion                          \
+    -Werror-implicit-function-declaration \
+    -Wextra                               \
+    -Winit-self                           \
+    -Wpointer-arith                       \
+    -Wshadow                              \
+    -Wstrict-prototypes                   \
+    -Wundef                               \
+    -Wuninitialized                       \
+    -Wunreachable-code                    \
+    -Wwrite-strings                       \
+    -flto                                 \
+    -fno-common                           \
+    -fsanitize=leak                       \
+    -march=native                         \
+    -pedantic                             \
+    -static                               \
+    -std=c18                              \
 
 all: $(EXEC)
 
@@ -67,7 +84,7 @@ theft:
 
 libtheft: theft
 	@echo "### BUILDING THEFT ###"
-	cd theft && make CC=$(CC)
+	make -C theft/ CC=$(CC)
 
 DATE := $(shell date +"%Y%m%d-%H%M")
 VALGRIND_LOG := valgrind-$(DATE)-$(CC).log
@@ -79,6 +96,6 @@ clean:
 	$(RM) $(OBJS) $(EXEC) valgrind-*.log $(EXEC)-*.out *.link
 
 clean_all: clean
-	cd theft/ && make clean
+	make -C theft/ clean
 
 .PHONY: all clean clean_all libtheft test theft valgrind

@@ -1,6 +1,6 @@
 #include <theft.h>
 
-#include <unused.h>
+#include <utils/unused.h>
 
 enum theft_alloc_res qc_int_alloc (struct theft * t, void * env, void ** output)
 {
@@ -25,7 +25,7 @@ void qc_int_free (void * instance, void * env)
 void qc_int_print (FILE * f, const void * instance, void * env)
 {
     UNUSED(env);
-    int x = * (int *) instance;
+    int x = * (const int *) instance;
     fprintf(f, "%d", x);
 }
 
@@ -37,8 +37,8 @@ const struct theft_type_info qc_int_info = {
 
 int qc_int_compar (const void * _a, const void * _b)
 {
-    int a = * (int *) _a;
-    int b = * (int *) _b;
+    int a = * (const int *) _a;
+    int b = * (const int *) _b;
 
     return (a > b) ?
         1:

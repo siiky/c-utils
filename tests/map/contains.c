@@ -25,7 +25,7 @@ static enum theft_trial_res QC_MKID_PROP(res) (struct theft * t, void * arg1, vo
     struct map map = *_map;
     bool res2 = map_contains(&map, key);
 
-    bool ret = (res1 && res2) || (!res1 && !res2);
+    bool ret = (!!res1) == (!!res2);
 
     return QC_BOOL2TRIAL(ret);
 }

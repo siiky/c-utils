@@ -17,7 +17,7 @@ CFLAGS := \
     -flto        \
     -pedantic    \
     -static      \
-    -std=c11     \
+    -std=c18     \
 
 all: $(EXEC)
 

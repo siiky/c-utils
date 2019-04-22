@@ -1,12 +1,12 @@
-/* map - v2019.01.19-0
+/* map - v2019.04.22-0
  *
  * A Hash Map type inspired by
  *  * [stb](https://github.com/nothings/stb)
  *  * [sort](https://github.com/swenson/sort)
  *
  * The most up to date version of this file can be found at
- * `include/map.h` on [siiky/c-utils](https://github.com/siiky/c-utils)
- * More usage examples can be found at `src/map` on the link above
+ * `include/utils/map.h` on [siiky/c-utils](https://github.com/siiky/c-utils)
+ * More usage examples can be found at `examples/map` on the link above
  */
 
 /*
@@ -64,7 +64,7 @@ struct MAP_CFG_MAP {
         struct {
 
             /** The hash of the key of this entry */
-            unsigned int hash;
+            unsigned hash;
 
             /** The key of this entry */
             MAP_CFG_KEY_DATA_TYPE key;
@@ -73,54 +73,59 @@ struct MAP_CFG_MAP {
             MAP_CFG_VALUE_DATA_TYPE value;
         } * entries;
 
-        /** Its length */
-        unsigned int length;
+        /** Number of entries in this entry array */
+        unsigned length;
 
         /*
          * since a call to realloc() (even if decreasing size)
          * may fail, the total capacity has to be kept
          * (maybe could be free slots?)
          */
-        /** Its capacity */
-        unsigned int capacity;
+        /** Maximum number of entries the array can hold */
+        unsigned capacity;
     } * table;
 
-    /** Its length */
-    unsigned int size;
+    /** Table size (fixed on initialization) */
+    unsigned size;
+
+    /** Number of entries stored currently */
+    unsigned cardinal;
 
     /** Whether the following info is still valid */
     bool lc_is_valid;
 
     /** Hash of the last entry that has been updated/looked up */
-    unsigned int lc_hash;
+    unsigned lc_hash;
 
     /** Index of the entry in the entry array */
-    unsigned int lc_idx;
+    unsigned lc_idx;
 };
 
 /*==========================================================
  * Function names
  *=========================================================*/
 #define MAP_ADD       MAP_CFG_MAKE_STR(add)
+#define MAP_CARDINAL  MAP_CFG_MAKE_STR(cardinal)
 #define MAP_CONTAINS  MAP_CFG_MAKE_STR(contains)
 #define MAP_FREE      MAP_CFG_MAKE_STR(free)
 #define MAP_GET       MAP_CFG_MAKE_STR(get)
+#define MAP_IS_EMPTY  MAP_CFG_MAKE_STR(is_empty)
 #define MAP_NEW       MAP_CFG_MAKE_STR(new)
 #define MAP_REMOVE    MAP_CFG_MAKE_STR(remove)
 #define MAP_WITH_SIZE MAP_CFG_MAKE_STR(with_size)
 
 /*==========================================================
  * Function prototypes
- *
- * RETURN TYPE            FUNCTION NAME PARAMETER LIST
  *==========================================================*/
 MAP_CFG_VALUE_DATA_TYPE MAP_GET       (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key);
 bool                    MAP_ADD       (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key, const MAP_CFG_VALUE_DATA_TYPE value);
 bool                    MAP_CONTAINS  (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key);
+bool                    MAP_IS_EMPTY  (const struct MAP_CFG_MAP * self);
 bool                    MAP_NEW       (struct MAP_CFG_MAP * self);
 bool                    MAP_REMOVE    (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key);
-bool                    MAP_WITH_SIZE (struct MAP_CFG_MAP * self, unsigned int size);
+bool                    MAP_WITH_SIZE (struct MAP_CFG_MAP * self, unsigned size);
 struct MAP_CFG_MAP      MAP_FREE      (struct MAP_CFG_MAP self);
+unsigned                MAP_CARDINAL  (const struct MAP_CFG_MAP * self);
 
 #ifdef MAP_CFG_IMPLEMENTATION
 
@@ -194,12 +199,16 @@ struct MAP_CFG_MAP      MAP_FREE      (struct MAP_CFG_MAP self);
 #  error "MAP_CFG_DEFAULT_SIZE must be bigger than 2"
 # endif /* MAP_CFG_DEFAULT_SIZE < 3 */
 
-static bool _MAP_DECREASE_CAPACITY (struct MAP_CFG_MAP * self, unsigned int tblidx)
+# ifndef MAP_MOD
+#  define MAP_MOD(hash, size) ((hash) % (size))
+# endif /* MAP_MOD */
+
+static bool _MAP_DECREASE_CAPACITY (struct MAP_CFG_MAP * self, unsigned tblidx)
 {
     if (self->table[tblidx].length == self->table[tblidx].capacity)
         return true;
 
-    unsigned int cap = self->table[tblidx].length;
+    unsigned cap = self->table[tblidx].length;
     void * entries = MAP_CFG_REALLOC(self->table[tblidx].entries,
             sizeof(*self->table[tblidx].entries) * cap);
     bool ret = entries != NULL;
@@ -212,12 +221,30 @@ static bool _MAP_DECREASE_CAPACITY (struct MAP_CFG_MAP * self, unsigned int tbli
     return ret;
 }
 
-static bool _MAP_INCREASE_CAPACITY (struct MAP_CFG_MAP * self, unsigned int tblidx)
+/*
+ * entryCmp (ha, ka) (hb, kb)
+ *     | ha < hb = LT
+ *     | ha > hb = GT
+ *     | otherwise = keyCmp ka kb
+ *
+ * This function establishes a strict total order iff the key
+ * comparisson function establishes a strict total order
+ */
+static inline int _MAP_ENTRY_CMP (unsigned ha, const MAP_CFG_KEY_DATA_TYPE ka, unsigned hb, const MAP_CFG_KEY_DATA_TYPE kb)
+{
+    return (ha < hb) ?
+        -1:
+        (ha > hb) ?
+        1:
+        MAP_CFG_KEY_CMP(ka, kb);
+}
+
+static bool _MAP_INCREASE_CAPACITY (struct MAP_CFG_MAP * self, unsigned tblidx)
 {
     if (self->table[tblidx].length < self->table[tblidx].capacity)
         return true;
 
-    unsigned int cap = self->table[tblidx].capacity + 1;
+    unsigned cap = self->table[tblidx].capacity + 1;
     void * entries = MAP_CFG_REALLOC(self->table[tblidx].entries,
             sizeof(*self->table[tblidx].entries) * cap);
     bool ret = entries != NULL;
@@ -230,21 +257,12 @@ static bool _MAP_INCREASE_CAPACITY (struct MAP_CFG_MAP * self, unsigned int tbli
     return ret;
 }
 
-static inline int _MAP_ENTRY_CMP (unsigned int ha, const MAP_CFG_KEY_DATA_TYPE ka, unsigned int hb, const MAP_CFG_KEY_DATA_TYPE kb)
-{
-    return (ha < hb) ?
-        -1:
-        (ha > hb) ?
-        1:
-        MAP_CFG_KEY_CMP(ka, kb);
-}
-
-static bool _MAP_SEARCH (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key, unsigned int hash, unsigned int tblidx, unsigned int * _i)
+static bool _MAP_SEARCH (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key, unsigned hash, unsigned tblidx, unsigned * _i)
 {
     bool ret = false;
-    unsigned int i = 0;
-    unsigned int size = self->table[tblidx].length;
-    unsigned int base = 0;
+    unsigned i = 0;
+    unsigned size = self->table[tblidx].length;
+    unsigned base = 0;
 
     if (size == 0)
         goto out;
@@ -259,8 +277,8 @@ static bool _MAP_SEARCH (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE 
     }
 
     while (size > 1) {
-        unsigned int half = size >> 1;
-        unsigned int mid = base + half;
+        unsigned half = size >> 1;
+        unsigned mid = base + half;
 
         int cmp = _MAP_ENTRY_CMP(hash, key,
                 self->table[tblidx].entries[mid].hash,
@@ -279,9 +297,7 @@ static bool _MAP_SEARCH (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE 
 
     ret = cmp == 0;
 
-    i = (ret) ?
-        base :
-        base + (cmp < 0);
+    i = base + (!ret && cmp < 0);
 
     if (ret) {
         self->lc_is_valid = true;
@@ -294,10 +310,10 @@ out:
     return ret;
 }
 
-static bool _MAP_INSERT_SORTED (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key, const MAP_CFG_VALUE_DATA_TYPE value, unsigned int hash, unsigned int tblidx)
+static bool _MAP_INSERT_SORTED (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key, const MAP_CFG_VALUE_DATA_TYPE value, unsigned hash, unsigned tblidx)
 {
-    unsigned int i = 0;
-    unsigned int len = self->table[tblidx].length;
+    unsigned i = 0;
+    unsigned len = self->table[tblidx].length;
 
     bool exists = _MAP_SEARCH(self, key, hash, tblidx, &i);
 
@@ -310,6 +326,8 @@ static bool _MAP_INSERT_SORTED (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DAT
             memmove(&self->table[tblidx].entries[i + 1],
                     &self->table[tblidx].entries[i],
                     sizeof(*self->table[tblidx].entries) * (len - i));
+
+        self->cardinal++;
     }
 
     self->table[tblidx].entries[i].hash = hash;
@@ -330,12 +348,11 @@ MAP_CFG_STATIC MAP_CFG_VALUE_DATA_TYPE MAP_GET (struct MAP_CFG_MAP * self, const
     assert(self->size >= 3);
     assert(self->table != NULL);
 
-    unsigned int hash = MAP_CFG_HASH_FUNC(key);
-    unsigned int tblidx = hash % self->size;
-    unsigned int i = 0;
+    unsigned hash = MAP_CFG_HASH_FUNC(key);
+    unsigned tblidx = MAP_MOD(hash, self->size);
+    unsigned i = 0;
 
     bool exists = _MAP_SEARCH(self, key, hash, tblidx, &i);
-
     assert(exists);
     return self->table[tblidx].entries[i].value;
 }
@@ -358,8 +375,8 @@ MAP_CFG_STATIC bool MAP_ADD (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_T
     if (self == NULL || self->size < 3 || self->table == NULL)
         return false;
 
-    unsigned int hash = MAP_CFG_HASH_FUNC(key);
-    unsigned int tblidx = hash % self->size;
+    unsigned hash = MAP_CFG_HASH_FUNC(key);
+    unsigned tblidx = MAP_MOD(hash, self->size);
 
     return _MAP_INSERT_SORTED(self, key, value, hash, tblidx);
 }
@@ -369,11 +386,16 @@ MAP_CFG_STATIC bool MAP_CONTAINS (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_D
     if (self == NULL || self->size < 3 || self->table == NULL)
         return false;
 
-    unsigned int hash = MAP_CFG_HASH_FUNC(key);
-    unsigned int tblidx = hash % self->size;
+    unsigned hash = MAP_CFG_HASH_FUNC(key);
+    unsigned tblidx = MAP_MOD(hash, self->size);
 
-    unsigned int _i;
+    unsigned _i;
     return _MAP_SEARCH(self, key, hash, tblidx, &_i);
+}
+
+bool MAP_IS_EMPTY (const struct MAP_CFG_MAP * self)
+{
+    return MAP_CARDINAL(self) == 0;
 }
 
 MAP_CFG_STATIC bool MAP_NEW (struct MAP_CFG_MAP * self)
@@ -386,10 +408,10 @@ MAP_CFG_STATIC bool MAP_REMOVE (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DAT
     if (self == NULL || self->size < 3 || self->table == NULL)
         return false;
 
-    unsigned int hash = MAP_CFG_HASH_FUNC(key);
-    unsigned int tblidx = hash % self->size;
+    unsigned hash = MAP_CFG_HASH_FUNC(key);
+    unsigned tblidx = MAP_MOD(hash, self->size);
 
-    unsigned int i = 0;
+    unsigned i = 0;
     bool exists = _MAP_SEARCH(self, key, hash, tblidx, &i);
     if (!exists)
         return false;
@@ -409,24 +431,23 @@ MAP_CFG_STATIC bool MAP_REMOVE (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DAT
     _MAP_DECREASE_CAPACITY(self, tblidx);
 
     self->lc_is_valid = false;
+    self->cardinal--;
 
     return true;
 }
 
-MAP_CFG_STATIC bool MAP_WITH_SIZE (struct MAP_CFG_MAP * self, unsigned int size)
+MAP_CFG_STATIC bool MAP_WITH_SIZE (struct MAP_CFG_MAP * self, unsigned size)
 {
     if (self == NULL || size < 3)
         return false;
 
+    *self = (struct MAP_CFG_MAP) {0};
     self->table = MAP_CFG_CALLOC(size, sizeof(*self->table));
 
     bool ret = self->table != NULL;
 
-    if (ret) {
-        self->lc_is_valid = false;
+    if (ret)
         self->size = size;
-        memset(self->table, 0, size * sizeof(*self->table));
-    }
 
     return ret;
 }
@@ -434,11 +455,11 @@ MAP_CFG_STATIC bool MAP_WITH_SIZE (struct MAP_CFG_MAP * self, unsigned int size)
 MAP_CFG_STATIC struct MAP_CFG_MAP MAP_FREE (struct MAP_CFG_MAP self)
 {
     if (self.table != NULL) {
-        for (unsigned int i = 0; i < self.size; i++) {
+        for (unsigned i = 0; i < self.size; i++) {
             if (self.table[i].entries != NULL) {
 
 # if defined(MAP_CFG_VALUE_DTOR) || defined(MAP_CFG_KEY_DTOR)
-                for (unsigned int j = 0; j < self.table[i].length; j++) {
+                for (unsigned j = 0; j < self.table[i].length; j++) {
 #  ifdef MAP_CFG_VALUE_DTOR
                     MAP_CFG_VALUE_DTOR(self.table[i].entries[j].value);
 #  endif /* MAP_CFG_VALUE_DTOR */
@@ -457,6 +478,11 @@ MAP_CFG_STATIC struct MAP_CFG_MAP MAP_FREE (struct MAP_CFG_MAP self)
     }
 
     return (struct MAP_CFG_MAP) {0};
+}
+
+unsigned MAP_CARDINAL (const struct MAP_CFG_MAP * self)
+{
+    return (self) ? self->cardinal : 0;
 }
 
 /*==========================================================
@@ -493,9 +519,11 @@ MAP_CFG_STATIC struct MAP_CFG_MAP MAP_FREE (struct MAP_CFG_MAP self)
  * Functions
  */
 #undef MAP_ADD
+#undef MAP_CARDINAL
 #undef MAP_CONTAINS
 #undef MAP_FREE
 #undef MAP_GET
+#undef MAP_IS_EMPTY
 #undef MAP_NEW
 #undef MAP_REMOVE
 #undef MAP_WITH_SIZE

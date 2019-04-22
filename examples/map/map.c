@@ -1,9 +1,9 @@
-static unsigned int hash_func (const unsigned int key)
+static unsigned int hash_func (unsigned key)
 {
     return key;
 }
 
-static int cmp_func (const unsigned int a, const unsigned int b)
+static int cmp_func (unsigned a, unsigned b)
 {
     return (a < b) ?
         -1:
@@ -12,6 +12,12 @@ static int cmp_func (const unsigned int a, const unsigned int b)
         0;
 }
 
+#include "tralloc.h"
+
+#define MAP_CFG_MALLOC trmalloc
+#define MAP_CFG_CALLOC trcalloc
+#define MAP_CFG_REALLOC trrealloc
+#define MAP_CFG_FREE trfree
 #define MAP_CFG_KEY_CMP cmp_func
 #define MAP_CFG_HASH_FUNC hash_func
 #define MAP_CFG_IMPLEMENTATION

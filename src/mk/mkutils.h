@@ -1,8 +1,8 @@
 #ifndef _MKUTILS_H
 #define _MKUTILS_H
 
-#include "ifnotnull.h"
-#include "ifjmp.h"
+#include <utils/ifnotnull.h>
+#include <utils/ifjmp.h>
 
 #define ABORT(L, C, ...)              \
     if (C) {                          \

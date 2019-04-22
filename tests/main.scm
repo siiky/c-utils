@@ -13,15 +13,11 @@
 #include "vec/qc.h"
 <#
 
-(define bs-test-all  `(bs  . ,(foreign-lambda bool "qc_bs_test_all")))
-(define map-test-all `(map . ,(foreign-lambda bool "qc_map_test_all")))
-(define vec-test-all `(vec . ,(foreign-lambda bool "qc_vec_test_all")))
-
 (define *TESTS*
   `(
-    ,bs-test-all
-    ,map-test-all
-    ,vec-test-all
+    (bs  . ,(foreign-lambda bool "qc_bs_test_all"))
+    (map . ,(foreign-lambda bool "qc_map_test_all"))
+    (vec . ,(foreign-lambda bool "qc_vec_test_all"))
     ))
 
 (define (usage cmd)
@@ -32,7 +28,10 @@
     "\t" cmd " x MOD...\n"
     "\t\tTest all modules but the ones specified\n"
     "\t" cmd " o MOD...\n"
-    "\t\tTest only the specified modules\n")
+    "\t\tTest only the specified modules\n"
+    "\n"
+    "Modules available for testing: "
+    (map car *TESTS*))
   1)
 
 (define (run-all tests)
@@ -44,7 +43,6 @@
 (define (run-except tests mods)
   (run-all (filter (lambda (test) (not (member (symbol->string (car test)) mods))) tests)))
 
-; TODO: return value
 (define (main args)
   (let ((usg    (lambda (_) (usage (program-name))))
         (all    (lambda (_) (run-all    *TESTS*)))

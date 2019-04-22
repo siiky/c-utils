@@ -5,8 +5,8 @@
  *  * [stb](https://github.com/nothings/stb)
  *
  * The most up to date version of this file can be found at
- * `include/ftr.h` on [siiky/c-utils](https://github.com/siiky/c-utils)
- * More usage examples can be found at `src/ftr` on the link above
+ * `include/utils/ftr.h` on [siiky/c-utils](https://github.com/siiky/c-utils)
+ * More usage examples can be found at `examples/ftr` on the link above
  */
 
 # if 0 /* EXAMPLE */

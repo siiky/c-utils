@@ -4,7 +4,7 @@
 #define FTR_CFG_RET_TYPE size_t
 #define FTR_CFG_FTR my_ftr
 #define _FTR_H_IMPLEMENTATION
-#include "ftr.h"
+#include <utils/ftr.h>
 
 #include <unistd.h>
 

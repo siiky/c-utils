@@ -16,11 +16,11 @@ struct strm_func {
 };
 
 #define VEC_CFG_DATA_TYPE struct strm_func
-#include "vec.h"
+#include <utils/vec.h>
 
 #define FTR_CFG_ARGS_TYPE void *
 #define FTR_CFG_RET_TYPE void *
-#include "ftr.h"
+#include <utils/ftr.h>
 
 struct strm {
     void *     head;
