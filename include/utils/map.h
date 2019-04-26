@@ -424,9 +424,10 @@ MAP_CFG_STATIC bool MAP_REMOVE (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DAT
     MAP_CFG_VALUE_DTOR(self->table[tblidx].entries[i].value);
 #endif /* MAP_CFG_VALUE_DTOR */
 
+    self->table[tblidx].length--;
     memmove(&self->table[tblidx].entries[i],
             &self->table[tblidx].entries[i + 1],
-            sizeof(*self->table[tblidx].entries) * (self->table[tblidx].length - i - 1));
+            sizeof(*self->table[tblidx].entries) * (self->table[tblidx].length - i));
 
     _MAP_DECREASE_CAPACITY(self, tblidx);
 
