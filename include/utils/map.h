@@ -1,4 +1,4 @@
-/* map - v2019.04.22-0
+/* map - v2019.04.26-2
  *
  * A Hash Map type inspired by
  *  * [stb](https://github.com/nothings/stb)
@@ -101,6 +101,17 @@ struct MAP_CFG_MAP {
         unsigned idx;
     } lc;
 
+    /** An iterator */
+    struct {
+        /** Whether it is iterating */
+        bool ing;
+
+        /** The table index */
+        unsigned tblidx;
+
+        /** The entry index */
+        unsigned entidx;
+    } iter;
 };
 
 /*==========================================================
@@ -112,6 +123,12 @@ struct MAP_CFG_MAP {
 #define MAP_FREE      MAP_CFG_MAKE_STR(free)
 #define MAP_GET       MAP_CFG_MAKE_STR(get)
 #define MAP_IS_EMPTY  MAP_CFG_MAKE_STR(is_empty)
+#define MAP_ITER      MAP_CFG_MAKE_STR(iter)
+#define MAP_ITERING   MAP_CFG_MAKE_STR(itering)
+#define MAP_ITER_END  MAP_CFG_MAKE_STR(iter_end)
+#define MAP_ITER_KEY  MAP_CFG_MAKE_STR(iter_key)
+#define MAP_ITER_NEXT MAP_CFG_MAKE_STR(iter_next)
+#define MAP_ITER_VAL  MAP_CFG_MAKE_STR(iter_val)
 #define MAP_NEW       MAP_CFG_MAKE_STR(new)
 #define MAP_REMOVE    MAP_CFG_MAKE_STR(remove)
 #define MAP_WITH_SIZE MAP_CFG_MAKE_STR(with_size)
@@ -119,10 +136,16 @@ struct MAP_CFG_MAP {
 /*==========================================================
  * Function prototypes
  *==========================================================*/
+MAP_CFG_KEY_DATA_TYPE   MAP_ITER_KEY  (const struct MAP_CFG_MAP * self);
 MAP_CFG_VALUE_DATA_TYPE MAP_GET       (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key);
+MAP_CFG_VALUE_DATA_TYPE MAP_ITER_VAL  (const struct MAP_CFG_MAP * self);
 bool                    MAP_ADD       (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key, const MAP_CFG_VALUE_DATA_TYPE value);
 bool                    MAP_CONTAINS  (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key);
 bool                    MAP_IS_EMPTY  (const struct MAP_CFG_MAP * self);
+bool                    MAP_ITER      (struct MAP_CFG_MAP * self);
+bool                    MAP_ITERING   (const struct MAP_CFG_MAP * self);
+bool                    MAP_ITER_END  (struct MAP_CFG_MAP * self);
+bool                    MAP_ITER_NEXT (struct MAP_CFG_MAP * self);
 bool                    MAP_NEW       (struct MAP_CFG_MAP * self);
 bool                    MAP_REMOVE    (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key);
 bool                    MAP_WITH_SIZE (struct MAP_CFG_MAP * self, unsigned size);
@@ -202,9 +225,21 @@ unsigned                MAP_CARDINAL  (const struct MAP_CFG_MAP * self);
 # endif /* MAP_CFG_DEFAULT_SIZE < 3 */
 
 # ifndef MAP_MOD
+/**
+ * @brief Calculates an index to an entry array
+ * @returns An index in range [ 0, @a size [ from @a hash and @a size
+ */
 #  define MAP_MOD(hash, size) ((hash) % (size))
 # endif /* MAP_MOD */
 
+/**
+ * @brief Tries to decrease the total capacity of an entry array to
+ *        its length
+ * @param self The map
+ * @param tblidx The index of the entry array
+ * @returns `true` if the array was already at the minimum capacity or
+ *          it successfully decreased it, `false` otherwise
+ */
 static bool _MAP_DECREASE_CAPACITY (struct MAP_CFG_MAP * self, unsigned tblidx)
 {
     if (self->table[tblidx].length == self->table[tblidx].capacity)
@@ -223,14 +258,24 @@ static bool _MAP_DECREASE_CAPACITY (struct MAP_CFG_MAP * self, unsigned tblidx)
     return ret;
 }
 
-/*
+/**
+ * @brief Compares two entries based on hash and key
+ * @param ha Hash of the first entry
+ * @param ka Key of the first entry
+ * @param hb Hash of the second entry
+ * @param kb Key of the second entry
+ * @returns <0 if (ha, ka) < (hb, kb), or
+ *          >0 if (ha, ka) > (hb, kb), or
+ *           0 if (ha, ka) == (hb, kb).
+ *           The keys are compared with MAP_CFG_KEY_CMP()
+ *
  * entryCmp (ha, ka) (hb, kb)
- *     | ha < hb = LT
- *     | ha > hb = GT
+ *     | ha < hb   = LT
+ *     | ha > hb   = GT
  *     | otherwise = keyCmp ka kb
  *
- * This function establishes a strict total order iff the key
- * comparisson function establishes a strict total order
+ * This function establishes a strict total order on entries iff
+ * MAP_CFG_KEY_CMP() establishes a strict total order on keys
  */
 static inline int _MAP_ENTRY_CMP (unsigned ha, const MAP_CFG_KEY_DATA_TYPE ka, unsigned hb, const MAP_CFG_KEY_DATA_TYPE kb)
 {
@@ -241,6 +286,14 @@ static inline int _MAP_ENTRY_CMP (unsigned ha, const MAP_CFG_KEY_DATA_TYPE ka, u
         MAP_CFG_KEY_CMP(ka, kb);
 }
 
+/**
+ * @brief Tries to increase the total capacity of an entry array to
+ *        fit another entry
+ * @param self The map
+ * @param tblidx The index of the entry array
+ * @returns `true` if it successfully increased the capacity or wasn't
+ *          necessary, `false` otherwise
+ */
 static bool _MAP_INCREASE_CAPACITY (struct MAP_CFG_MAP * self, unsigned tblidx)
 {
     if (self->table[tblidx].length < self->table[tblidx].capacity)
@@ -259,6 +312,30 @@ static bool _MAP_INCREASE_CAPACITY (struct MAP_CFG_MAP * self, unsigned tblidx)
     return ret;
 }
 
+/**
+ * @brief Searches for an entry with key @a key and hash @a hash in
+ *        the entry array with index @a tblidx
+ * @param self The map
+ * @param key The key
+ * @param hash The hash of @a key
+ * @param tblidx The index of the entry array
+ * @param[out] _i The index of the entry in the entry array (!NULL)
+ * @returns `true` if there was an entry with key @a key, and sets
+ *          @a _i to the index of the entry in the entry array.
+ *          `false` if there was no entry with key @a key, and sets
+ *          @a _i to the index in the entry array where an entry
+ *          with key @a key should be inserted
+ *
+ * This function assumes the entry arrays are sorted according to
+ *     _MAP_ENTRY_CMP(). This means MAP_CFG_KEY_CMP() must be
+ *     correctly defined similarly to a compare function passable to
+ *     strcmp(), the only difference being the arguments are not
+ *     pointers to, but values of type MAP_CFG_KEY_DATA_TYPE. It may
+ *     be defined either as a macro or a function, but must behave
+ *     as if it was a function of the type:
+ *
+ * int MAP_CFG_KEY_CMP (MAP_CFG_KEY_DATA_TYPE, MAP_CFG_KEY_DATA_TYPE)
+ */
 static bool _MAP_SEARCH (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key, unsigned hash, unsigned tblidx, unsigned * _i)
 {
     bool ret = false;
@@ -312,6 +389,17 @@ out:
     return ret;
 }
 
+/**
+ * @brief Inserts or updates an entry
+ * @param self The map
+ * @param key The key
+ * @param value The value
+ * @param hash The hash of @a key
+ * @param tblidx The index of the entry array where the entry should
+ *        be put
+ * @returns `false` if there was no entry with key @a key and it wasn't
+ *          possible to insert it, `true` otherwise
+ */
 static bool _MAP_INSERT_SORTED (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key, const MAP_CFG_VALUE_DATA_TYPE value, unsigned hash, unsigned tblidx)
 {
     unsigned i = 0;
@@ -344,6 +432,28 @@ static bool _MAP_INSERT_SORTED (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DAT
     return true;
 }
 
+/**
+ * @brief Gets the key of the iterator's current entry.
+ *        The map must be iterating
+ * @param self The map
+ * @returns The key of the iterator's current entry
+ */
+MAP_CFG_KEY_DATA_TYPE MAP_ITER_KEY (const struct MAP_CFG_MAP * self)
+{
+    assert(self->iter.ing);
+    assert(self->iter.tblidx < self->size);
+    assert(self->iter.entidx < self->table[self->iter.tblidx].length);
+    return self->table[self->iter.tblidx].entries[self->iter.entidx].key;
+}
+
+/**
+ * @brief Gets the value associated with a given key
+ *        The map must have been successfully initialized with
+ *        MAP_NEW() or MAP_WITH_SIZE()
+ * @param self The map
+ * @param key The key (must be the key of an entry in the map)
+ * @returns The value associated with @a key
+ */
 MAP_CFG_STATIC MAP_CFG_VALUE_DATA_TYPE MAP_GET (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key)
 {
     assert(self != NULL);
@@ -360,16 +470,28 @@ MAP_CFG_STATIC MAP_CFG_VALUE_DATA_TYPE MAP_GET (struct MAP_CFG_MAP * self, const
 }
 
 /**
- * @brief Adds an entry to @a self with @a key and @a value.
- *        @a self must have been successfully initialized with
+ * @brief Gets the value of the iterator's current entry.
+ *        The map must be iterating
+ * @param self The map
+ * @returns The value of the iterator's current entry
+ */
+MAP_CFG_VALUE_DATA_TYPE MAP_ITER_VAL (const struct MAP_CFG_MAP * self)
+{
+    assert(self->iter.ing);
+    assert(self->iter.tblidx < self->size);
+    assert(self->iter.entidx < self->table[self->iter.tblidx].length);
+    return self->table[self->iter.tblidx].entries[self->iter.entidx].value;
+}
+
+/**
+ * @brief Adds or updates an entry to the map with @a key and @a value.
+ *        The map must have been successfully initialized with
  *        MAP_NEW() or MAP_WITH_SIZE()
- *
  * @param self The map
  * @param key The key
  * @param value The value
- *
  * @returns `true` if it successfully added the entry to the map.
- *          This function fails (returns `false`) if @a self isn't
+ *          This function fails (returns `false`) if the map isn't
  *          valid, or it wasn't possible to get space for the new entry
  */
 MAP_CFG_STATIC bool MAP_ADD (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key, const MAP_CFG_VALUE_DATA_TYPE value)
@@ -383,6 +505,12 @@ MAP_CFG_STATIC bool MAP_ADD (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_T
     return _MAP_INSERT_SORTED(self, key, value, hash, tblidx);
 }
 
+/**
+ * @brief Checks if the map contains a given @a key
+ * @param self The map
+ * @param key The key
+ * @returns `true` if the map contains @a key
+ */
 MAP_CFG_STATIC bool MAP_CONTAINS (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key)
 {
     if (self == NULL || self->size < 3 || self->table == NULL)
@@ -395,16 +523,107 @@ MAP_CFG_STATIC bool MAP_CONTAINS (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_D
     return _MAP_SEARCH(self, key, hash, tblidx, &_i);
 }
 
+/**
+ * @brief Checks if the map is empty (i.e., has no entries)
+ * @param self The map
+ * @returns `true` if the map is empty, `false` otherwise
+ */
 bool MAP_IS_EMPTY (const struct MAP_CFG_MAP * self)
 {
     return MAP_CARDINAL(self) == 0;
 }
 
+/**
+ * @brief Starts iterating over the map
+ * @param self The map
+ * @returns `false` if the map is already iterating or is empty
+ */
+bool MAP_ITER (struct MAP_CFG_MAP * self)
+{
+    if (self->iter.ing || MAP_IS_EMPTY(self))
+        return false;
+
+    unsigned tblidx = 0;
+    for (; tblidx < self->size && self->table[tblidx].length == 0; tblidx++)
+        ;
+
+    self->iter.ing = true;
+    self->iter.tblidx = tblidx;
+    self->iter.entidx = 0;
+
+    return true;
+}
+
+/**
+ * @brief Checks if the map is iterating
+ * @param self The map
+ * @returns `true` if the map is iterating
+ */
+bool MAP_ITERING (const struct MAP_CFG_MAP * self)
+{
+    return self && self->iter.ing;
+}
+
+/**
+ * @brief Stops iterating over the map. Has no effect if is wasn't
+ *        iterating
+ * @param self The map
+ * @returns `true` if the map is not NULL
+ */
+bool MAP_ITER_END (struct MAP_CFG_MAP * self)
+{
+    return self
+        && !(self->iter.ing = false);
+}
+
+/**
+ * @brief Advances the iterator to the next entry (if any)
+ * @param self The map
+ * @returns `true` if the map is still iterating
+ */
+bool MAP_ITER_NEXT (struct MAP_CFG_MAP * self)
+{
+    if (!MAP_ITERING(self)
+            || self->iter.tblidx >= self->size
+            || self->iter.entidx >= self->table[self->iter.tblidx].length)
+        return false;
+
+    if (self->iter.entidx < self->table[self->iter.tblidx].length - 1)
+        return self->iter.entidx++, true;
+
+    unsigned tblidx = 0;
+    for (; tblidx < self->size && self->table[tblidx].length == 0; tblidx++)
+        ;
+
+    bool ret = tblidx < self->size;
+    if (ret) {
+        self->iter.tblidx = tblidx;
+        self->iter.entidx = 0;
+    }
+
+    return ret;
+}
+
+/**
+ * @brief Initializes a map with the default size
+ * @param self The map
+ * @returns `true` if it successfully initialized the map
+ */
 MAP_CFG_STATIC bool MAP_NEW (struct MAP_CFG_MAP * self)
 {
     return MAP_WITH_SIZE(self, MAP_CFG_DEFAULT_SIZE);
 }
 
+/**
+ * @brief Remove the entry with a given key
+ * @param self The map
+ * @param key The key
+ * @retuns `true` if there was an entry with key @a key, or `false`
+ *         if there was no such entry or the map is not valid
+ *
+ * If defined, MAP_CFG_KEY_DTOR() and MAP_CFG_VALUE_DTOR() are called
+ *     on the entry to be removed
+ */
 MAP_CFG_STATIC bool MAP_REMOVE (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key)
 {
     if (self == NULL || self->size < 3 || self->table == NULL)
@@ -439,6 +658,12 @@ MAP_CFG_STATIC bool MAP_REMOVE (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DAT
     return true;
 }
 
+/**
+ * @brief Initializes a map with a given size
+ * @param self The map
+ * @param size The size of the table (must be >= 3)
+ * @returns `true` if it successfully initialized the map
+ */
 MAP_CFG_STATIC bool MAP_WITH_SIZE (struct MAP_CFG_MAP * self, unsigned size)
 {
     if (self == NULL || size < 3)
@@ -455,6 +680,12 @@ MAP_CFG_STATIC bool MAP_WITH_SIZE (struct MAP_CFG_MAP * self, unsigned size)
     return ret;
 }
 
+/**
+ * @brief Cleans and frees the map. It also frees keys and values if
+ *        MAP_CFG_KEY_DTOR() and MAP_CFG_VALUE_DTOR() are defined
+ * @param self The map
+ * @returns A new empty (clean) map
+ */
 MAP_CFG_STATIC struct MAP_CFG_MAP MAP_FREE (struct MAP_CFG_MAP self)
 {
     if (self.table != NULL) {
@@ -483,6 +714,11 @@ MAP_CFG_STATIC struct MAP_CFG_MAP MAP_FREE (struct MAP_CFG_MAP self)
     return (struct MAP_CFG_MAP) {0};
 }
 
+/**
+ * @brief Calculates the cardinal (number of entries) in the map
+ * @param self The map
+ * @returns The number of entries in the map
+ */
 unsigned MAP_CARDINAL (const struct MAP_CFG_MAP * self)
 {
     return (self) ? self->cardinal : 0;
@@ -527,6 +763,12 @@ unsigned MAP_CARDINAL (const struct MAP_CFG_MAP * self)
 #undef MAP_FREE
 #undef MAP_GET
 #undef MAP_IS_EMPTY
+#undef MAP_ITER
+#undef MAP_ITERING
+#undef MAP_ITER_END
+#undef MAP_ITER_KEY
+#undef MAP_ITER_NEXT
+#undef MAP_ITER_VAL
 #undef MAP_NEW
 #undef MAP_REMOVE
 #undef MAP_WITH_SIZE
