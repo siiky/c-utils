@@ -59,10 +59,8 @@
 struct MAP_CFG_MAP {
     /** The map, an array of arrays of entries */
     struct {
-
         /** An array of entries */
         struct {
-
             /** The hash of the key of this entry */
             unsigned hash;
 
@@ -91,14 +89,18 @@ struct MAP_CFG_MAP {
     /** Number of entries stored currently */
     unsigned cardinal;
 
-    /** Whether the following info is still valid */
-    bool lc_is_valid;
+    /** A little cache */
+    struct {
+        /** Whether the following info is still valid */
+        bool valid;
 
-    /** Hash of the last entry that has been updated/looked up */
-    unsigned lc_hash;
+        /** Hash of the last entry that has been updated/looked up */
+        unsigned hash;
 
-    /** Index of the entry in the entry array */
-    unsigned lc_idx;
+        /** Index of the entry in the entry array */
+        unsigned idx;
+    } lc;
+
 };
 
 /*==========================================================
@@ -267,11 +269,11 @@ static bool _MAP_SEARCH (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE 
     if (size == 0)
         goto out;
 
-    if (self->lc_is_valid
-            && self->lc_hash == hash
-            && MAP_CFG_KEY_CMP(key, self->table[tblidx].entries[self->lc_idx].key) == 0)
+    if (self->lc.valid
+            && self->lc.hash == hash
+            && MAP_CFG_KEY_CMP(key, self->table[tblidx].entries[self->lc.idx].key) == 0)
     {
-        i = self->lc_idx;
+        i = self->lc.idx;
         ret = true;
         goto out;
     }
@@ -300,9 +302,9 @@ static bool _MAP_SEARCH (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE 
     i = base + (!ret && cmp < 0);
 
     if (ret) {
-        self->lc_is_valid = true;
-        self->lc_hash = hash;
-        self->lc_idx = i;
+        self->lc.valid = true;
+        self->lc.hash = hash;
+        self->lc.idx = i;
     }
 
 out:
@@ -335,9 +337,9 @@ static bool _MAP_INSERT_SORTED (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DAT
     self->table[tblidx].entries[i].value = value;
     self->table[tblidx].length++;
 
-    self->lc_is_valid = true;
-    self->lc_hash = hash;
-    self->lc_idx = i;
+    self->lc.valid = true;
+    self->lc.hash = hash;
+    self->lc.idx = i;
 
     return true;
 }
@@ -431,7 +433,7 @@ MAP_CFG_STATIC bool MAP_REMOVE (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DAT
 
     _MAP_DECREASE_CAPACITY(self, tblidx);
 
-    self->lc_is_valid = false;
+    self->lc.valid = false;
     self->cardinal--;
 
     return true;
