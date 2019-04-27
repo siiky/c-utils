@@ -1,9 +1,9 @@
-CC := musl-gcc
-#CC := cc
+include ../../defaults.mk
 
 DEST := ~/bin
-
-INCLUDE := -I../../include/
+INC := -I../../include/
+OPT := -Os
+CFLAGS := $(FLAGS) $(INC) $(OPT)
 
 HEADERS := mkutils.h
 
@@ -13,32 +13,6 @@ SRC := \
 
 EXECS := $(SRC:.c=)
 
-OPT := -Os
-
-CFLAGS := \
-	$(INCLUDE)                            \
-	$(OPT)                                \
-	-Wall                                 \
-	-Wcast-align                          \
-	-Wcast-qual                           \
-	-Wconversion                          \
-	-Werror-implicit-function-declaration \
-	-Wextra                               \
-	-Winit-self                           \
-	-Wpointer-arith                       \
-	-Wshadow                              \
-	-Wstrict-prototypes                   \
-	-Wundef                               \
-	-Wuninitialized                       \
-	-Wunreachable-code                    \
-	-Wwrite-strings                       \
-	-flto                                 \
-	-fno-common                           \
-	-march=native                         \
-	-pedantic                             \
-	-static                               \
-	-std=c18                              \
-
 all: $(EXECS)
 
 %: %.c
@@ -47,16 +21,13 @@ all: $(EXECS)
 strip: $(EXECS)
 	strip -s $(EXECS)
 
-install: $(EXECS)
+install: strip
 	install -m 0700 $(EXECS) -t $(DEST)
 
 clean:
 	$(RM) $(EXECS)
 
 check: $(SRC) $(HEADERS)
-	cppcheck --std=c11 -f --language=c --enable=all $(INCLUDE) $(SRC) $(HEADERS)
+	cppcheck --std=c11 -f --language=c --enable=all $(INC) $(SRC) $(HEADERS)
 
-tags: $(SRC) $(HEADERS)
-	ctags --language-force=c --tag-relative=yes -f .tags $(SRC) $(HEADERS)
-
-.PHONY: all check clean install strip tags
+.PHONY: all check clean install strip

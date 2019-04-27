@@ -12,12 +12,6 @@ static int cmp_func (unsigned a, unsigned b)
         0;
 }
 
-#include "tralloc.h"
-
-#define MAP_CFG_MALLOC trmalloc
-#define MAP_CFG_CALLOC trcalloc
-#define MAP_CFG_REALLOC trrealloc
-#define MAP_CFG_FREE trfree
 #define MAP_CFG_KEY_CMP cmp_func
 #define MAP_CFG_HASH_FUNC hash_func
 #define MAP_CFG_IMPLEMENTATION
@@ -41,4 +35,18 @@ void map_print_all_elements (const struct map * self)
                     l, i, _(hash), _(key), _(value));
 #undef _
     }
+}
+
+size_t map_data_mem_usage (unsigned nelems)
+{
+    return nelems * (sizeof(unsigned) + sizeof(unsigned));
+}
+
+size_t map_expected_mem_usage (unsigned size, unsigned nelems)
+{
+    struct map map;
+    return map_data_mem_usage(nelems)
+        + sizeof(struct map)
+        + size * sizeof(*map.table)
+        + nelems * sizeof(unsigned);
 }

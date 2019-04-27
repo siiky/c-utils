@@ -1,3 +1,7 @@
+VEC_HEADERS := \
+    vec/vec.h \
+    vec/qc.h  \
+
 VEC_SRC := \
     vec/append.c         \
     vec/as_mut_slice.c   \

@@ -1,45 +1,19 @@
-CC := musl-gcc
-#CC := cc
+include ../../defaults.mk
+
 EXEC := map
-
-FLAGS := \
-    -I../../include/                      \
-    -Wall                                 \
-    -Wcast-align                          \
-    -Wcast-qual                           \
-    -Wconversion                          \
-    -Werror-implicit-function-declaration \
-    -Wextra                               \
-    -Winit-self                           \
-    -Wpointer-arith                       \
-    -Wshadow                              \
-    -Wstrict-prototypes                   \
-    -Wundef                               \
-    -Wuninitialized                       \
-    -Wunreachable-code                    \
-    -Wwrite-strings                       \
-    -flto                                 \
-    -fno-common                           \
-    -march=native                         \
-    -pedantic                             \
-    -static                               \
-    -std=c18                              \
-
-OPT := -g -O3
-
-CFLAGS := $(OPT) $(FLAGS)
+INC := -I../../include/
+OPT := -g -Og
+CFLAGS := $(FLAGS) $(INC) $(OPT)
 
 HEADERS := \
-    map.h     \
-    tralloc.h \
+    ../../include/utils/map.h \
+    map.h                     \
 
 SRC := \
-    main.c    \
-    map.c     \
-    tralloc.c \
+    main.c \
+    map.c  \
 
 OBJS := $(SRC:.c=.o)
-
 DEPS := $(HEADERS) $(OBJS)
 
 all: $(EXEC)
@@ -47,8 +21,10 @@ all: $(EXEC)
 $(EXEC): $(DEPS)
 	$(CC) $(CFLAGS) $(OBJS) -o $(EXEC)
 
-%.o: %.c
-	$(CC) $(CFLAGS) -c -o $@ $<
-
 clean:
-	rm -rf $(OBJS) $(EXEC)
+	$(RM) $(OBJS) $(EXEC)
+
+check: $(SRC) $(HEADERS)
+	cppcheck --std=c11 -f --language=c --enable=all $(INC) $(SRC) $(HEADERS)
+
+.PHONY: all check clean

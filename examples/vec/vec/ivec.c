@@ -9,7 +9,7 @@ bool ivec_init (struct ivec * self, size_t cap)
 
     if (ret)
         for (size_t i = 1; i <= cap; i++)
-            ivec_push(self, rand() % 0x100000000);
+            ivec_push(self, rand() % 100000000);
 
     return ret;
 }

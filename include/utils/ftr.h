@@ -1,4 +1,4 @@
-/* ftr - v2018.12.15-0
+/* ftr - v2019.04.27-0
  *
  * A future implementation inspired by
  *  * Scheme
@@ -29,7 +29,7 @@
 //#define NDEBUG
 
 // Create implementation, instead of working as a header
-#define _FTR_H_IMPLEMENTATION
+#define FTR_CFG_IMPLEMENTATION
 #include <ftr.h>
 
 #include <unistd.h>
@@ -149,7 +149,7 @@ bool             FTR_DELAY (struct FTR_CFG_FTR * self, FTR_CFG_RET_TYPE (* proc)
 bool             FTR_DELAY (struct FTR_CFG_FTR * self, FTR_CFG_RET_TYPE (* proc) (FTR_CFG_ARGS_TYPE));
 # endif /* FTR_CFG_ARGS_TYPE_DEFAULT */
 
-# ifdef _FTR_H_IMPLEMENTATION
+# ifdef FTR_CFG_IMPLEMENTATION
 
 /*
  * <stddef.h>
@@ -234,9 +234,9 @@ bool FTR_CLEAN (struct FTR_CFG_FTR * self)
 /*
  * Other
  */
-#undef _FTR_H_IMPLEMENTATION
+#undef FTR_CFG_IMPLEMENTATION
 
-# endif /* _FTR_H_IMPLEMENTATION */
+# endif /* FTR_CFG_IMPLEMENTATION */
 
 /*==========================================================
  * Clean up

@@ -1,44 +1,30 @@
-CC := musl-gcc
-#CC := cc
+include ../../defaults.mk
+
 EXEC := bs
-INCLUDE := -I../../include/
-HEADERS :=
+INC := -I../../include/
+OPT := -g -Og
+CFLAGS := $(FLAGS) $(INC) $(OPT)
+CPPFLAGS := -DNDEBUG
+
+HEADERS := \
+    ../../include/utils/bs.h
 
 SRC := \
     bs.c   \
     main.c \
 
 OBJS := $(SRC:.c=.o)
-
-OPT := -Og -g
-
-CFLAGS := \
-    $(INCLUDE)   \
-    $(OPT)       \
-    -DNDEBUG     \
-    -Wall        \
-    -Wconversion \
-    -Wextra      \
-    -flto        \
-    -pedantic    \
-    -static      \
-    -std=c18     \
+DEPS := $(HEADERS) $(OBJS)
 
 all: $(EXEC)
 
-$(EXEC): $(OBJS)
+$(EXEC): $(DEPS)
 	$(CC) $(CFLAGS) $(OBJS) -o $@
-
-strip: $(EXEC)
-	strip -s $(EXEC)
 
 clean:
 	$(RM) $(OBJS) $(EXEC)
 
 check: $(SRC) $(HEADERS)
-	cppcheck --std=c11 -f --language=c --enable=all $(INCLUDE) $(SRC) $(HEADERS)
+	cppcheck --std=c11 -f --language=c --enable=all $(INC) $(SRC) $(HEADERS)
 
-tags: $(SRC) $(HEADERS)
-	ctags --language-force=c --tag-relative=yes -f .tags $(SRC) $(HEADERS)
-
-.PHONY: all check clean strip tags
+.PHONY: all check clean

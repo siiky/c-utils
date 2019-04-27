@@ -14,7 +14,7 @@ bool cvec_init (struct cvec * self, size_t cap)
 
     if (ret)
         for (size_t i = 1; i <= cap; i++)
-            cvec_push(self, rand() % 256);
+            cvec_push(self, (char) (rand() % 256));
 
     return ret;
 }

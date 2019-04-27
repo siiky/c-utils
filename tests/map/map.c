@@ -161,9 +161,9 @@ static bool qc_map_insert (struct map * self, int key, int value, unsigned hash,
     self->table[tblidx].entries[i].value = value;
     self->table[tblidx].length++;
 
-    self->lc_is_valid = true;
-    self->lc_hash = hash;
-    self->lc_idx = i;
+    self->lc.valid = true;
+    self->lc.hash = hash;
+    self->lc.idx = i;
 
     return true;
 }

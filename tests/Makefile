@@ -1,9 +1,10 @@
+include ../defaults.mk
+include common/common.mk
 include bs/bs.mk
 include map/map.mk
 include vec/vec.mk
 
 # NOTE: CC must be the same used to build CHICKEN and Theft
-CC := cc
 CSC := csc
 CSCFLAGS := \
     -L -Ltheft/build/ \
@@ -13,65 +14,37 @@ CSCFLAGS := \
     -static           \
 
 EXEC := tests
+INC := -I. -I../include/ -Itheft/inc/
+OPT := -Og -g -ggdb
+CFLAGS := $(FLAGS) $(INC) $(OPT)
+
+HEADERS := \
+    $(BS_HEADERS)     \
+    $(COMMON_HEADERS) \
+    $(MAP_HEADERS)    \
+    $(VEC_HEADERS)    \
 
 C_SRC := \
-    $(BS_SRC)         \
-    $(MAP_SRC)        \
-    $(VEC_SRC)        \
-    common/bool.c     \
-    common/int.c      \
-    common/size_t.c   \
-    common/void_ptr.c \
+    $(BS_SRC)     \
+    $(COMMON_SRC) \
+    $(MAP_SRC)    \
+    $(VEC_SRC)    \
 
 CHICKEN_SRC := main.scm
 
 OBJS := $(C_SRC:.c=.o) $(CHICKEN_SRC:.scm=.o)
-
-INCS := \
-    -I.           \
-    -I../include/ \
-    -Itheft/inc/  \
-
-OPTS := -Og -g -ggdb
-
-CFLAGS := \
-    $(INCS)                               \
-    $(OPTS)                               \
-    -Wall                                 \
-    -Wcast-align                          \
-    -Wcast-qual                           \
-    -Wconversion                          \
-    -Werror-implicit-function-declaration \
-    -Wextra                               \
-    -Winit-self                           \
-    -Wpointer-arith                       \
-    -Wshadow                              \
-    -Wstrict-prototypes                   \
-    -Wundef                               \
-    -Wuninitialized                       \
-    -Wunreachable-code                    \
-    -Wwrite-strings                       \
-    -flto                                 \
-    -fno-common                           \
-    -fsanitize=leak                       \
-    -march=native                         \
-    -pedantic                             \
-    -static                               \
-    -std=c18                              \
+DEPS := $(HEADERS) $(OBJS)
 
 all: $(EXEC)
 
 test: all
 	./$(EXEC) $(TEST_ARGS)
 
-$(EXEC): $(OBJS)
+$(EXEC): $(DEPS)
 	$(CSC) $(CSCFLAGS) -o $(EXEC) $(OBJS)
 
 %.o: %.scm
 	$(CSC) $(CSCFLAGS) -o $@ -c $<
-
-%.o: %.c
-	$(CC) $(CFLAGS) -o $@ -c $<
 
 theft:
 	@if [ -d theft ]; then \

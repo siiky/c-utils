@@ -22,3 +22,5 @@ install: $(HEADERS)
 uninstall:
 	rm -rf $(DEST)/$(HEADERS)
 	rmdir $(DEST)
+
+.PHONY: all install uninstall

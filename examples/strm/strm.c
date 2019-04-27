@@ -1,7 +1,7 @@
 #define VEC_CFG_DATA_TYPE_CMP(L, R) \
     (((void) (L)), ((void) (R)), 0)
 #define VEC_CFG_IMPLEMENTATION
-#define _FTR_H_IMPLEMENTATION
+#define FTR_CFG_IMPLEMENTATION
 #include "strm.h"
 
 #include <assert.h>

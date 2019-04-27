@@ -14,7 +14,7 @@
 
 int main (void)
 {
-    srand(time(NULL));
+    srand((unsigned) time(NULL));
 
 # ifdef INT
     puts("INT");

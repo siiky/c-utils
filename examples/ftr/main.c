@@ -3,7 +3,7 @@
 #define FTR_CFG_ARGS_TYPE size_t
 #define FTR_CFG_RET_TYPE size_t
 #define FTR_CFG_FTR my_ftr
-#define _FTR_H_IMPLEMENTATION
+#define FTR_CFG_IMPLEMENTATION
 #include <utils/ftr.h>
 
 #include <unistd.h>
