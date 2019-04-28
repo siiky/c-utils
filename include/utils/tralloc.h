@@ -1,4 +1,4 @@
-/* tralloc - v2019.04.22-0
+/* tralloc - v2019.04.28-0
  *
  * A simple hack to track memory allocations inspired by:
  *  * [stb](https://github.com/nothings/stb)
@@ -201,27 +201,32 @@ size_t _trused (void);
 
 #ifdef TRALLOC_CFG_IMPLEMENTATION
 
+/**
+ * Info of an allocated memory block
+ */
 struct trs {
-    /* file where this block of memory was allocated */
+    /** file where this block of memory was allocated */
     const char * file;
-    /* function where this block of memory was allocated */
+    /** function where this block of memory was allocated */
     const char * func;
-    /* line where this block of memory was allocated */
+    /** line where this block of memory was allocated */
     unsigned short line;
 
-    /* size of this block of memory */
+    /** size of this block of memory */
     size_t size;
-    /* pointer to the allocated block of memory */
+    /** pointer to the allocated block of memory */
     void * ptr;
 };
 
+/*
+ * NOTE: Comparing pointers that are not of the same array/object is
+ *       *NOT* guaranteed to work by the C standard
+ */
 static int trs_cmp (struct trs a, struct trs b)
 {
-    size_t aptr = (size_t) a.ptr;
-    size_t bptr = (size_t) b.ptr;
-    return (aptr < bptr) ?
+    return (a.ptr < b.ptr) ?
         -1:
-        (aptr > bptr) ?
+        (a.ptr > b.ptr) ?
         1:
         0;
 }
@@ -261,7 +266,7 @@ static struct trs_vec trvec[1] = {0};
 static void * _tradd_new_entry (size_t size, void * ptr, const char * file, const char * func, unsigned short line)
 {
     if (ptr)
-        trs_push(trvec, _trs_new(size, ptr, file, func, line));
+        trs_insert_sorted(trvec, _trs_new(size, ptr, file, func, line));
     return ptr;
 }
 
@@ -272,11 +277,10 @@ void * _trcalloc (size_t nmemb, size_t size, const char * file, const char * fun
 
 void _trfree (void * ptr)
 {
-    if (!ptr)
-        return;
-    size_t idx = trs_find(trvec, _trs_new(0, ptr, NULL, NULL, 0));
+    if (!ptr) return;
+    size_t idx = trs_search(trvec, _trs_new(0, ptr, NULL, NULL, 0));
     if (idx < trs_len(trvec)) /* ptr was found */
-        _trs_free(trs_swap_remove(trvec, idx));
+        _trs_free(trs_remove(trvec, idx));
 }
 
 void * _trmalloc (size_t size, const char * file, const char * func, unsigned short line)
@@ -305,12 +309,17 @@ void * _trrealloc (void * ptr, size_t size, const char * file, const char * func
 
     if (ret) { /* allocation was successful */
         /* ptr should already be in trvec */
-        size_t idx = trs_find(trvec, _trs_new(0, ptr, NULL, NULL, 0));
-
-        if (idx < trs_len(trvec)) /* ptr is in trvec */
-            trs_set_nth(trvec, idx, _trs_new(size, ret, file, func, line));
-        else /* ptr not in trvec */
+        size_t idx = trs_search(trvec, _trs_new(0, ptr, NULL, NULL, 0));
+        if (idx < trs_len(trvec)) { /* ptr is in trvec */
+            if (ret == ptr) {
+                trs_set_nth(trvec, idx, _trs_new(size, ret, file, func, line));
+            } else {
+                trs_remove(trvec, idx);
+                _tradd_new_entry(size, ret, file, func, line);
+            }
+        } else { /* ptr not in trvec */
             _tradd_new_entry(size, ret, file, func, line);
+        }
     }
 
     return ret;
