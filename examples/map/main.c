@@ -35,8 +35,8 @@ int main (void)
     printf("minimum %zu (%zuM)\n"
             "used %zu (%zuM)\n"
             "used/min %lf\n",
-            min, min/1024/1024,
-            used, used/1024/1024,
+            min, min >> 20,
+            used, used >> 20,
             (double) used / (double) min);
     return 0;
 }

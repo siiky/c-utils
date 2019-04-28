@@ -10,9 +10,6 @@
  *
  * This implementation depends on `vec.h`, which can be found at
  * `include/utils/vec.h`
- *
- * # TODO:
- * - [ ] Keep the structure sorted
  */
 
 #if 0

@@ -1,4 +1,4 @@
-/* map - v2019.04.27-0
+/* map - v2019.04.28-0
  *
  * A Hash Map type inspired by
  *  * [stb](https://github.com/nothings/stb)
@@ -131,6 +131,7 @@ struct MAP_CFG_MAP {
 #define MAP_ITER_VAL  MAP_CFG_MAKE_STR(iter_val)
 #define MAP_NEW       MAP_CFG_MAKE_STR(new)
 #define MAP_REMOVE    MAP_CFG_MAKE_STR(remove)
+#define MAP_RESIZE    MAP_CFG_MAKE_STR(resize)
 #define MAP_WITH_SIZE MAP_CFG_MAKE_STR(with_size)
 
 /*==========================================================
@@ -148,6 +149,7 @@ bool                    MAP_ITER_END  (struct MAP_CFG_MAP * self);
 bool                    MAP_ITER_NEXT (struct MAP_CFG_MAP * self);
 bool                    MAP_NEW       (struct MAP_CFG_MAP * self);
 bool                    MAP_REMOVE    (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key);
+bool                    MAP_RESIZE    (struct MAP_CFG_MAP * self, unsigned new_size);
 bool                    MAP_WITH_SIZE (struct MAP_CFG_MAP * self, unsigned size);
 struct MAP_CFG_MAP      MAP_FREE      (struct MAP_CFG_MAP self);
 unsigned                MAP_CARDINAL  (const struct MAP_CFG_MAP * self);
@@ -659,6 +661,57 @@ MAP_CFG_STATIC bool MAP_REMOVE (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DAT
 }
 
 /**
+ * @brief Resizes a map
+ * @param self The map
+ * @param new_size The new size for the map
+ * @returns `true` if it successfully resized the map,
+ *          `false` otherwise
+ *
+ * Initializes a map with the requested size and tries to insert every
+ *     entry of the original map into the new one. After all entries
+ *     have been inserted, the original map is freed. This is not very
+ *     efficient memory-wise, but reduces the risk of corrupting the
+ *     original map. If any of the insertions fail, the new map is
+ *     freed and the original is left untouched.
+ */
+MAP_CFG_STATIC bool MAP_RESIZE (struct MAP_CFG_MAP * self, unsigned new_size)
+{
+    struct MAP_CFG_MAP ret = {0};
+    if (self == NULL || !MAP_WITH_SIZE(&ret, new_size))
+        return false;
+
+    unsigned cur_size = self->size;
+    for (unsigned tblidx = 0; tblidx < cur_size; tblidx++) {
+        unsigned length = self->table[tblidx].length;
+
+        for (unsigned entidx = 0; entidx < length; entidx++) {
+            MAP_CFG_KEY_DATA_TYPE key = self->table[tblidx].entries[entidx].key;
+            MAP_CFG_VALUE_DATA_TYPE val = self->table[tblidx].entries[entidx].value;
+            unsigned hash = self->table[tblidx].entries[entidx].hash;
+            unsigned targtblidx = MAP_MOD(hash, new_size);
+
+            if (!_MAP_INSERT_SORTED(&ret, key, val, hash, targtblidx))
+                goto ret_cleanup;
+        }
+    }
+
+    /* self cleanup */
+    for (unsigned tblidx = 0; tblidx < cur_size; tblidx++)
+        if (self->table[tblidx].entries != NULL)
+            MAP_CFG_FREE(self->table[tblidx].entries);
+    MAP_CFG_FREE(self->table);
+
+    return (*self = ret), true;
+
+ret_cleanup:
+    for (unsigned tblidx = 0; tblidx < new_size; tblidx++)
+        if (ret.table[tblidx].entries != NULL)
+            MAP_CFG_FREE(ret.table[tblidx].entries);
+    MAP_CFG_FREE(ret.table);
+    return false;
+}
+
+/**
  * @brief Initializes a map with a given size
  * @param self The map
  * @param size The size of the table (must be >= 3)
@@ -771,6 +824,7 @@ unsigned MAP_CARDINAL (const struct MAP_CFG_MAP * self)
 #undef MAP_ITER_VAL
 #undef MAP_NEW
 #undef MAP_REMOVE
+#undef MAP_RESIZE
 #undef MAP_WITH_SIZE
 
 /*
