@@ -1,5 +1,3 @@
-#include "vec.h"
-
 #define QC_MKID_PROP(TEST) \
     QC_MKID_MOD_PROP(free_range, TEST)
 
@@ -141,3 +139,8 @@ QC_MKTEST_ALL(QC_MKID_MOD_ALL(free_range),
         QC_MKID_TEST(res),
         QC_MKID_TEST(right_content),
         );
+
+#undef QC_MKID_PROP
+#undef QC_MKID_TEST
+#undef QC_MKTEST_FUNC
+#undef _QC_PRE

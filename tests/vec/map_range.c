@@ -1,5 +1,3 @@
-#include "vec.h"
-
 #define QC_MKID_PROP(TEST) \
     QC_MKID_MOD_PROP(map_range, TEST)
 
@@ -13,16 +11,6 @@
             &qc_vec_info,         \
             &qc_size_t_info,      \
             &qc_size_t_info)
-
-static int _map_id (int elem)
-{
-    return elem;
-}
-
-static int _map_double (int elem)
-{
-    return elem * 2;
-}
 
 static enum theft_trial_res _qc_vec_map_range_meta_prop (struct theft * t, void * arg1, int (*f) (int), void * arg2, void * arg3)
 {
@@ -223,3 +211,7 @@ QC_MKTEST_ALL(QC_MKID_MOD_ALL(map_range),
         QC_MKID_TEST(id_meta),
         QC_MKID_TEST(id_right_content),
         );
+
+#undef QC_MKID_PROP
+#undef QC_MKID_TEST
+#undef QC_MKTEST_FUNC

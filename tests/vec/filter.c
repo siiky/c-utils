@@ -1,5 +1,3 @@
-#include "vec.h"
-
 #define QC_MKID_PROP(TEST) \
     QC_MKID_MOD_PROP(filter, TEST)
 
@@ -82,3 +80,7 @@ QC_MKTEST_ALL(QC_MKID_MOD_ALL(filter),
         QC_MKID_TEST(len_const_true),
         QC_MKID_TEST(len_is_even),
         );
+
+#undef QC_MKID_PROP
+#undef QC_MKID_TEST
+#undef QC_MKTEST_FUNC

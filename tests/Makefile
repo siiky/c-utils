@@ -1,8 +1,4 @@
 include ../defaults.mk
-include common/common.mk
-include bs/bs.mk
-include map/map.mk
-include vec/vec.mk
 
 # NOTE: CC must be the same used to build CHICKEN and Theft
 CSC := csc
@@ -10,7 +6,6 @@ CSCFLAGS := \
     -L -Ltheft/build/ \
     -L -ltheft        \
     -L -static        \
-    -lfa2             \
     -static           \
 
 EXEC := tests
@@ -18,17 +13,13 @@ INC := -I. -I../include/ -Itheft/inc/
 OPT := -Og -g -ggdb
 CFLAGS := $(FLAGS) $(INC) $(OPT)
 
-HEADERS := \
-    $(BS_HEADERS)     \
-    $(COMMON_HEADERS) \
-    $(MAP_HEADERS)    \
-    $(VEC_HEADERS)    \
+HEADERS := common.h
 
 C_SRC := \
-    $(BS_SRC)     \
-    $(COMMON_SRC) \
-    $(MAP_SRC)    \
-    $(VEC_SRC)    \
+    bs/qc.c  \
+    common.c \
+    map/qc.c \
+    vec/qc.c \
 
 CHICKEN_SRC := main.scm
 

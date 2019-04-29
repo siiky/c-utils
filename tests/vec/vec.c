@@ -1,5 +1,17 @@
 #define VEC_CFG_IMPLEMENTATION
-#include "vec.h"
+#define VEC_CFG_DATA_TYPE int
+#include <utils/vec.h>
+
+#include <common.h>
+
+#define QC_MKID_MOD_TEST(FUNC, TEST) \
+    QC_MKID(vec, FUNC, TEST, test)
+
+#define QC_MKID_MOD_PROP(FUNC, TEST) \
+    QC_MKID(vec, FUNC, TEST, prop)
+
+#define QC_MKID_MOD_ALL(FUNC) \
+    QC_MKID_ALL(vec, FUNC)
 
 static enum theft_alloc_res qc_vec_alloc (struct theft * t, void * env, void ** output)
 {
@@ -76,7 +88,7 @@ const struct theft_type_info qc_vec_info = {
     .print = qc_vec_print,
 };
 
-bool qc_vec_dup_contents (const struct vec * self, struct vec * dup)
+static bool qc_vec_dup_contents (const struct vec * self, struct vec * dup)
 {
     bool ret = true;
 
@@ -93,12 +105,12 @@ bool qc_vec_dup_contents (const struct vec * self, struct vec * dup)
     return ret;
 }
 
-void qc_vec_dup_free (struct vec * self)
+static void qc_vec_dup_free (struct vec * self)
 {
     *self = vec_free(*self);
 }
 
-bool qc_vec_search (const struct vec * self, int elem, size_t * _i)
+static bool qc_vec_search (const struct vec * self, int elem, size_t * _i)
 {
     const size_t len = self->length;
 
@@ -115,7 +127,7 @@ bool qc_vec_search (const struct vec * self, int elem, size_t * _i)
     return false;
 }
 
-size_t qc_vec_count (struct vec * self, bool pred (const int *))
+static size_t qc_vec_count (struct vec * self, bool pred (const int *))
 {
     size_t ret = 0;
 
@@ -127,7 +139,7 @@ size_t qc_vec_count (struct vec * self, bool pred (const int *))
     return ret;
 }
 
-bool qc_vec_is_sorted (const struct vec * self)
+static bool qc_vec_is_sorted (const struct vec * self)
 {
     bool ret = true;
     size_t len = self->length;

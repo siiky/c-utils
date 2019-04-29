@@ -1,4 +1,4 @@
-/* bs - v2019.01.19-0
+/* bs - v2019.04.29-0
  *
  * A BitSet type inspired by
  *  * [stb](https://github.com/nothings/stb)
@@ -103,8 +103,8 @@ static inline bool _bs_valid (const struct bs * self)
                 || (self->nbits > 0 && self->bytes != NULL));
 }
 
-#define bs_nbits2len(nbits) ((nbits / 8) + ((nbits % 8 != 0) ? 1 : 0))
-#define bs_nth2idx(nbits)   (nbits / 8)
+#define bs_nth2idx(nbits)   (nbits >> 3)
+#define bs_nbits2len(nbits) (bs_nth2idx(nbits) + ((nbits & 0x7) ? 1 : 0))
 #define bs_valid(bs)        if (!_bs_valid(bs)) return false
 
 bool bs_clone (const struct bs * restrict self, struct bs * restrict other)

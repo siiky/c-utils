@@ -1,5 +1,3 @@
-#include "vec.h"
-
 #define QC_MKID_PROP(TEST) \
     QC_MKID_MOD_PROP(get_nth, TEST)
 
@@ -96,3 +94,7 @@ QC_MKTEST_ALL(QC_MKID_MOD_ALL(get_nth),
         QC_MKID_TEST(elem),
         QC_MKID_TEST(meta),
         );
+
+#undef QC_MKID_PROP
+#undef QC_MKID_TEST
+#undef QC_MKTEST_FUNC

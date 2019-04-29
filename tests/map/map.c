@@ -1,18 +1,40 @@
-int      qc_map_int_cmp  (const int k1, const int k2);
-unsigned qc_map_int_hash (const int k);
+static inline int qc_map_int_cmp (const int k1, const int k2)
+{
+    return (k1 < k2) ?
+        -1 :
+        (k1 > k2) ?
+        1 :
+        0;
+}
+
+static unsigned int qc_map_int_hash (const int k)
+{
+    return (unsigned int) k;
+}
+
+#include <common.h>
+
+#define QC_MKID_MOD_TEST(FUNC, TEST) \
+    QC_MKID(map, FUNC, TEST, test)
+
+#define QC_MKID_MOD_PROP(FUNC, TEST) \
+    QC_MKID(map, FUNC, TEST, prop)
+
+#define QC_MKID_MOD_ALL(FUNC) \
+    QC_MKID_ALL(map, FUNC)
 
 #define MAP_CFG_IMPLEMENTATION
 #define MAP_CFG_HASH_FUNC qc_map_int_hash
 #define MAP_CFG_KEY_CMP qc_map_int_cmp
-#include "map.h"
+#define MAP_CFG_KEY_DATA_TYPE int
+#define MAP_CFG_VALUE_DATA_TYPE int
+#include <utils/map.h>
 
-#include <utils/ifnotnull.h>
-
-#include <assert.h>
-
-static bool qc_map_insert  (struct map * self, int key, int value, unsigned hash, unsigned tblidx);
-static bool qc_map_lsearch (const struct map * self, int key, unsigned hash, unsigned tblidx, unsigned * _i);
-static void qc_map_free    (void * instance, void * env);
+static bool     qc_map_cardinal_eq (const struct map * map, const struct map * other);
+static bool     qc_map_insert      (struct map * self, int key, int value, unsigned hash, unsigned tblidx);
+static bool     qc_map_lsearch     (const struct map * self, int key, unsigned hash, unsigned tblidx, unsigned * _i);
+static unsigned qc_map_cardinal    (const struct map * map);
+static void     qc_map_free        (void * instance, void * env);
 
 static enum theft_alloc_res qc_map_alloc (struct theft * t, void * env, void ** output)
 {
@@ -46,15 +68,15 @@ static enum theft_alloc_res qc_map_alloc (struct theft * t, void * env, void ** 
             } while (qc_map_lsearch(map, k, h, tblidx, &_i));
 
             int v = 0;
-            if (!qc_map_insert(map, k, v, h, tblidx)) {
-                qc_map_free(map, NULL);
-                return THEFT_ALLOC_SKIP;
-            }
+            if (!qc_map_insert(map, k, v, h, tblidx))
+                return qc_map_free(map, NULL), THEFT_ALLOC_SKIP;
         }
     }
 
-    *output = map;
+    { /* TODO: random valid iterator */
+    }
 
+    *output = map;
     return THEFT_ALLOC_OK;
 }
 
@@ -83,7 +105,7 @@ static void qc_map_print (FILE * f, const void * instance, void * env)
             fprintf(f, "(%d, %d),%c",
                     map->table[i].entries[j].key,
                     map->table[i].entries[j].value,
-                    ((t % 5 == 0) ? '\n' : ' '));
+                    (((t & 0x3) == 0) ? '\n' : ' '));
     }
     fprintf(f, "}\n");
 }
@@ -93,20 +115,6 @@ const struct theft_type_info qc_map_info = {
     .free  = qc_map_free,
     .print = qc_map_print,
 };
-
-unsigned int qc_map_int_hash (const int k)
-{
-    return (unsigned int) k;
-}
-
-inline int qc_map_int_cmp (const int k1, const int k2)
-{
-    return (k1 < k2) ?
-        -1 :
-        (k1 > k2) ?
-        1 :
-        0;
-}
 
 static inline int qc_map_entry_cmp (unsigned int ha, int ka, unsigned int hb, int kb)
 {
@@ -141,7 +149,7 @@ static bool qc_map_lsearch (const struct map * self, int key, unsigned hash, uns
  */
 static bool qc_map_insert (struct map * self, int key, int value, unsigned hash, unsigned tblidx)
 {
-    unsigned int i = 0;
+    unsigned i = 0;
     bool exists = qc_map_lsearch(self, key, hash, tblidx, &i);
 
     if (!exists) {
@@ -149,11 +157,17 @@ static bool qc_map_insert (struct map * self, int key, int value, unsigned hash,
             return false;
 
         /* move entries to the right */
-        unsigned int len = self->table[tblidx].length;
+        unsigned len = self->table[tblidx].length;
         if (i < len)
             memmove(&self->table[tblidx].entries[i + 1],
                     &self->table[tblidx].entries[i],
                     sizeof(*self->table[tblidx].entries) * (len - i));
+
+        self->cardinal++;
+
+        self->lc.valid = true;
+        self->lc.hash = hash;
+        self->lc.idx = i;
     }
 
     self->table[tblidx].entries[i].hash = hash;
@@ -161,14 +175,63 @@ static bool qc_map_insert (struct map * self, int key, int value, unsigned hash,
     self->table[tblidx].entries[i].value = value;
     self->table[tblidx].length++;
 
-    self->lc.valid = true;
-    self->lc.hash = hash;
-    self->lc.idx = i;
+    return true;
+}
+
+static bool qc_map_cardinal_eq (const struct map * map, const struct map * other)
+{
+    return map->cardinal == other->cardinal;
+}
+
+static unsigned qc_map_cardinal (const struct map * map)
+{
+    unsigned ret = 0;
+    for (unsigned tblidx = 0; tblidx < map->size; tblidx++)
+        ret += map->table[tblidx].length;
+    return ret;
+}
+
+static bool qc_map_clone (const struct map * map, struct map * other)
+{
+    *other = *map;
+    other->table = calloc(map->size, sizeof(*other->table));
+    if (other->table == NULL)
+        return false;
+
+    const unsigned size = map->size;
+    const size_t ent_size = sizeof(*other->table[0].entries);
+    for (unsigned tblidx = 0; tblidx < size; tblidx++) {
+        unsigned length = map->table[tblidx].length;
+        size_t nbytes = length * ent_size;
+        other->table[tblidx].entries = calloc(map->table[tblidx].length, ent_size);
+        assert(other->table[tblidx].entries != NULL);
+        other->table[tblidx].capacity = map->table[tblidx].capacity;
+        other->table[tblidx].length = length;
+        memcpy(other->table[tblidx].entries, map->table[tblidx].entries, nbytes);
+    }
 
     return true;
 }
 
-int qc_map_get (const struct map * map, int k)
+static bool qc_map_content_eq (const struct map * map, const struct map * other)
+{
+    bool ret = map->size == other->size;
+    unsigned size = map->size;
+    for (unsigned tblidx = 0; tblidx < size && ret; tblidx++) {
+        unsigned length = map->table[tblidx].length;
+        size_t nbytes = length * sizeof(*map->table[tblidx].entries);
+        ret = other->table[tblidx].length == length
+            && (memcmp(map->table[tblidx].entries, other->table[tblidx].entries, nbytes) == 0);
+    }
+    return ret;
+}
+
+static bool qc_map_iter_eq (const struct map * map, const struct map * other)
+{
+    return memcmp(&map->iter, &other->iter, sizeof(map->iter)) == 0;
+}
+
+static int qc_map_get (const struct map * map, int k)
 {
     unsigned h = qc_map_int_hash(k);
     unsigned tblidx = h % map->size;
@@ -178,7 +241,7 @@ int qc_map_get (const struct map * map, int k)
     return map->table[tblidx].entries[i].value;
 }
 
-bool qc_map_contains (const struct map * map, int k)
+static bool qc_map_contains (const struct map * map, int k)
 {
     unsigned h = qc_map_int_hash(k);
     unsigned tblidx = h % map->size;
@@ -186,7 +249,7 @@ bool qc_map_contains (const struct map * map, int k)
     return qc_map_lsearch(map, k, h, tblidx, &i);
 }
 
-int qc_map_random_in (struct theft * t, const struct map * map)
+static int qc_map_random_in (struct theft * t, const struct map * map)
 {
     int ret = 0;
 
@@ -202,17 +265,9 @@ int qc_map_random_in (struct theft * t, const struct map * map)
     return ret;
 }
 
-int qc_map_random_not_in (const struct map * map, int k)
+static int qc_map_random_not_in (const struct map * map, int k)
 {
     while (qc_map_contains(map, k))
         k++;
     return k;
-}
-
-unsigned qc_map_cardinal (const struct map * map)
-{
-    unsigned ret = 0;
-    for (unsigned tblidx = 0; tblidx < map->size; tblidx++)
-        ret += map->table[tblidx].length;
-    return ret;
 }

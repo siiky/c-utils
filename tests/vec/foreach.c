@@ -1,5 +1,3 @@
-#include "vec.h"
-
 #define QC_MKID_PROP(TEST) \
     QC_MKID_MOD_PROP(foreach, TEST)
 
@@ -11,14 +9,6 @@
             prop1,                \
             QC_MKID_PROP(TEST),   \
             &qc_vec_info)
-
-static size_t what = 0;
-
-static void _do_nothing (const int x)
-{
-    UNUSED(x);
-    what++;
-}
 
 static enum theft_trial_res QC_MKID_PROP(len) (struct theft * t, void * arg1)
 {
@@ -97,3 +87,7 @@ QC_MKTEST_ALL(QC_MKID_MOD_ALL(foreach),
         QC_MKID_TEST(len),
         QC_MKID_TEST(side_effects),
         );
+
+#undef QC_MKID_PROP
+#undef QC_MKID_TEST
+#undef QC_MKTEST_FUNC

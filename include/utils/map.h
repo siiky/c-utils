@@ -1,4 +1,4 @@
-/* map - v2019.04.28-0
+/* map - v2019.04.29-0
  *
  * A Hash Map type inspired by
  *  * [stb](https://github.com/nothings/stb)
@@ -405,8 +405,6 @@ out:
 static bool _MAP_INSERT_SORTED (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key, const MAP_CFG_VALUE_DATA_TYPE value, unsigned hash, unsigned tblidx)
 {
     unsigned i = 0;
-    unsigned len = self->table[tblidx].length;
-
     bool exists = _MAP_SEARCH(self, key, hash, tblidx, &i);
 
     if (!exists) {
@@ -414,6 +412,7 @@ static bool _MAP_INSERT_SORTED (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DAT
             return false;
 
         /* move entries to the right */
+        unsigned len = self->table[tblidx].length;
         if (i < len)
             memmove(&self->table[tblidx].entries[i + 1],
                     &self->table[tblidx].entries[i],

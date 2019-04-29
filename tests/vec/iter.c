@@ -1,5 +1,3 @@
-#include "vec.h"
-
 #define QC_MKID_PROP(TEST) \
     QC_MKID_MOD_PROP(iter, TEST)
 
@@ -91,3 +89,7 @@ QC_MKTEST_ALL(QC_MKID_MOD_ALL(iter),
         QC_MKID_TEST(iter),
         QC_MKID_TEST(meta),
         );
+
+#undef QC_MKID_PROP
+#undef QC_MKID_TEST
+#undef QC_MKTEST_FUNC

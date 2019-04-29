@@ -1,5 +1,3 @@
-#include "vec.h"
-
 #define QC_MKID_TEST(TEST) \
     QC_MKID_MOD_TEST(swap_remove, TEST)
 
@@ -199,3 +197,7 @@ QC_MKTEST_ALL(QC_MKID_MOD_ALL(swap_remove),
         QC_MKID_TEST(len),
         QC_MKID_TEST(right_content),
         );
+
+#undef QC_MKID_PROP
+#undef QC_MKID_TEST
+#undef QC_MKTEST_FUNC

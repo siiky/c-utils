@@ -1,41 +1,63 @@
-#include "vec.h"
+#include "vec.c"
 
-bool QC_MKID_MOD_ALL(append)         (void);
-bool QC_MKID_MOD_ALL(as_mut_slice)   (void);
-bool QC_MKID_MOD_ALL(as_slice)       (void);
-bool QC_MKID_MOD_ALL(cap)            (void);
-bool QC_MKID_MOD_ALL(elem)           (void);
-bool QC_MKID_MOD_ALL(filter)         (void);
-bool QC_MKID_MOD_ALL(find)           (void);
-bool QC_MKID_MOD_ALL(foreach)        (void);
-bool QC_MKID_MOD_ALL(foreach_range)  (void);
-bool QC_MKID_MOD_ALL(free)           (void);
-bool QC_MKID_MOD_ALL(free_range)     (void);
-bool QC_MKID_MOD_ALL(from_raw_parts) (void);
-bool QC_MKID_MOD_ALL(get_nth)        (void);
-bool QC_MKID_MOD_ALL(insert)         (void);
-bool QC_MKID_MOD_ALL(is_empty)       (void);
-bool QC_MKID_MOD_ALL(iter)           (void);
-bool QC_MKID_MOD_ALL(iter_end)       (void);
-bool QC_MKID_MOD_ALL(iter_idx)       (void);
-bool QC_MKID_MOD_ALL(iter_next)      (void);
-bool QC_MKID_MOD_ALL(iter_rev)       (void);
-bool QC_MKID_MOD_ALL(itering)        (void);
-bool QC_MKID_MOD_ALL(len)            (void);
-bool QC_MKID_MOD_ALL(map)            (void);
-bool QC_MKID_MOD_ALL(map_range)      (void);
-bool QC_MKID_MOD_ALL(pop)            (void);
-bool QC_MKID_MOD_ALL(push)           (void);
-bool QC_MKID_MOD_ALL(qsort)          (void);
-bool QC_MKID_MOD_ALL(remove)         (void);
-bool QC_MKID_MOD_ALL(reserve)        (void);
-bool QC_MKID_MOD_ALL(set_len)        (void);
-bool QC_MKID_MOD_ALL(set_nth)        (void);
-bool QC_MKID_MOD_ALL(shrink_to_fit)  (void);
-bool QC_MKID_MOD_ALL(split_off)      (void);
-bool QC_MKID_MOD_ALL(swap_remove)    (void);
-bool QC_MKID_MOD_ALL(truncate)       (void);
-bool QC_MKID_MOD_ALL(with_cap)       (void);
+static int _map_id (int elem)
+{
+    return elem;
+}
+
+static int _map_double (int elem)
+{
+    return elem * 2;
+}
+
+static size_t what = 0;
+static void _do_nothing (const int x)
+{
+    UNUSED(x);
+    what++;
+}
+
+#include "append.c"
+#include "as_mut_slice.c"
+#include "as_slice.c"
+#include "cap.c"
+#include "elem.c"
+#include "filter.c"
+#include "find.c"
+#include "foreach.c"
+#include "foreach_range.c"
+#include "free.c"
+#include "free_range.c"
+#include "from_raw_parts.c"
+#include "get_nth.c"
+#include "insert.c"
+#include "is_empty.c"
+#include "iter.c"
+#include "iter_end.c"
+#include "iter_idx.c"
+#include "iter_next.c"
+#include "iter_rev.c"
+#include "itering.c"
+#include "len.c"
+#include "map.c"
+#include "map_range.c"
+#include "pop.c"
+#include "push.c"
+#include "qsort.c"
+#include "remove.c"
+#include "reserve.c"
+#include "set_len.c"
+#include "set_nth.c"
+#include "shrink_to_fit.c"
+#include "split_off.c"
+#include "swap_remove.c"
+#include "truncate.c"
+#include "with_cap.c"
+
+/* redefine warning */
+#define QC_MKID_PROP
+#define QC_MKID_TEST
+#define QC_MKTEST_FUNC
 
 QC_MKTEST_ALL(qc_vec_test_all,
         QC_MKID_MOD_ALL(append),

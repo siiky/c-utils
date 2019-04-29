@@ -20,7 +20,7 @@
             .seed = theft_seed_of_time(),         \
         };                                        \
         return theft_run(&cfg) == THEFT_RUN_PASS; \
-    } bool fname (void)
+    } static bool fname (void)
 
 /**
  * @brief Create a function to run a group of tests
@@ -67,6 +67,12 @@ extern const struct theft_type_info qc_int_info;
 extern const struct theft_type_info qc_size_t_info;
 extern const struct theft_type_info qc_void_ptr_info;
 
-#include "common/int.h"
+int qc_int_compar (const void * _a, const void * _b);
+
+#include <stdbool.h>
+#include <string.h>
+#include <utils/unused.h>
+#include <utils/ifnotnull.h>
+#include <assert.h>
 
 #endif /* _COMMON_H */

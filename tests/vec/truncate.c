@@ -1,5 +1,3 @@
-#include "vec.h"
-
 #define QC_MKID_PROP(TEST) \
     QC_MKID_MOD_PROP(truncate, TEST)
 
@@ -144,3 +142,7 @@ QC_MKTEST_ALL(QC_MKID_MOD_ALL(truncate),
         QC_MKID_TEST(oob_content),
         QC_MKID_TEST(oob_meta),
         );
+
+#undef QC_MKID_PROP
+#undef QC_MKID_TEST
+#undef QC_MKTEST_FUNC

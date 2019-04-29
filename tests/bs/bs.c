@@ -1,5 +1,19 @@
 #define BS_CFG_IMPLEMENTATION
-#include "bs.h"
+#include <utils/bs.h>
+
+#include <common.h>
+
+#define bs_nbits2idx(nbits) (nbits / 8)
+#define bs_nbits2len(nbits) (bs_nbits2idx(nbits) + ((nbits % 8 != 0) ? 1 : 0))
+
+#define QC_MKID_MOD_TEST(FUNC, TEST) \
+    QC_MKID(bs, FUNC, TEST, test)
+
+#define QC_MKID_MOD_PROP(FUNC, TEST) \
+    QC_MKID(bs, FUNC, TEST, prop)
+
+#define QC_MKID_MOD_ALL(FUNC) \
+    QC_MKID_ALL(bs, FUNC)
 
 static enum theft_alloc_res qc_bs_alloc (struct theft * t, void * env, void ** output)
 {
