@@ -64,6 +64,7 @@
 
 extern const struct theft_type_info qc_bool_info;
 extern const struct theft_type_info qc_int_info;
+extern const struct theft_type_info qc_segment_info;
 extern const struct theft_type_info qc_size_t_info;
 extern const struct theft_type_info qc_void_ptr_info;
 
@@ -71,8 +72,9 @@ int qc_int_compar (const void * _a, const void * _b);
 
 #include <stdbool.h>
 #include <string.h>
-#include <utils/unused.h>
 #include <utils/ifnotnull.h>
+#include <utils/unused.h>
+
 #include <assert.h>
 
 #endif /* _COMMON_H */

@@ -8,9 +8,10 @@
   )
 
 #>
-#include "bs/qc.h"
-#include "map/qc.h"
-#include "vec/qc.h"
+#include <stdbool.h>
+bool qc_bs_test_all (void);
+bool qc_map_test_all (void);
+bool qc_vec_test_all (void);
 <#
 
 (define *TESTS*

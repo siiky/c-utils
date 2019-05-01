@@ -33,13 +33,16 @@ int main (int argc, char ** argv)
 
         struct bs clone[1] = {0};
         if (bs_clone(bs, clone)) {
+            bs_print(clone);
             printf("cmp = %d\n", bs_cmp(bs, clone));
 
             bs_flip(clone, clone->nbits - 1);
+            bs_print(clone);
             printf("cmp = %d\n", bs_cmp(bs, clone));
 
             bs_flip(clone, clone->nbits - 1);
             bs_flip(clone, clone->nbits - 2);
+            bs_print(clone);
             printf("cmp = %d\n", bs_cmp(bs, clone));
 
             bs_free(clone);

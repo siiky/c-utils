@@ -1,5 +1,9 @@
 include ../defaults.mk
 
+BS_DEPS := $(wildcard bs/*.c) ../include/utils/bs.h
+MAP_DEPS := $(wildcard map/*.c) ../include/utils/map.h
+VEC_DEPS := $(wildcard vec/*.c) ../include/utils/vec.h
+
 # NOTE: CC must be the same used to build CHICKEN and Theft
 CSC := csc
 CSCFLAGS := \
@@ -36,6 +40,15 @@ $(EXEC): $(DEPS)
 
 %.o: %.scm
 	$(CSC) $(CSCFLAGS) -o $@ -c $<
+
+bs/qc.o: $(BS_DEPS)
+	$(CC) $(CFLAGS) -o bs/qc.o -c bs/qc.c
+
+map/qc.o: $(MAP_DEPS)
+	$(CC) $(CFLAGS) -o map/qc.o -c map/qc.c
+
+vec/qc.o: $(VEC_DEPS)
+	$(CC) $(CFLAGS) -o vec/qc.o -c vec/qc.c
 
 theft:
 	@if [ -d theft ]; then \

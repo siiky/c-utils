@@ -3,9 +3,6 @@
 
 #include <common.h>
 
-#define bs_nbits2idx(nbits) (nbits / 8)
-#define bs_nbits2len(nbits) (bs_nbits2idx(nbits) + ((nbits % 8 != 0) ? 1 : 0))
-
 #define QC_MKID_MOD_TEST(FUNC, TEST) \
     QC_MKID(bs, FUNC, TEST, test)
 
@@ -19,20 +16,16 @@ static enum theft_alloc_res qc_bs_alloc (struct theft * t, void * env, void ** o
 {
     UNUSED(env);
 
-    struct bs * bs = malloc(sizeof(struct bs));
+    struct bs * bs = calloc(1, sizeof(struct bs));
     if (bs == NULL)
         return THEFT_ALLOC_SKIP;
 
-
-    *bs = (struct bs) {0};
-
-    unsigned nbits = (unsigned) theft_random_bits(t, 16);
-
+    unsigned nbits = (unsigned) theft_random_bits(t, 8);
     if (!bs_init(bs, nbits))
         return free(bs), THEFT_ALLOC_SKIP;
 
-    for (unsigned n = 0; n < nbits; n++)
-        bs_set(bs, n, 0x1 & theft_random_bits(t, 1));
+    for (unsigned segidx = 0; segidx < bs_nbits2arrlen(nbits); segidx++)
+        bs->segs[segidx] = theft_random_bits(t, bs_bits_per_seg);
 
     *output = bs;
     return THEFT_ALLOC_OK;
@@ -49,15 +42,15 @@ static void qc_bs_free (void * instance, void * env)
 static void qc_bs_print (FILE * f, const void * instance, void * env)
 {
     UNUSED(env);
-
     const struct bs * bs = instance;
-
     fprintf(f,
             "{\n"
-            "  .bytes = %p,\n"
+            "  .segs = \"");
+    bs_fprint(bs, f);
+    fprintf(f,
+            "\",\n"
             "  .nbits = %u,\n"
             "}\n",
-            (void*) bs->bytes,
             bs->nbits);
 }
 
@@ -66,4 +59,4 @@ const struct theft_type_info qc_bs_info = {
     .free  = qc_bs_free,
     .print = qc_bs_print,
 };
-const size_t bs_byte_size = sizeof(struct byte);
+const size_t bs_seg_size = sizeof(segment);

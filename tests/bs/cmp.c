@@ -11,56 +11,64 @@
             &qc_bs_info,          \
             &qc_bs_info)
 
-static enum theft_trial_res QC_MKID_PROP(res) (struct theft * t, void * arg1, void * arg2)
-{
-    UNUSED(t);
-
-    struct bs * bs = arg1;
-    struct bs * other = arg2;
-
-    bool res = bs_cmp(bs, other)
-        || true;
-
-    return QC_BOOL2TRIAL(res);
-}
-
 static enum theft_trial_res QC_MKID_PROP(content) (struct theft * t, void * arg1, void * arg2)
 {
     UNUSED(t);
-
-    struct bs * bs = arg1;
-    struct bs * other = arg2;
-
-    struct bs bs_copy[1];
-    struct bs other_copy[1];
-
-    if (!bs_init(bs_copy, bs->nbits) || !bs_init(other_copy, other->nbits))
+    const struct bs * bs = arg1;
+    const struct bs * other = arg2;
+    struct bs clone[1];
+    struct bs other_clone[1];
+    if (!bs_clone(bs, clone) || !bs_clone(other, other_clone))
         return THEFT_TRIAL_SKIP;
-
-    size_t bs_size = bs_nbits2len(bs->nbits) * bs_byte_size;
-    size_t other_size = bs_nbits2len(other->nbits) * bs_byte_size;
-
-    memcpy(bs_copy->bytes, bs->bytes, bs_size);
-    memcpy(other_copy->bytes, other->bytes, other_size);
-
     bs_cmp(bs, other);
-
+    size_t bs_len = bs_nbits2arrlen(bs->nbits);
+    size_t other_len = bs_nbits2arrlen(other->nbits);
     bool res = true
-        && memcmp(bs->bytes, bs_copy->bytes, bs_size) == 0
-        && memcmp(other->bytes, other_copy->bytes, other_size) == 0;
-
-    bs_free(bs_copy);
-    bs_free(other_copy);
-
+        && memcmp(bs->segs, clone->segs, bs_len * sizeof(segment)) == 0
+        && memcmp(other->segs, other_clone->segs, other_len * sizeof(segment)) == 0;
+    bs_free(clone);
+    bs_free(other_clone);
     return QC_BOOL2TRIAL(res);
+}
+
+static enum theft_trial_res QC_MKID_PROP(res) (struct theft * t, void * arg1, void * arg2)
+{
+    UNUSED(t);
+    const struct bs * bs = arg1;
+    const struct bs * other = arg2;
+    size_t mlen = (bs->nbits < other->nbits) ?
+        bs_nbits2arrlen(bs->nbits):
+        bs_nbits2arrlen(other->nbits);
+    int res = bs_cmp(bs, other);
+    bool ret = (bs->nbits < other->nbits) ?
+        (res < 0):
+        (bs->nbits > other->nbits) ?
+        (res > 0):
+        (res == 0) ?
+        (memcmp(bs->segs, other->segs, mlen * sizeof(segment)) == 0):
+        true;
+    return QC_BOOL2TRIAL(ret);
+}
+
+static enum theft_trial_res QC_MKID_PROP(res_eq) (struct theft * t, void * arg1, void * arg2)
+{
+    UNUSED(t);
+    const struct bs * bs = arg1;
+    struct bs * other = arg2;
+    if (!bs_free(other) || !bs_clone(bs, other))
+        return THEFT_TRIAL_SKIP;
+    bool ret = bs_cmp(bs, other) == 0;
+    return QC_BOOL2TRIAL(ret);
 }
 
 QC_MKTEST_FUNC(content);
 QC_MKTEST_FUNC(res);
+QC_MKTEST_FUNC(res_eq);
 
 QC_MKTEST_ALL(QC_MKID_MOD_ALL(cmp),
         QC_MKID_TEST(content),
         QC_MKID_TEST(res),
+        QC_MKID_TEST(res_eq),
         );
 
 #undef QC_MKID_PROP

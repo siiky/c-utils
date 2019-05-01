@@ -222,9 +222,9 @@ struct trs {
 static int trs_cmp (struct trs a, struct trs b)
 {
     return (a.ptr < b.ptr) ?
-        -1:
-        (a.ptr > b.ptr) ?
         1:
+        (a.ptr > b.ptr) ?
+        -1:
         0;
 }
 
