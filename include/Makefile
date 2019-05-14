@@ -1,4 +1,4 @@
-DEST=/usr/local/include/utils
+DEST := ~/.local/include/utils
 
 HEADERS=\
 	utils/bs.h        \
@@ -20,7 +20,7 @@ install: $(HEADERS)
 	install -m 0644 $(HEADERS) -t $(DEST)
 
 uninstall:
-	rm -rf $(DEST)/$(HEADERS)
+	#TODO: properly remove installed headers
 	rmdir $(DEST)
 
 .PHONY: all install uninstall
