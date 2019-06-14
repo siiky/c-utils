@@ -20,3 +20,5 @@ FLAGS := \
     -pedantic                             \
     -static                               \
     -std=c18                              \
+
+# -Wpadded

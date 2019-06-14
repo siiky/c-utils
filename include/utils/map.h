@@ -1,4 +1,4 @@
-/* map - v2019.04.29-0
+/* map - v2019.06.15-0
  *
  * A Hash Map type inspired by
  *  * [stb](https://github.com/nothings/stb)
@@ -246,6 +246,13 @@ static bool _MAP_DECREASE_CAPACITY (struct MAP_CFG_MAP * self, unsigned tblidx)
 {
     if (self->table[tblidx].length == self->table[tblidx].capacity)
         return true;
+
+    if (self->table[tblidx].length == 0) { /* avoid double free */
+        free(self->table[tblidx].entries);
+        self->table[tblidx].entries = NULL;
+        self->table[tblidx].capacity = 0;
+        return true;
+    }
 
     unsigned cap = self->table[tblidx].length;
     void * entries = MAP_CFG_REALLOC(self->table[tblidx].entries,
