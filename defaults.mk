@@ -22,5 +22,6 @@ FLAGS := \
     -pie                                  \
     -static                               \
     -std=c18                              \
+    -znoexecstack                         \
 
 # -Wpadded

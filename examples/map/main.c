@@ -40,10 +40,18 @@ int main (void)
         map_add(&map, i, i);
 
     gtod();
-    for (unsigned i = 0; i < MAP_NELEMS; i++)
+    for (unsigned i = 0; i < MAP_NELEMS; i++) {
+#if 1
         map_contains(&map, i);
-    //if (map_contains(&map, i))
-    //    map_remove(&map, i);
+#else
+        /*
+         * Because of internal caching, time isnt doubled with these 2
+         * operations
+         */
+        if (map_contains(&map, i))
+            map_remove(&map, i, NULL);
+#endif
+    }
 
     gtod();
     map = map_free(map);

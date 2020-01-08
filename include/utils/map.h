@@ -1,4 +1,4 @@
-/* map - v2019.06.15-0
+/* map - v2020.01.08-0
  *
  * A Hash Map type inspired by
  *  * [stb](https://github.com/nothings/stb)
@@ -148,7 +148,7 @@ bool                    MAP_ITERING   (const struct MAP_CFG_MAP * self);
 bool                    MAP_ITER_END  (struct MAP_CFG_MAP * self);
 bool                    MAP_ITER_NEXT (struct MAP_CFG_MAP * self);
 bool                    MAP_NEW       (struct MAP_CFG_MAP * self);
-bool                    MAP_REMOVE    (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key);
+bool                    MAP_REMOVE    (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key, MAP_CFG_VALUE_DATA_TYPE * value);
 bool                    MAP_RESIZE    (struct MAP_CFG_MAP * self, unsigned new_size);
 bool                    MAP_WITH_SIZE (struct MAP_CFG_MAP * self, unsigned size);
 struct MAP_CFG_MAP      MAP_FREE      (struct MAP_CFG_MAP self);
@@ -248,7 +248,7 @@ static bool _MAP_DECREASE_CAPACITY (struct MAP_CFG_MAP * self, unsigned tblidx)
         return true;
 
     if (self->table[tblidx].length == 0) { /* avoid double free */
-        free(self->table[tblidx].entries);
+        MAP_CFG_FREE(self->table[tblidx].entries);
         self->table[tblidx].entries = NULL;
         self->table[tblidx].capacity = 0;
         return true;
@@ -336,12 +336,11 @@ static bool _MAP_INCREASE_CAPACITY (struct MAP_CFG_MAP * self, unsigned tblidx)
  *          with key @a key should be inserted
  *
  * This function assumes the entry arrays are sorted according to
- *     _MAP_ENTRY_CMP(). This means MAP_CFG_KEY_CMP() must be
- *     correctly defined similarly to a compare function passable to
- *     strcmp(), the only difference being the arguments are not
- *     pointers to, but values of type MAP_CFG_KEY_DATA_TYPE. It may
- *     be defined either as a macro or a function, but must behave
- *     as if it was a function of the type:
+ *     _MAP_ENTRY_CMP(). This means MAP_CFG_KEY_CMP() must be defined similarly
+ *     strcmp(), the only difference being the arguments are not pointers to,
+ *     but values of type MAP_CFG_KEY_DATA_TYPE. It may be defined either as a
+ *     macro or a function, but must behave as if it was a function of the
+ *     following type:
  *
  * int MAP_CFG_KEY_CMP (MAP_CFG_KEY_DATA_TYPE, MAP_CFG_KEY_DATA_TYPE)
  */
@@ -626,13 +625,15 @@ MAP_CFG_STATIC bool MAP_NEW (struct MAP_CFG_MAP * self)
  * @brief Remove the entry with a given key
  * @param self The map
  * @param key The key
- * @retuns `true` if there was an entry with key @a key, or `false`
- *         if there was no such entry or the map is not valid
+ * @param[out] value Where to save the value associated with @a key. If it is
+ *             NULL the value is free()d.
+ * @retuns `true` if there was an entry with key @a key, or `false` if there
+ *         was no such entry or the map is not valid
  *
- * If defined, MAP_CFG_KEY_DTOR() and MAP_CFG_VALUE_DTOR() are called
- *     on the entry to be removed
+ * If defined, MAP_CFG_KEY_DTOR() and MAP_CFG_VALUE_DTOR() are called on the
+ *     entry to be removed
  */
-MAP_CFG_STATIC bool MAP_REMOVE (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key)
+MAP_CFG_STATIC bool MAP_REMOVE (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key, MAP_CFG_VALUE_DATA_TYPE * value)
 {
     if (self == NULL || self->size < 3 || self->table == NULL)
         return false;
@@ -649,8 +650,11 @@ MAP_CFG_STATIC bool MAP_REMOVE (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DAT
     MAP_CFG_KEY_DTOR(self->table[tblidx].entries[i].key);
 #endif /* MAP_CFG_KEY_DTOR */
 
+    if (value != NULL)
+        *value = self->table[tblidx].entries[i].value;
 #ifdef MAP_CFG_VALUE_DTOR
-    MAP_CFG_VALUE_DTOR(self->table[tblidx].entries[i].value);
+    else
+        MAP_CFG_VALUE_DTOR(self->table[tblidx].entries[i].value);
 #endif /* MAP_CFG_VALUE_DTOR */
 
     self->table[tblidx].length--;
