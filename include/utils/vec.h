@@ -1,4 +1,4 @@
-/* vec - v2019.04.28-0
+/* vec - v2020.01.08-0
  *
  * A vector type inspired by
  *  * Rust's `Vec` type
@@ -339,11 +339,11 @@ struct VEC_CFG_VEC        VEC_FREE           (struct VEC_CFG_VEC self);
  * @param self The vector
  * @param element The element to search for
  * @param[out] _i The result index
- * @returns If @a element is in the vector, sets @a _i to the index
- *          of an occurrence of @a element and returns `true`.
- *          If @a element is not in the vector, sets @a _i to the
- *          index where @a element should be inserted to keep the
- *          vector sorted and returns `false`
+ * @returns If @a element is in the vector, sets @a _i to the index of an
+ *          occurrence of @a element and returns `true`.
+ *          If @a element is not in the vector, sets @a _i to the index where
+ *          @a element should be inserted to keep the vector sorted and returns
+ *          `false`
  *
  * Assumes the vector is sorted and not empty
  */
@@ -394,12 +394,12 @@ static inline bool _VEC_CLEAN (struct VEC_CFG_VEC * self)
 }
 
 /**=========================================================
- * @brief Check if @a self has capacity for another element, and try
- *        to increase it, if it doesn't
+ * @brief Check if @a self has capacity for another element, and try to
+ *        increase it, if it doesn't
  * @param self The vector
- * @returns `true` if @a self has enough space for at least one more
- *          element (after the operation, i.e., if it already had
- *          before, or it was able to increase), `false` otherwise
+ * @returns `true` if @a self has enough space for at least one more element
+ *          (after the operation, i.e., if it already had before, or it was
+ *          able to increase), `false` otherwise
  */
 static inline bool _VEC_INCREASE_CAPACITY (struct VEC_CFG_VEC * self)
 {
@@ -412,8 +412,8 @@ static inline bool _VEC_INCREASE_CAPACITY (struct VEC_CFG_VEC * self)
 /**=========================================================
  * @brief Check if @a self has too much unused memory and decrease it
  * @param self The vector
- * @returns `false` if @a self has too much unused memory but it
- *          couldn't decrease it, `true` otherwise
+ * @returns `false` if @a self has too much unused memory but it couldn't
+ *          decrease it, `true` otherwise
  */
 static inline bool _VEC_DECREASE_CAPACITY (struct VEC_CFG_VEC * self)
 {
@@ -502,8 +502,7 @@ VEC_CFG_STATIC bool VEC_RESERVE (struct VEC_CFG_VEC * self, size_t total)
 /**=========================================================
  * @brief Shrink @a self to its length
  * @param self The vector
- * @returns `false` if it wasn't possible to shrink @a self,
- *          `true` otherwise
+ * @returns `false` if it wasn't possible to shrink @a self, `true` otherwise
  */
 VEC_CFG_STATIC bool VEC_SHRINK_TO_FIT (struct VEC_CFG_VEC * self)
 {
@@ -568,8 +567,7 @@ VEC_CFG_STATIC inline bool VEC_SET_LEN (struct VEC_CFG_VEC * self, size_t len)
 }
 
 /**=========================================================
- * @brief Remove the element at @a index, replacing it with the last
- *        element
+ * @brief Remove the element at @a index, replacing it with the last element
  * @param self The vector
  * @param index Index of the element to be removed
  * @returns The removed element
@@ -589,14 +587,13 @@ VEC_CFG_STATIC VEC_CFG_DATA_TYPE VEC_SWAP_REMOVE (struct VEC_CFG_VEC * self, siz
 }
 
 /**=========================================================
- * @brief Insert an @a element at @a index, shifting every element
- *        after it to the right
+ * @brief Insert an @a element at @a index, shifting every element after it to
+ *        the right
  * @param self The vector
  * @param index Where the element will be inserted
  * @param element Element to be inserted
- * @returns `false` if @a index is out of bounds or @a self didn't have
- *          enough capacity and it wasn't possible to increase it,
- *          `true` otherwise
+ * @returns `false` if @a index is out of bounds or @a self didn't have enough
+ *          capacity and it wasn't possible to increase it, `true` otherwise
  */
 VEC_CFG_STATIC bool VEC_INSERT (struct VEC_CFG_VEC * self, size_t index, VEC_CFG_DATA_TYPE element)
 {
@@ -624,9 +621,8 @@ VEC_CFG_STATIC bool VEC_INSERT (struct VEC_CFG_VEC * self, size_t index, VEC_CFG
  * @brief Insert an @a element in @a self, keeping it sorted
  * @param self The vector
  * @param element Element to be inserted
- * @returns `false` if @a index is out of bounds or @a self didn't have
- *          enough capacity and it wasn't possible to increase it,
- *          `true` otherwise
+ * @returns `false` if @a index is out of bounds or @a self didn't have enough
+ *          capacity and it wasn't possible to increase it, `true` otherwise
  *
  * Assumes the vector is sorted
  */
@@ -640,8 +636,8 @@ VEC_CFG_STATIC bool VEC_INSERT_SORTED (struct VEC_CFG_VEC * self, VEC_CFG_DATA_T
 }
 
 /**=========================================================
- * @brief Remove an element at @a index, shifting every element after
- *        it to the left
+ * @brief Remove an element at @a index, shifting every element after it to the
+ *        left
  * @param self The vector
  * @param index Index of the element to be removed
  * @returns The removed element
@@ -687,13 +683,13 @@ VEC_CFG_STATIC bool VEC_FREE_RANGE (struct VEC_CFG_VEC * self, size_t from, size
 }
 
 /**=========================================================
- * @brief Keep every element of @a self that satisfies a predicate
- *        @a pred. If VEC_CFG_DTOR is defined, it is called on
- *        each element of @a self that does not satisfy @a pred
+ * @brief Keep every element of @a self that satisfies a predicate @a pred. If
+ *        VEC_CFG_DTOR is defined, it is called on each element of @a self that
+ *        does not satisfy @a pred
  * @param self The vector
  * @param pred The predicate
- * @returns `false` if @a self is not a valid vector or @a pred is
- *          NULL, `true` otherwise
+ * @returns `false` if @a self is not a valid vector or @a pred is NULL, `true`
+ *          otherwise
  */
 VEC_CFG_STATIC bool VEC_FILTER (struct VEC_CFG_VEC * self, bool pred (const VEC_CFG_DATA_TYPE *))
 {
@@ -720,9 +716,8 @@ VEC_CFG_STATIC bool VEC_FILTER (struct VEC_CFG_VEC * self, bool pred (const VEC_
  * @brief Insert an @a element at the end of @a self
  * @param self The vector
  * @param element Element to be pushed
- * @returns `false` if @a self is not a valid vector, or it didn't
- *          have enough capacity and it wasn't possible to increase
- *          it, `true` otherwise
+ * @returns `false` if @a self is not a valid vector, or it didn't have enough
+ *          capacity and it wasn't possible to increase it, `true` otherwise
  */
 VEC_CFG_STATIC bool VEC_PUSH (struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE element)
 {
@@ -747,13 +742,12 @@ VEC_CFG_STATIC VEC_CFG_DATA_TYPE VEC_POP (struct VEC_CFG_VEC * self)
 }
 
 /**=========================================================
- * @brief Append @a other to @a self and set the length of @a other
- *        to 0
+ * @brief Append @a other to @a self and set the length of @a other to 0
  * @param self The vector
  * @param other The other vector
- * @returns `false` if either @a self or @a other aren't valid vectors,
- *          @a self didn't have enough capacity and it wasn't possible
- *          to increase it, `true` otherwise
+ * @returns `false` if either @a self or @a other aren't valid vectors, @a self
+ *          didn't have enough capacity and it wasn't possible to increase it,
+ *          `true` otherwise
  */
 VEC_CFG_STATIC bool VEC_APPEND (struct VEC_CFG_VEC * restrict self, struct VEC_CFG_VEC * restrict other)
 {
@@ -792,8 +786,8 @@ VEC_CFG_STATIC inline size_t VEC_LEN (const struct VEC_CFG_VEC * self)
  * @brief Get the index of the an occurrence (if any) of @a element
  * @param self The vector
  * @param element The element to search for
- * @returns The index of an occurrence of @a element, or, if
- *          @a element does not exist, the length of @a self
+ * @returns The index of an occurrence of @a element, or, if @a element does
+ *          not exist, the length of @a self
  *
  * Assumes the vector is sorted
  */
@@ -820,8 +814,8 @@ VEC_CFG_STATIC inline bool VEC_IS_EMPTY (const struct VEC_CFG_VEC * self)
 }
 
 /**=========================================================
- * @brief Split @a self in two, keeping the first `at - 1` elements
- *        in @a self, and the rest in the returned vector
+ * @brief Split @a self in two, keeping the first `at - 1` elements in @a self,
+ *        and the rest in the returned vector
  * @param self The vector
  * @param other Where to put the elements to the right of @a at
  * @param at Where to split
@@ -871,8 +865,8 @@ VEC_CFG_STATIC inline VEC_CFG_DATA_TYPE VEC_GET_NTH (const struct VEC_CFG_VEC * 
  * @param self The vector
  * @param nth The index
  * @param element The new element
- * @returns `false` if @a self is not a valid vector or @a nth is out
- *          of bounds, `true` otherwise
+ * @returns `false` if @a self is not a valid vector or @a nth is out of
+ *          bounds, `true` otherwise
  */
 VEC_CFG_STATIC inline bool VEC_SET_NTH (struct VEC_CFG_VEC * self, size_t nth, VEC_CFG_DATA_TYPE element)
 {
@@ -885,8 +879,8 @@ VEC_CFG_STATIC inline bool VEC_SET_NTH (struct VEC_CFG_VEC * self, size_t nth, V
  * @brief Get the index of the first occurrence (if any) of @a element
  * @param self The vector
  * @param element The element to look for
- * @returns The index of the first occurrence of @a element, or, if
- *          @a element does not exist, the length of @a self
+ * @returns The index of the first occurrence of @a element, or, if @a element
+ *          does not exist, the length of @a self
  */
 VEC_CFG_STATIC size_t VEC_FIND (const struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE element)
 {
@@ -941,15 +935,14 @@ VEC_CFG_STATIC bool VEC_QSORT (struct VEC_CFG_VEC * self, int compar (const void
 }
 
 /**=========================================================
- * @brief Apply @a f on every element of @a self in the range
- *        [@a from, @a to[
+ * @brief Apply @a f on every element of @a self in the range [@a from, @a to[
  * @param self The vector
  * @param f The function to apply on every element
  * @param from The start index
  * @param to The end index (not including element at this index)
- * @returns `false` if @a self is not a valid vector, @a f is NULL,
- *          @a from is larger than or equal to @a to, or @a to is out of bounds,
- *          `true` otherwise
+ * @returns `false` if @a self is not a valid vector, @a f is NULL, @a from is
+ *          larger than or equal to @a to, or @a to is out of bounds, `true`
+ *          otherwise
  */
 VEC_CFG_STATIC bool VEC_MAP_RANGE (struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE f (VEC_CFG_DATA_TYPE), size_t from, size_t to)
 {
@@ -970,8 +963,7 @@ VEC_CFG_STATIC bool VEC_MAP_RANGE (struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE 
  * @brief Apply @a f to every element of @a self
  * @param self The vector
  * @param f The function to apply on every element
- * @returns Same as VEC_MAP_RANGE()
- *          `true` otherwise
+ * @returns Same as VEC_MAP_RANGE() `true` otherwise
  */
 VEC_CFG_STATIC bool VEC_MAP (struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE f (VEC_CFG_DATA_TYPE))
 {
@@ -980,15 +972,15 @@ VEC_CFG_STATIC bool VEC_MAP (struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE f (VEC
 }
 
 /**=========================================================
- * @brief For every element in @a self in the range [@a from, @a to[,
- *        call @a f with it. This function is similar to VEC_MAP_RANGE
- *        except @a self or its elements are not altered
+ * @brief For every element in @a self in the range [@a from, @a to[, call @a f
+ *        with it. This function is similar to VEC_MAP_RANGE except @a self or
+ *        its elements are not altered
  * @param self The vector
  * @param f The function to call for every element
  * @param from The start index
  * @param to The end index (not including element at this index)
- * @returns `false` if @a self is not a valid vector or @a f is NULL,
- *          `true` otherwise
+ * @returns `false` if @a self is not a valid vector or @a f is NULL, `true`
+ *          otherwise
  */
 VEC_CFG_STATIC bool VEC_FOREACH_RANGE (const struct VEC_CFG_VEC * self, void f (const VEC_CFG_DATA_TYPE), size_t from, size_t to)
 {
@@ -1006,9 +998,8 @@ VEC_CFG_STATIC bool VEC_FOREACH_RANGE (const struct VEC_CFG_VEC * self, void f (
 }
 
 /**=========================================================
- * @brief For every element in @a self call @a f with it. This function
- *        is similar to VEC_MAP except @a self or its elements are not
- *        altered
+ * @brief For every element in @a self call @a f with it. This function is
+ *        similar to VEC_MAP except @a self or its elements are not altered
  * @param self The vector
  * @param f The function to apply on every element
  * @returns Same as VEC_FOREACH_RANGE()
@@ -1020,8 +1011,8 @@ VEC_CFG_STATIC bool VEC_FOREACH (const struct VEC_CFG_VEC * self, void f (const 
 }
 
 /**=========================================================
- * @brief Start iterating over @a self. If @a self is already iterating,
- *        do nothing
+ * @brief Start iterating over @a self. If @a self is already iterating, do
+ *        nothing
  * @param self The vector
  * @returns `false` if @a self is not a valid vector or it is already
  *          iterating, `true` otherwise
@@ -1106,11 +1097,11 @@ VEC_CFG_STATIC bool VEC_ITER_NEXT (struct VEC_CFG_VEC * self)
 }
 
 /**=========================================================
- * @brief Set the `reverse` flag, i.e., if the iterator should
- *        move from beggining to end or end to begginning
+ * @brief Set the `reverse` flag, i.e., if the iterator should move from
+ *        beggining to end or end to begginning
  * @param self The vector
- * @returns `false` if @a self is iterating or it is not a valid vector,
- *          `true` otherwise
+ * @returns `false` if @a self is iterating or it is not a valid vector, `true`
+ *          otherwise
  */
 VEC_CFG_STATIC bool VEC_ITER_REV (struct VEC_CFG_VEC * self, bool rev)
 {
