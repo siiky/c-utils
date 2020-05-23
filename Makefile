@@ -17,7 +17,13 @@ build: $(TARGS)
 install:
 	make -C include/ install
 
+version:
+	date +"v%Y.%m.%d-"
+
+docs:
+	doxygen
+
 %/:
 	make -C $@
 
-.PHONY: build help install
+.PHONY: build docs help install version

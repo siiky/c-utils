@@ -1,4 +1,4 @@
-/* vec - v2020.01.08-0
+/* vec - v2020.05.23-0
  *
  * A vector type inspired by
  *  * Rust's `Vec` type
@@ -156,7 +156,7 @@ int main (void)
 #  define VEC_CFG_PREFIX VEC_CFG_MAKE_STR1(VEC_CFG_VEC, _)
 # endif /* VEC_CFG_PREFIX */
 
-/**=========================================================
+/**
  * @brief The vector type
  */
 struct VEC_CFG_VEC {
@@ -334,7 +334,7 @@ struct VEC_CFG_VEC        VEC_FREE           (struct VEC_CFG_VEC self);
  * Function definitions
  *========================================================*/
 
-/**=========================================================
+/**
  * @brief Search the vector for an occurrence of @a element
  * @param self The vector
  * @param element The element to search for
@@ -365,7 +365,7 @@ static bool _VEC_BSEARCH (const struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE ele
     return ret;
 }
 
-/**=========================================================
+/**
  * @brief Try to change the capacity of @a self to @a cap
  * @param self The vector
  * @param cap The new capacity
@@ -382,7 +382,7 @@ static inline bool _VEC_CHANGE_CAPACITY (struct VEC_CFG_VEC * self, size_t cap)
     return ret;
 }
 
-/**=========================================================
+/**
  * @brief Clean a vector, i.e., zero it
  * @param self The vector
  * @returns `true`
@@ -393,7 +393,7 @@ static inline bool _VEC_CLEAN (struct VEC_CFG_VEC * self)
     return true;
 }
 
-/**=========================================================
+/**
  * @brief Check if @a self has capacity for another element, and try to
  *        increase it, if it doesn't
  * @param self The vector
@@ -409,7 +409,7 @@ static inline bool _VEC_INCREASE_CAPACITY (struct VEC_CFG_VEC * self)
                 self->capacity + (self->capacity >> 1) + 1);
 }
 
-/**=========================================================
+/**
  * @brief Check if @a self has too much unused memory and decrease it
  * @param self The vector
  * @returns `false` if @a self has too much unused memory but it couldn't
@@ -429,7 +429,7 @@ static inline bool _VEC_DECREASE_CAPACITY (struct VEC_CFG_VEC * self)
                 self->length + (self->length >> 1) + 1);
 }
 
-/**=========================================================
+/**
  * @brief Free @a self
  * @param self The vector
  * @returns An empty vector (i.e. zeroed)
@@ -443,7 +443,7 @@ VEC_CFG_STATIC struct VEC_CFG_VEC VEC_FREE (struct VEC_CFG_VEC self)
     return self;
 }
 
-/**=========================================================
+/**
  * @brief Clean and initialize a vector with @a capacity free slots
  * @param capacity Number of elements to allocate
  * @returns The new vector
@@ -457,7 +457,7 @@ VEC_CFG_STATIC inline bool VEC_WITH_CAP (struct VEC_CFG_VEC * self, size_t capac
         && VEC_FROM_RAW_PARTS(self, ptr, 0, capacity);
 }
 
-/**=========================================================
+/**
  * @brief Create a vector from separate components
  * @param ptr A pointer to malloc()'d memory
  * @param length Number of elements in @a ptr
@@ -473,7 +473,7 @@ VEC_CFG_STATIC inline bool VEC_FROM_RAW_PARTS (struct VEC_CFG_VEC * self, VEC_CF
     return true;
 }
 
-/**=========================================================
+/**
  * @brief Calculate the capacity of @a self
  * @param self The vector
  * @returns The capacity of @a self
@@ -485,7 +485,7 @@ VEC_CFG_STATIC inline size_t VEC_CAP (const struct VEC_CFG_VEC * self)
         0;
 }
 
-/**=========================================================
+/**
  * @brief Reserve memory for @a total elements
  * @param self The vector
  * @param total Number of total elements
@@ -499,7 +499,7 @@ VEC_CFG_STATIC bool VEC_RESERVE (struct VEC_CFG_VEC * self, size_t total)
           || _VEC_CHANGE_CAPACITY(self, total));
 }
 
-/**=========================================================
+/**
  * @brief Shrink @a self to its length
  * @param self The vector
  * @returns `false` if it wasn't possible to shrink @a self, `true` otherwise
@@ -512,7 +512,7 @@ VEC_CFG_STATIC bool VEC_SHRINK_TO_FIT (struct VEC_CFG_VEC * self)
           || _VEC_CHANGE_CAPACITY(self, self->length));
 }
 
-/**=========================================================
+/**
  * @brief Shorten @a self, keeping the first @a len elements
  * @param self The vector
  * @param len New length
@@ -530,7 +530,7 @@ VEC_CFG_STATIC bool VEC_TRUNCATE (struct VEC_CFG_VEC * self, size_t len)
     return true;
 }
 
-/**=========================================================
+/**
  * @brief Return a `const` qualified pointer to allocated memory
  * @param self The vector
  * @returns `const` qualified pointer to allocated memory
@@ -542,7 +542,7 @@ VEC_CFG_STATIC inline const VEC_CFG_DATA_TYPE * VEC_AS_SLICE (const struct VEC_C
         NULL;
 }
 
-/**=========================================================
+/**
  * @brief Like vec_as_slice, but not `const` qualified
  * @param self The vector
  * @returns Pointer to allocated memory
@@ -554,7 +554,7 @@ VEC_CFG_STATIC inline VEC_CFG_DATA_TYPE * VEC_AS_MUT_SLICE (struct VEC_CFG_VEC *
         NULL;
 }
 
-/**=========================================================
+/**
  * @brief Set the length of @a self to @a len, without checks
  * @param self The vector
  * @param len The new length
@@ -566,7 +566,7 @@ VEC_CFG_STATIC inline bool VEC_SET_LEN (struct VEC_CFG_VEC * self, size_t len)
         && ((self->length = len), true);
 }
 
-/**=========================================================
+/**
  * @brief Remove the element at @a index, replacing it with the last element
  * @param self The vector
  * @param index Index of the element to be removed
@@ -586,7 +586,7 @@ VEC_CFG_STATIC VEC_CFG_DATA_TYPE VEC_SWAP_REMOVE (struct VEC_CFG_VEC * self, siz
     return VEC_POP(self);
 }
 
-/**=========================================================
+/**
  * @brief Insert an @a element at @a index, shifting every element after it to
  *        the right
  * @param self The vector
@@ -617,7 +617,7 @@ VEC_CFG_STATIC bool VEC_INSERT (struct VEC_CFG_VEC * self, size_t index, VEC_CFG
     return true;
 }
 
-/**=========================================================
+/**
  * @brief Insert an @a element in @a self, keeping it sorted
  * @param self The vector
  * @param element Element to be inserted
@@ -635,7 +635,7 @@ VEC_CFG_STATIC bool VEC_INSERT_SORTED (struct VEC_CFG_VEC * self, VEC_CFG_DATA_T
          && VEC_INSERT(self, i, element));
 }
 
-/**=========================================================
+/**
  * @brief Remove an element at @a index, shifting every element after it to the
  *        left
  * @param self The vector
@@ -662,7 +662,7 @@ VEC_CFG_STATIC VEC_CFG_DATA_TYPE VEC_REMOVE (struct VEC_CFG_VEC * self, size_t i
     return ret;
 }
 
-/**=========================================================
+/**
  * @brief Free the elements of @a self in the range [@a from, @a to[
  * @param self The vector
  * @param from The start index
@@ -682,7 +682,7 @@ VEC_CFG_STATIC bool VEC_FREE_RANGE (struct VEC_CFG_VEC * self, size_t from, size
 # endif /* VEC_CFG_DTOR */
 }
 
-/**=========================================================
+/**
  * @brief Keep every element of @a self that satisfies a predicate @a pred. If
  *        VEC_CFG_DTOR is defined, it is called on each element of @a self that
  *        does not satisfy @a pred
@@ -712,7 +712,7 @@ VEC_CFG_STATIC bool VEC_FILTER (struct VEC_CFG_VEC * self, bool pred (const VEC_
     return true;
 }
 
-/**=========================================================
+/**
  * @brief Insert an @a element at the end of @a self
  * @param self The vector
  * @param element Element to be pushed
@@ -728,7 +728,7 @@ VEC_CFG_STATIC bool VEC_PUSH (struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE eleme
     return true;
 }
 
-/**=========================================================
+/**
  * @brief Remove the last element of @a self
  * @param self The vector
  * @returns The removed element
@@ -741,7 +741,7 @@ VEC_CFG_STATIC VEC_CFG_DATA_TYPE VEC_POP (struct VEC_CFG_VEC * self)
     return self->ptr[self->length];
 }
 
-/**=========================================================
+/**
  * @brief Append @a other to @a self and set the length of @a other to 0
  * @param self The vector
  * @param other The other vector
@@ -770,7 +770,7 @@ VEC_CFG_STATIC bool VEC_APPEND (struct VEC_CFG_VEC * restrict self, struct VEC_C
     return true;
 }
 
-/**=========================================================
+/**
  * @brief Calculate the length of @a self
  * @param self The vector
  * @returns The length of @a self
@@ -782,7 +782,7 @@ VEC_CFG_STATIC inline size_t VEC_LEN (const struct VEC_CFG_VEC * self)
         0;
 }
 
-/**=========================================================
+/**
  * @brief Get the index of the an occurrence (if any) of @a element
  * @param self The vector
  * @param element The element to search for
@@ -801,7 +801,7 @@ VEC_CFG_STATIC size_t VEC_SEARCH (const struct VEC_CFG_VEC * self, VEC_CFG_DATA_
         VEC_LEN(self);
 }
 
-/**=========================================================
+/**
  * @brief Check if @a self is empty
  * @param self The vector
  * @returns `true` if @a self is empty, `false` otherwise
@@ -813,7 +813,7 @@ VEC_CFG_STATIC inline bool VEC_IS_EMPTY (const struct VEC_CFG_VEC * self)
         || (self->length == 0);
 }
 
-/**=========================================================
+/**
  * @brief Split @a self in two, keeping the first `at - 1` elements in @a self,
  *        and the rest in the returned vector
  * @param self The vector
@@ -846,7 +846,7 @@ VEC_CFG_STATIC bool VEC_SPLIT_OFF (struct VEC_CFG_VEC * restrict self, struct VE
     return ret;
 }
 
-/**=========================================================
+/**
  * @brief Get the element at the @a nth index
  * @param self The vector
  * @param nth The index
@@ -860,7 +860,7 @@ VEC_CFG_STATIC inline VEC_CFG_DATA_TYPE VEC_GET_NTH (const struct VEC_CFG_VEC * 
     return self->ptr[nth];
 }
 
-/**=========================================================
+/**
  * @brief Set the element at index @a nth to @a element
  * @param self The vector
  * @param nth The index
@@ -875,7 +875,7 @@ VEC_CFG_STATIC inline bool VEC_SET_NTH (struct VEC_CFG_VEC * self, size_t nth, V
         && ((self->ptr[nth] = element), true);
 }
 
-/**=========================================================
+/**
  * @brief Get the index of the first occurrence (if any) of @a element
  * @param self The vector
  * @param element The element to look for
@@ -892,7 +892,7 @@ VEC_CFG_STATIC size_t VEC_FIND (const struct VEC_CFG_VEC * self, VEC_CFG_DATA_TY
     return ret;
 }
 
-/**=========================================================
+/**
  * @brief Check if @a self contains an @a element
  * @param self The vector
  * @param element The element to look for
@@ -905,7 +905,7 @@ VEC_CFG_STATIC inline bool VEC_ELEM (const struct VEC_CFG_VEC * self, VEC_CFG_DA
         && (VEC_FIND(self, element) < self->length);
 }
 
-/**=========================================================
+/**
  * @brief Check if @a self contains an @a element
  * @param self The vector
  * @param element The element to look for
@@ -920,7 +920,7 @@ VEC_CFG_STATIC inline bool VEC_ELEM_SORTED (const struct VEC_CFG_VEC * self, VEC
         && _VEC_BSEARCH(self, element, &i);
 }
 
-/**=========================================================
+/**
  * @brief Wraper for `stdlib.h`'s `qsort()` function
  * @param self The vector
  * @param compar A function suitable to be passed to `qsort()`
@@ -934,7 +934,7 @@ VEC_CFG_STATIC bool VEC_QSORT (struct VEC_CFG_VEC * self, int compar (const void
     return true;
 }
 
-/**=========================================================
+/**
  * @brief Apply @a f on every element of @a self in the range [@a from, @a to[
  * @param self The vector
  * @param f The function to apply on every element
@@ -959,7 +959,7 @@ VEC_CFG_STATIC bool VEC_MAP_RANGE (struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE 
     return true;
 }
 
-/**=========================================================
+/**
  * @brief Apply @a f to every element of @a self
  * @param self The vector
  * @param f The function to apply on every element
@@ -971,7 +971,7 @@ VEC_CFG_STATIC bool VEC_MAP (struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE f (VEC
         && VEC_MAP_RANGE(self, f, 0, self->length);
 }
 
-/**=========================================================
+/**
  * @brief For every element in @a self in the range [@a from, @a to[, call @a f
  *        with it. This function is similar to VEC_MAP_RANGE except @a self or
  *        its elements are not altered
@@ -997,7 +997,7 @@ VEC_CFG_STATIC bool VEC_FOREACH_RANGE (const struct VEC_CFG_VEC * self, void f (
     return true;
 }
 
-/**=========================================================
+/**
  * @brief For every element in @a self call @a f with it. This function is
  *        similar to VEC_MAP except @a self or its elements are not altered
  * @param self The vector
@@ -1010,7 +1010,7 @@ VEC_CFG_STATIC bool VEC_FOREACH (const struct VEC_CFG_VEC * self, void f (const 
         && VEC_FOREACH_RANGE(self, f, 0, self->length);
 }
 
-/**=========================================================
+/**
  * @brief Start iterating over @a self. If @a self is already iterating, do
  *        nothing
  * @param self The vector
@@ -1030,7 +1030,7 @@ VEC_CFG_STATIC bool VEC_ITER (struct VEC_CFG_VEC * self)
     return (self->iterating = true);
 }
 
-/**=========================================================
+/**
  * @brief Stop the iterator over @a self
  * @param self The vector
  * @returns `false` if @a self is not a valid vector, `true` otherwise
@@ -1041,7 +1041,7 @@ VEC_CFG_STATIC inline bool VEC_ITER_END (struct VEC_CFG_VEC * self)
         && !(self->iterating = false);
 }
 
-/**=========================================================
+/**
  * @brief Check if @a self is iterating
  * @param self The vector
  * @returns `true` if @a self is iterating, `false` otherwise
@@ -1052,7 +1052,7 @@ VEC_CFG_STATIC inline bool VEC_ITERING (const struct VEC_CFG_VEC * self)
         && self->iterating;
 }
 
-/**=========================================================
+/**
  * @brief Get the index of the iterator
  * @param self The vector
  * @returns The current index of the iterator
@@ -1064,7 +1064,7 @@ VEC_CFG_STATIC inline size_t VEC_ITER_IDX (const struct VEC_CFG_VEC * self)
     return self->idx;
 }
 
-/**=========================================================
+/**
  * @brief Move the iterator to the next index
  * @param self The vector
  * @returns `true` if still iterating, `false` otherwise
@@ -1096,7 +1096,7 @@ VEC_CFG_STATIC bool VEC_ITER_NEXT (struct VEC_CFG_VEC * self)
     return self->iterating;
 }
 
-/**=========================================================
+/**
  * @brief Set the `reverse` flag, i.e., if the iterator should move from
  *        beggining to end or end to begginning
  * @param self The vector
