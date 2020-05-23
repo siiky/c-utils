@@ -39,6 +39,7 @@ tests/theft/
 examples/bs/bs
 examples/ftr/ftr
 examples/map/map
+examples/rc/rc
 examples/strm/strm
 examples/tralloc/trace.txt
 examples/tralloc/tralloc

@@ -6,6 +6,7 @@ TARGS := \
 	examples/bs/      \
 	examples/ftr/     \
 	examples/map/     \
+	examples/rc/      \
 	examples/strm/    \
 	examples/tralloc/ \
 	examples/vec/     \
@@ -15,7 +16,7 @@ TARGS := \
 build: $(TARGS)
 
 install:
-	make -C include/ install
+	$(MAKE) -C include/ install
 
 version:
 	date +"v%Y.%m.%d-"
@@ -24,6 +25,6 @@ docs:
 	doxygen
 
 %/:
-	make -C $@
+	$(MAKE) -C $@
 
 .PHONY: build docs help install version

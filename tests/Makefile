@@ -61,7 +61,7 @@ theft:
 
 libtheft: theft
 	@echo "### BUILDING THEFT ###"
-	make -C theft/ CC=$(CC)
+	$(MAKE) -C theft/ CC=$(CC)
 
 DATE := $(shell date +"%Y%m%d-%H%M")
 VALGRIND_LOG := valgrind-$(DATE)-$(CC).log
@@ -73,6 +73,6 @@ clean:
 	$(RM) $(OBJS) $(EXEC) valgrind-*.log $(EXEC)-*.out *.link
 
 clean_all: clean
-	make -C theft/ clean
+	$(MAKE) -C theft/ clean
 
 .PHONY: all clean clean_all libtheft test theft valgrind
