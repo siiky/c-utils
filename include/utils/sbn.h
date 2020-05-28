@@ -51,6 +51,8 @@
 
 # endif /* SBN_CFG_NO_STDINT */
 
+# define sbn_digit_nquartets              (sbn_digit_nbits >> 2)
+# define sbn_digit_nbytes                 (sbn_digit_nbits >> 3)
 # define sbn_nbits_diff                   (sbn_double_digit_nbits - sbn_digit_nbits)
 # define sbn_double_digit_upper_half(dig) ((sbn_digit) ((dig) >> sbn_nbits_diff))
 # define sbn_double_digit_lower_half(dig) sbn_double_digit_upper_half((dig) << sbn_nbits_diff)
@@ -66,14 +68,19 @@
  *
  *  <stddef.h>
  *   size_t
+ *
+ *  <string.h>
+ *   memmove()
+ *   memcpy()
  */
 #include <stdbool.h>
 #include <stddef.h>
+#include <string.h>
 
 /* I don't like it as an opaque structure, but I can't think of a workaround */
 struct sbn;
 
-bool         sbn_add_digit_ud (struct sbn * a, sbn_digit dig);
+bool         sbn_add_digit_ud (struct sbn * a, const sbn_digit dig);
 bool         sbn_eq           (const struct sbn * a, const struct sbn * b);
 bool         sbn_ge           (const struct sbn * a, const struct sbn * b);
 bool         sbn_gt           (const struct sbn * a, const struct sbn * b);
@@ -91,7 +98,7 @@ int          sbn_sign         (const struct sbn * a);
 sbn_digit    sbn_nth_digit    (const struct sbn * a, size_t nth);
 size_t       sbn_ndigits      (const struct sbn * a);
 struct sbn * sbn_add          (const struct sbn * a, const struct sbn * b);
-struct sbn * sbn_add_digit_u  (struct sbn * a, sbn_digit dig);
+struct sbn * sbn_add_digit_u  (const struct sbn * a, const sbn_digit dig);
 struct sbn * sbn_add_u        (const struct sbn * a, const struct sbn * b);
 struct sbn * sbn_clone        (const struct sbn * a);
 struct sbn * sbn_free         (struct sbn * a);
@@ -138,14 +145,19 @@ static bool _sbn_append_digits (struct sbn * restrict a, const struct sbn * rest
 {
 	size_t andigs = sbn_ndigits(a);
 	size_t bndigs = sbn_ndigits(b);
+	size_t totdigs = andigs + bndigs;
 
-	if (!a || !b || !_sbn_reserve(a, andigs + bndigs))
+	if (!a || !b || !_sbn_reserve(a, totdigs))
 		return false;
 
 	sbn_digit * dest = a->digits->ptr + andigs;
 	sbn_digit * src = b->digits->ptr;
 	size_t n = bndigs * sizeof(sbn_digit);
 	memcpy(dest, src, n);
+
+	_sbn_digits_vec_set_len(a->digits, totdigs);
+	a->digits->capacity = totdigs;
+
 
 	return true;
 }
@@ -159,6 +171,65 @@ static bool _sbn_push_digit (struct sbn * a, sbn_digit dig)
 /******************
  * Misc Functions *
  ******************/
+
+/**
+ * @brief Reverse a string
+ */
+static bool _sbn_str_reverse (size_t nchars, char str[nchars])
+{
+	if (!str) return false;
+
+	size_t mid = nchars >> 1;
+	for (size_t i = 0; i < mid; i++) {
+		char tmp = str[i];
+		str[i] = str[nchars - i - 1];
+		str[nchars - i - 1] = tmp;
+	}
+
+	return true;
+}
+
+#if 0
+/**
+ * @brief Find the index of the first occurrence of a char that's not @a c
+ */
+static size_t _sbn_strnchr_idx (size_t nchars, char str[nchars], char c)
+{
+	if (!str) return 0;
+	size_t ret = 0;
+	for (ret = 0; ret < nchars && str[ret] == c; ret++);
+	return ret;
+}
+
+/**
+ * @brief Strip occurrences of @a c to the left of @a str
+ */
+static size_t _sbn_str_strip_left_chr (size_t nchars, char str[nchars], char c)
+{
+	if (!str) return 0;
+
+	size_t nni = _sbn_strnchr_idx(nchars, str, c);
+	if (nni == nchars + 1) return nchars; /* No occurrence, nothing to change */
+
+	size_t newlen = nchars - nni;
+	memmove(str, str + nni, nchars - nni);
+	str[newlen] = '\0';
+	return newlen;
+}
+#endif
+
+static size_t _sbn_digit_non_left_0_quartets (sbn_digit dig)
+{
+	const sbn_digit mod16 = 0xf;
+	size_t ret = 0;
+	for (; ret < sbn_digit_nquartets; ret++) {
+		size_t shift = (sbn_digit_nquartets - ret - 1) << 2;
+		size_t quart = (dig >> shift) & mod16;
+		if (quart != 0)
+			break;
+	}
+	return sbn_digit_nquartets - ret;
+}
 
 /**
  * @brief Set the @a nth digit to @a dig
@@ -181,7 +252,9 @@ static sbn_digit _sbn_add_digits (sbn_digit _a, sbn_digit _b, sbn_digit * _carry
 
 	sbn_double_digit tmp = a + b + carry;
 	*_carry = sbn_double_digit_upper_half(tmp);
-	return sbn_double_digit_lower_half(tmp);
+	sbn_digit ret = sbn_double_digit_lower_half(tmp);
+	debug_log("ret=%u\n", ret);
+	return ret;
 }
 
 /**
@@ -330,7 +403,7 @@ bool sbn_is_negative (const struct sbn * a)
  * @brief Negate @a a
  */
 bool sbn_negate (struct sbn * a)
-{ return a && ((a->is_negative = !a->is_negative), true); }
+{return sbn_set_sign(a, !sbn_is_negative(a)); }
 
 /**
  * @brief Set @a a's sign
@@ -358,34 +431,51 @@ size_t sbn_ndigits (const struct sbn * a)
 
 /**
  * @brief Convert an SBN to a string in base 16
+ *
+ * TODO: Handle 0 correctly; Ideally, have this zero check outside, so it
+ *       doesn't have to be repeated
  */
 char * sbn_to_str_16 (const struct sbn * a)
 {
 	if (!a) return NULL;
 
+	const sbn_digit mod16 = 0xf;
 	const size_t ndigs = sbn_ndigits(a);
-	const size_t dig_nquarts = sbn_digit_nbits >> 2;
-	/* TODO: Improve this approximation */
-	const size_t nchars = ndigs * dig_nquarts;
+	const sbn_digit last_dig = sbn_nth_digit(a, ndigs - 1);
+	const size_t last_dig_nquarts = _sbn_digit_non_left_0_quartets(last_dig);
+	const size_t nchars = (ndigs - 1) * sbn_digit_nquartets + last_dig_nquarts;
 
 	char * ret = calloc(nchars + 1, sizeof(char));
 	if (!ret) return NULL;
 
-	for (size_t di = 0; di < ndigs; di++) {
+	for (size_t di = 0; di < (ndigs - 1); di++) {
 		const sbn_digit dig = sbn_nth_digit(a, di);
-		for (size_t qi = 0; qi < dig_nquarts; qi++) {
+		for (size_t qi = 0; qi < sbn_digit_nquartets; qi++) {
 			const size_t shift = qi << 2;
-			const sbn_digit c = (dig >> shift) & 0xf;
+			const unsigned char c = (dig >> shift) & mod16;
 
-			const size_t ci = (di << 2) + qi;
+			const size_t ci = (di * sbn_digit_nquartets) + qi;
 			ret[ci] = (c <= 0x9) ?
 				((char) ('0' + c)):
 				(c >= 0xa && c <= 0xf) ?
-				((char) ('a' + c)):
-				'!';
+				((char) ('a' + c - 0xa)):
+				'!'; /* Shouldn't happen */
 		}
 	}
 
+	for (size_t qi = 0; qi < last_dig_nquarts; qi++) {
+		const size_t shift = qi << 2;
+		const unsigned char c = (last_dig >> shift) & mod16;
+
+		const size_t ci = ((ndigs - 1) * sbn_digit_nquartets) + qi;
+		ret[ci] = (c <= 0x9) ?
+			((char) ('0' + c)):
+			(c >= 0xa && c <= 0xf) ?
+			((char) ('a' + c - 0xa)):
+			'!'; /* Shouldn't happen */
+	}
+
+	_sbn_str_reverse(nchars, ret);
 	return ret;
 }
 
@@ -453,7 +543,7 @@ struct sbn * sbn_from_str (size_t nchars, const char str[nchars], unsigned base)
 /**
  * @brief Add a single digit to @a a, destructively, ignoring the sign
  */
-bool sbn_add_digit_ud (struct sbn * a, sbn_digit dig)
+bool sbn_add_digit_ud (struct sbn * a, const sbn_digit dig)
 {
 	if (!a) return false;
 	if (dig == 0) return true;
@@ -461,16 +551,26 @@ bool sbn_add_digit_ud (struct sbn * a, sbn_digit dig)
 	sbn_digit carry = dig;
 	size_t ndigs = sbn_ndigits(a);
 
-	for (size_t i = 0; carry > 0 && i < ndigs; i++)
-		_sbn_set_nth_digit(a, i, _sbn_add_digits(sbn_nth_digit(a, i), 0, &carry));
+	debug_log("carry before=%u,\tndigs=%zu\n", carry, ndigs);
+	for (size_t i = 0; carry > 0 && i < ndigs; i++) {
+		sbn_digit sum = _sbn_add_digits(sbn_nth_digit(a, i), 0, &carry);
+		bool succ = _sbn_set_nth_digit(a, i, sum);
+		debug_log("loop: carry=%u,\tsum=%u,\tsucc=%s\n", carry, sum, bool_to_str(succ));
+		if (!succ)
+			return false;
+	}
 
-	return !carry || _sbn_push_digit(a, carry);
+	debug_log("carry after =%u\n", carry);
+
+	bool ret = !carry || _sbn_push_digit(a, carry);
+	debug_log("ret=%s\n", bool_to_str(ret));
+	return ret;
 }
 
 /**
  * @brief Add a single digit to @a a, non-destructively, ignoring the sign
  */
-struct sbn * sbn_add_digit_u (struct sbn * a, sbn_digit dig)
+struct sbn * sbn_add_digit_u (const struct sbn * a, const sbn_digit dig)
 {
 	struct sbn * ret = sbn_clone(a);
 	return (ret && !sbn_add_digit_ud(ret, dig)) ?
