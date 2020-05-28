@@ -12,6 +12,9 @@
  *
  * It can be configured to use different integer types for the digits, but
  * there can be only one implementation.
+ *
+ * _Modern Computer Arithmetic_ is used as a reference; you can get it here:
+ * https://members.loria.fr/PZimmermann/mca/pub226.html
  */
 
 # ifdef SBN_CFG_NO_STDINT
@@ -71,11 +74,18 @@
 struct sbn;
 
 bool         sbn_add_digit_ud (struct sbn * a, sbn_digit dig);
+bool         sbn_eq           (const struct sbn * a, const struct sbn * b);
 bool         sbn_free         (struct sbn * a);
+bool         sbn_ge           (const struct sbn * a, const struct sbn * b);
+bool         sbn_gt           (const struct sbn * a, const struct sbn * b);
 bool         sbn_is_negative  (const struct sbn * a);
 bool         sbn_is_zero      (const struct sbn * a);
+bool         sbn_le           (const struct sbn * a, const struct sbn * b);
+bool         sbn_lt           (const struct sbn * a, const struct sbn * b);
 bool         sbn_negate       (struct sbn * a);
+bool         sbn_neq          (const struct sbn * a, const struct sbn * b);
 bool         sbn_set_sign     (struct sbn * a, bool is_negative);
+int          sbn_cmp          (const struct sbn * a, const struct sbn * b);
 int          sbn_sign         (const struct sbn * a);
 sbn_digit    sbn_nth_digit    (const struct sbn * a, size_t nth);
 size_t       sbn_ndigits      (const struct sbn * a);
@@ -101,23 +111,21 @@ struct sbn {
 	struct _sbn_digits_vec digits[1];
 };
 
+/*************************
+ *************************
+ *** Private Functions ***
+ *************************
+ *************************/
+
+/*******************************
+ * Memory Management Functions *
+ *******************************/
+
 /**
  * @brief Reserve a total number of digits
  */
 static bool _sbn_reserve (struct sbn * a, size_t total_digs)
 { return a && _sbn_digits_vec_reserve(a->digits, total_digs); }
-
-/**
- * @brief Append a new digit
- */
-static bool _sbn_push_digit (struct sbn * a, sbn_digit dig)
-{ return a && _sbn_digits_vec_push(a->digits, dig); }
-
-/**
- * @brief Set the @a nth digit to @a dig
- */
-static bool _sbn_set_nth_digit (struct sbn * a, size_t i, sbn_digit dig)
-{ return a && _sbn_digits_vec_set_nth(a->digits, i, dig); }
 
 /**
  * @brief Append the digits of @a b to the end of @a a's digits
@@ -139,6 +147,26 @@ static bool _sbn_append_digits (struct sbn * restrict a, const struct sbn * rest
 }
 
 /**
+ * @brief Append a new digit
+ */
+static bool _sbn_push_digit (struct sbn * a, sbn_digit dig)
+{ return a && _sbn_digits_vec_push(a->digits, dig); }
+
+/******************
+ * Misc Functions *
+ ******************/
+
+/**
+ * @brief Set the @a nth digit to @a dig
+ */
+static bool _sbn_set_nth_digit (struct sbn * a, size_t i, sbn_digit dig)
+{ return a && _sbn_digits_vec_set_nth(a->digits, i, dig); }
+
+/************************
+ * Arithmetic Functions *
+ ************************/
+
+/**
  * @brief Calculate the result and carry of adding two digits
  */
 static sbn_digit _sbn_add_digits (sbn_digit _a, sbn_digit _b, sbn_digit * _carry)
@@ -152,6 +180,9 @@ static sbn_digit _sbn_add_digits (sbn_digit _a, sbn_digit _b, sbn_digit * _carry
 	return sbn_double_digit_lower_half(tmp);
 }
 
+/**
+ * @brief Calculate the result and carry of subtracting two digits
+ */
 static sbn_digit _sbn_sub_digits (sbn_digit _a, sbn_digit _b, sbn_digit * _carry)
 {
 	sbn_double_digit a = _a;
@@ -162,6 +193,167 @@ static sbn_digit _sbn_sub_digits (sbn_digit _a, sbn_digit _b, sbn_digit * _carry
 	*_carry = sbn_double_digit_upper_half(tmp);
 	return sbn_double_digit_lower_half(tmp);
 }
+
+/************************
+ ************************
+ *** Public Functions ***
+ ************************
+ ************************/
+
+/*******************************
+ * Memory Management Functions *
+ *******************************/
+
+/**
+ * @brief Create a new SBN
+ */
+struct sbn * sbn_new (void)
+{ return calloc(1, sizeof(struct sbn)); }
+
+/**
+ * @brief Free @a a
+ */
+bool sbn_free (struct sbn * a)
+{
+	if (a) {
+		*a->digits = _sbn_digits_vec_free(*a->digits);
+		a->is_negative = 0;
+	}
+	return true;
+}
+
+/**
+ * @brief Clone @a a
+ */
+struct sbn * sbn_clone (const struct sbn * a)
+{
+	struct sbn * ret = (a) ? sbn_new() : NULL;
+	if (ret) {
+		if (!_sbn_append_digits(ret, a))
+			return sbn_free(ret), NULL;
+		ret->is_negative = a->is_negative;
+	}
+	return ret;
+}
+
+/************************
+ * Comparison Functions *
+ ************************/
+
+/**
+ * @brief Is @a a zero?
+ */
+bool sbn_is_zero (const struct sbn * a)
+{ return a && sbn_ndigits(a) == 0; }
+
+/**
+ * @brief Compare @a a and @a b a la `strcmp()`
+ */
+int sbn_cmp (const struct sbn * a, const struct sbn * b)
+{
+	if (a == b) return 0;
+	if (!a) return -1;
+	if (!b) return 1;
+
+	size_t andigs = sbn_ndigits(a);
+	size_t bndigs = sbn_ndigits(b);
+
+	if (andigs < bndigs) return -1;
+	if (andigs > bndigs) return 1;
+
+	int ret = 0;
+	for (size_t i = 0; i < andigs && ret == 0; i++) {
+		size_t nth = andigs - i - 1;
+		sbn_digit adig = sbn_nth_digit(a, nth);
+		sbn_digit bdig = sbn_nth_digit(b, nth);
+		ret = (adig < bdig) ?
+			-1:
+			(adig > bdig) ?
+			1:
+			0;
+	}
+	return ret;
+}
+
+/**
+ * @brief @a a == @a b
+ */
+bool sbn_eq (const struct sbn * a, const struct sbn * b)
+{ return sbn_cmp(a, b) == 0; }
+
+/**
+ * @brief @a a != @a b
+ */
+bool sbn_neq (const struct sbn * a, const struct sbn * b)
+{ return sbn_cmp(a, b) != 0; }
+
+/**
+ * @brief @a a > @a b
+ */
+bool sbn_gt (const struct sbn * a, const struct sbn * b)
+{ return sbn_cmp(a, b) > 0; }
+
+/**
+ * @brief @a a < @a b
+ */
+bool sbn_lt (const struct sbn * a, const struct sbn * b)
+{ return sbn_cmp(a, b) < 0; }
+
+/**
+ * @brief @a a >= @a b
+ */
+bool sbn_ge (const struct sbn * a, const struct sbn * b)
+{ return sbn_cmp(a, b) >= 0; }
+
+/**
+ * @brief @a a <= @a b
+ */
+bool sbn_le (const struct sbn * a, const struct sbn * b)
+{ return sbn_cmp(a, b) <= 0; }
+
+/******************
+ * Misc Functions *
+ ******************/
+
+/**
+ * @brief Is @a a negative?
+ */
+bool sbn_is_negative (const struct sbn * a)
+{ return a && a->is_negative; }
+
+/**
+ * @brief Negate @a a
+ */
+bool sbn_negate (struct sbn * a)
+{ return a && ((a->is_negative = !a->is_negative), true); }
+
+/**
+ * @brief Set @a a's sign
+ */
+bool sbn_set_sign (struct sbn * a, bool is_negative)
+{ return a && ((a->is_negative = is_negative), true); }
+
+/**
+ * @brief Get the sign of @a a
+ */
+int sbn_sign (const struct sbn * a)
+{ return (sbn_is_zero(a)) ? 0: (sbn_is_negative(a)) ? -1: 1; }
+
+/**
+ * @brief Get the @a nth digit of @a a
+ */
+sbn_digit sbn_nth_digit (const struct sbn * a, size_t nth)
+{ return _sbn_digits_vec_get_nth(a->digits, nth); }
+
+/**
+ * @brief Get the number of digits of @a a
+ */
+size_t sbn_ndigits (const struct sbn * a)
+{ return (a) ? _sbn_digits_vec_len(a->digits) : 0; }
+
+/************************
+ * Arithmetic Functions *
+ ************************/
 
 /**
  * @brief Add a single digit to @a a, destructively, ignoring the sign
@@ -178,109 +370,6 @@ bool sbn_add_digit_ud (struct sbn * a, sbn_digit dig)
 		_sbn_set_nth_digit(a, i, _sbn_add_digits(sbn_nth_digit(a, i), 0, &carry));
 
 	return !carry || _sbn_push_digit(a, carry);
-}
-
-/**
- * @brief Free @a a
- */
-bool sbn_free (struct sbn * a)
-{
-	if (a) {
-		*a->digits = _sbn_digits_vec_free(*a->digits);
-		a->is_negative = 0;
-	}
-	return true;
-}
-
-/**
- * @brief Is @a a negative?
- */
-bool sbn_is_negative (const struct sbn * a)
-{
-	return a && a->is_negative;
-}
-
-/**
- * @brief Is @a a zero?
- */
-bool sbn_is_zero (const struct sbn * a)
-{
-	return a && sbn_ndigits(a) == 0;
-}
-
-/**
- * @brief Negate @a a
- */
-bool sbn_negate (struct sbn * a)
-{
-	return a && ((a->is_negative = !a->is_negative), true);
-}
-
-/**
- * @brief Set @a a's sign
- */
-bool sbn_set_sign (struct sbn * a, bool is_negative)
-{
-	return a && ((a->is_negative = is_negative), true);
-}
-
-/**
- * @brief Get the sign of @a a
- */
-int sbn_sign (const struct sbn * a)
-{
-	return (sbn_is_zero(a)) ?
-		0:
-		(sbn_is_negative(a)) ?
-		-1:
-		1;
-}
-
-/**
- * @brief Get the @a nth digit of @a a
- */
-sbn_digit sbn_nth_digit (const struct sbn * a, size_t nth)
-{
-	return _sbn_digits_vec_get_nth(a->digits, nth);
-}
-
-/**
- * @brief Get the number of digits of @a a
- */
-size_t sbn_ndigits (const struct sbn * a)
-{
-	return (a) ? _sbn_digits_vec_len(a->digits) : 0;
-}
-
-/**
- * @brief Add @a b to @a a
- *
- * TODO: Add numbers of different signs
- *
- * Same sign:
- *  a +  b = a + b
- * -a + -b = -(a + b)
- *
- * Different sign:
- *  a + -b = a - b
- * -a +  b = b - a
- */
-struct sbn * sbn_add (const struct sbn * a, const struct sbn * b)
-{
-	struct sbn * ret = NULL;
-	bool is_a_negative = sbn_is_negative(a);
-
-	if (is_a_negative == sbn_is_negative(b)) {
-		ret = sbn_add_u(a, b);
-		sbn_set_sign(ret, is_a_negative);
-	} else {
-		ret = (is_a_negative) ?
-			sbn_sub_u(b, a):
-			sbn_sub_u(a, b);
-		/* TODO: Set the right sign */
-	}
-
-	return ret;
 }
 
 /**
@@ -319,17 +408,8 @@ struct sbn * sbn_add_u (const struct sbn * a, const struct sbn * b)
 	 * number of digits
 	 */
 	if (andigs < bndigs) {
-		{
-			const struct sbn * tmp = a;
-			a = b;
-			b = tmp;
-		}
-
-		{
-			size_t tmp = andigs;
-			andigs = bndigs;
-			bndigs = tmp;
-		}
+		{ const struct sbn * tmp = a; a = b; b = tmp; }
+		{ size_t tmp = andigs; andigs = bndigs; bndigs = tmp; }
 	}
 
 	struct sbn * ret = sbn_new();
@@ -372,36 +452,38 @@ struct sbn * sbn_add_u (const struct sbn * a, const struct sbn * b)
 }
 
 /**
- * @brief Clone @a a
+ * @brief Add @a b to @a a
+ *
+ * TODO: Add numbers of different signs
+ *
+ * Same sign:
+ *  a +  b = a + b
+ * -a + -b = -(a + b)
+ *
+ * Different sign:
+ *  a + -b = a - b
+ * -a +  b = b - a
  */
-struct sbn * sbn_clone (const struct sbn * a)
+struct sbn * sbn_add (const struct sbn * a, const struct sbn * b)
 {
-	struct sbn * ret = (a) ? sbn_new() : NULL;
-	if (ret) {
-		if (!_sbn_append_digits(ret, a))
-			return sbn_free(ret), NULL;
-		ret->is_negative = a->is_negative;
+	struct sbn * ret = NULL;
+	bool is_a_negative = sbn_is_negative(a);
+
+	if (is_a_negative == sbn_is_negative(b)) {
+		ret = sbn_add_u(a, b);
+		sbn_set_sign(ret, is_a_negative);
+	} else {
+		ret = (is_a_negative) ?
+			sbn_sub_u(b, a):
+			sbn_sub_u(a, b);
+		/* TODO: Set the right sign */
 	}
+
 	return ret;
 }
 
 /**
- * @brief Create a new SBN
- */
-struct sbn * sbn_new (void)
-{
-	return calloc(1, sizeof(struct sbn));
-}
-
-/**
  * @brief Subtract @a b from @a a, ignoring the sign
- *
- * TODO: Subtract numbers of different signs
- *
- *  a -  b = a - b
- *  a - -b = a + b
- * -a -  b = -(a + b)
- * -a - -b = b - a
  */
 struct sbn * sbn_sub_u (const struct sbn * a, const struct sbn * b)
 {
@@ -454,6 +536,37 @@ struct sbn * sbn_sub_u (const struct sbn * a, const struct sbn * b)
 	 */
 	if (carry != 0 && !_sbn_push_digit(ret, carry))
 		return sbn_free(ret), NULL;
+
+	return ret;
+}
+
+/**
+ * @brief Subtract @a b from @a a
+ *
+ * TODO: Subtract numbers of different signs
+ *
+ * Same sign:
+ *  a -  b = a - b
+ * -a - -b = b - a
+ *
+ * Different sign:
+ *  a - -b = a + b
+ * -a -  b = -(a + b)
+ */
+struct sbn * sbn_sub (const struct sbn * a, const struct sbn * b)
+{
+	struct sbn * ret = NULL;
+	bool is_a_negative = sbn_is_negative(a);
+
+	if (is_a_negative != sbn_is_negative(b)) {
+		ret = sbn_add_u(a, b);
+		sbn_set_sign(ret, is_a_negative);
+	} else {
+		ret = (is_a_negative) ?
+			sbn_sub_u(b, a):
+			sbn_sub_u(a, b);
+		/* TODO: Set the right sign */
+	}
 
 	return ret;
 }
