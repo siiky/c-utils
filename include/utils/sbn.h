@@ -85,6 +85,8 @@ bool         sbn_lt           (const struct sbn * a, const struct sbn * b);
 bool         sbn_negate       (struct sbn * a);
 bool         sbn_neq          (const struct sbn * a, const struct sbn * b);
 bool         sbn_set_sign     (struct sbn * a, bool is_negative);
+char *       sbn_to_str       (const struct sbn * a, unsigned base);
+char *       sbn_to_str_16    (const struct sbn * a);
 int          sbn_cmp          (const struct sbn * a, const struct sbn * b);
 int          sbn_sign         (const struct sbn * a);
 sbn_digit    sbn_nth_digit    (const struct sbn * a, size_t nth);
@@ -93,6 +95,8 @@ struct sbn * sbn_add          (const struct sbn * a, const struct sbn * b);
 struct sbn * sbn_add_digit_u  (struct sbn * a, sbn_digit dig);
 struct sbn * sbn_add_u        (const struct sbn * a, const struct sbn * b);
 struct sbn * sbn_clone        (const struct sbn * a);
+struct sbn * sbn_from_str     (size_t nchars, const char str[nchars], unsigned base);
+struct sbn * sbn_from_str_16  (size_t nchars, const char str[nchars]);
 struct sbn * sbn_new          (void);
 struct sbn * sbn_sub_u        (const struct sbn * a, const struct sbn * b);
 
@@ -218,6 +222,7 @@ bool sbn_free (struct sbn * a)
 	if (a) {
 		*a->digits = _sbn_digits_vec_free(*a->digits);
 		a->is_negative = 0;
+		free(a);
 	}
 	return true;
 }
@@ -350,6 +355,96 @@ sbn_digit sbn_nth_digit (const struct sbn * a, size_t nth)
  */
 size_t sbn_ndigits (const struct sbn * a)
 { return (a) ? _sbn_digits_vec_len(a->digits) : 0; }
+
+/**
+ * @brief Convert an SBN to a string in base 16
+ */
+char * sbn_to_str_16 (const struct sbn * a)
+{
+	if (!a) return NULL;
+
+	const size_t ndigs = sbn_ndigits(a);
+	const size_t dig_nquarts = sbn_digit_nbits >> 2;
+	/* TODO: Improve this approximation */
+	const size_t nchars = ndigs * dig_nquarts;
+
+	char * ret = calloc(nchars + 1, sizeof(char));
+	if (!ret) return NULL;
+
+	for (size_t di = 0; di < ndigs; di++) {
+		const sbn_digit dig = sbn_nth_digit(a, di);
+		for (size_t qi = 0; qi < dig_nquarts; qi++) {
+			const size_t shift = qi << 2;
+			const sbn_digit c = (dig >> shift) & 0xf;
+
+			const size_t ci = (di << 2) + qi;
+			ret[ci] = (c <= 0x9) ?
+				((char) ('0' + c)):
+				(c >= 0xa && c <= 0xf) ?
+				((char) ('a' + c)):
+				'!';
+		}
+	}
+
+	return ret;
+}
+
+/**
+ * @brief Convert an SBN to a string
+ */
+char * sbn_to_str (const struct sbn * a, unsigned base)
+{
+	/* TODO: Convert to bases other than 16 */
+	return (!a) ?
+		NULL:
+		(base == 16) ?
+		sbn_to_str_16(a):
+		NULL;
+}
+
+/**
+ * @brief Convert a string to an SBN in base 16
+ */
+struct sbn * sbn_from_str_16 (size_t nchars, const char str[nchars])
+{
+	if (!str) return NULL;
+
+	nchars = (nchars == 0) ? strlen(str) : nchars;
+	const size_t dig_nquarts = sbn_digit_nbits >> 2;
+	const size_t ndigs = nchars / dig_nquarts;
+
+	struct sbn * ret = sbn_new();
+	if (!ret) return NULL;
+	if (!_sbn_reserve(ret, ndigs)) return sbn_free(ret), NULL;
+
+	/* TODO: Implement this */
+#if 0
+	sbn_digit dig = 0;
+	for (size_t di = 0; di < ndigs; di++) {
+		for (size_t qi = 0; qi < dig_nquarts; qi++) {
+			size_t ci = (di << 2) + qi;
+			size_t shift = sbn_digit_nbits - ((qi + 1) << 2);
+			(void) ci;
+			(void) shift;
+		}
+	}
+#endif
+
+	return ret;
+}
+
+/**
+ * @brief Convert a string to an SBN
+ */
+struct sbn * sbn_from_str (size_t nchars, const char str[nchars], unsigned base)
+{
+	/* TODO: Convert to bases other than 16 */
+	return (!str) ?
+		NULL:
+		(base == 16) ?
+		sbn_from_str_16(nchars, str):
+		NULL;
+}
 
 /************************
  * Arithmetic Functions *
