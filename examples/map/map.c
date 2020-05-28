@@ -12,8 +12,14 @@ static int cmp_func (unsigned a, unsigned b)
         0;
 }
 
+static void value_dtor (unsigned x)
+{
+    (void) x;
+}
+
 #define MAP_CFG_KEY_CMP cmp_func
 #define MAP_CFG_HASH_FUNC hash_func
+#define MAP_CFG_VALUE_DTOR value_dtor
 #define MAP_CFG_IMPLEMENTATION
 #include "map.h"
 

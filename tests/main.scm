@@ -38,17 +38,15 @@ bool qc_vec_test_all (void);
 (define (run-all tests)
   (fold (lambda (e acc) (+ acc (if ((cdr e)) 0 1))) 0 tests))
 
-(define (run-only tests mods)
-  (run-all (filter (lambda (test) (member (symbol->string (car test)) mods)) tests)))
-
-(define (run-except tests mods)
-  (run-all (filter (lambda (test) (not (member (symbol->string (car test)) mods))) tests)))
+(define ((is-in? mods) test) (member (symbol->string (car test)) mods))
+(define (run-only tests mods) (run-all (filter (is-in? mods) tests)))
+(define (run-except tests mods) (run-all (filter (complement (is-in? mods)) tests)))
 
 (define (main args)
-  (let ((usg    (lambda (_) (usage (program-name))))
-        (all    (lambda (_) (run-all    *TESTS*)))
-        (only   (lambda (_) (run-only   *TESTS* (cdr args))))
-        (except (lambda (_) (run-except *TESTS* (cdr args)))))
+  (let ((usg    (lambda _ (usage (program-name))))
+        (all    (lambda _ (run-all    *TESTS*)))
+        (only   (lambda _ (run-only   *TESTS* (cdr args))))
+        (except (lambda _ (run-except *TESTS* (cdr args)))))
     (exit
       (cond
         ((= (length args) 1)       => usg)

@@ -16,7 +16,12 @@ FLAGS := \
     -Wwrite-strings                       \
     -flto                                 \
     -fno-common                           \
+    -fpic                                 \
     -march=native                         \
     -pedantic                             \
+    -pie                                  \
     -static                               \
     -std=c18                              \
+    -znoexecstack                         \
+
+# -Wpadded
