@@ -68,7 +68,6 @@
 /* I don't like it as an opaque structure, but I can't think of a workaround */
 struct sbn;
 
-bool         sbn_add_digit_u  (struct sbn * a, sbn_digit dig);
 bool         sbn_add_digit_ud (struct sbn * a, sbn_digit dig);
 bool         sbn_free         (struct sbn * a);
 bool         sbn_is_negative  (const struct sbn * a);
@@ -79,6 +78,7 @@ int          sbn_sign         (const struct sbn * a);
 sbn_digit    sbn_nth_digit    (const struct sbn * a, size_t nth);
 size_t       sbn_ndigits      (const struct sbn * a);
 struct sbn * sbn_add          (struct sbn * a, struct sbn * b);
+struct sbn * sbn_add_digit_u  (struct sbn * a, sbn_digit dig);
 struct sbn * sbn_add_u        (struct sbn * a, struct sbn * b);
 struct sbn * sbn_clone        (const struct sbn * a);
 struct sbn * sbn_new          (void);
@@ -93,7 +93,7 @@ struct sbn * sbn_sub_u        (struct sbn * a, struct sbn * b);
 
 struct sbn {
 	/** Is this SBN negative? */
-	unsigned char is_negative : 1; /* UNUSED for now */
+	unsigned char is_negative : 1;
 
 	/** The vector of digits */
 	struct _sbn_digits_vec digits[1];
@@ -178,14 +178,6 @@ static sbn_digit _sbn_add_digits (sbn_digit _a, sbn_digit _b, sbn_digit * _carry
 	sbn_double_digit tmp = a + b + carry;
 	*_carry = sbn_double_digit_upper_half(tmp);
 	return sbn_double_digit_lower_half(tmp);
-}
-
-/**
- * @brief Add a single digit to @a a, non-destructively, ignoring the sign
- */
-bool sbn_add_digit_u (struct sbn * a, sbn_digit dig)
-{
-	return sbn_add_digit_ud(sbn_clone(a), dig);
 }
 
 /**
@@ -312,6 +304,17 @@ struct sbn * sbn_add (struct sbn * a, struct sbn * b)
 	}
 
 	return ret;
+}
+
+/**
+ * @brief Add a single digit to @a a, non-destructively, ignoring the sign
+ */
+struct sbn * sbn_add_digit_u (struct sbn * a, sbn_digit dig)
+{
+	struct sbn * ret = sbn_clone(a);
+	return (ret && !sbn_add_digit_ud(ret, dig)) ?
+		(sbn_free(ret), NULL):
+		ret;
 }
 
 /**
