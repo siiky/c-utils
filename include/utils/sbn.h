@@ -52,6 +52,8 @@
 # define sbn_double_digit_upper_half(dig) ((sbn_digit) ((dig) >> sbn_nbits_diff))
 # define sbn_double_digit_lower_half(dig) sbn_double_digit_upper_half((dig) << sbn_nbits_diff)
 # define sbn_twos_compl(dig)              (~(dig) + 1)
+# define _sbn_min(a, b)                   (((a) < (b)) ? (a) : (b))
+# define _sbn_max(a, b)                   (((a) > (b)) ? (a) : (b))
 
 /*
  * <stdbool.h>
@@ -77,12 +79,12 @@ bool         sbn_set_sign     (struct sbn * a, bool is_negative);
 int          sbn_sign         (const struct sbn * a);
 sbn_digit    sbn_nth_digit    (const struct sbn * a, size_t nth);
 size_t       sbn_ndigits      (const struct sbn * a);
-struct sbn * sbn_add          (struct sbn * a, struct sbn * b);
+struct sbn * sbn_add          (const struct sbn * a, const struct sbn * b);
 struct sbn * sbn_add_digit_u  (struct sbn * a, sbn_digit dig);
-struct sbn * sbn_add_u        (struct sbn * a, struct sbn * b);
+struct sbn * sbn_add_u        (const struct sbn * a, const struct sbn * b);
 struct sbn * sbn_clone        (const struct sbn * a);
 struct sbn * sbn_new          (void);
-struct sbn * sbn_sub_u        (struct sbn * a, struct sbn * b);
+struct sbn * sbn_sub_u        (const struct sbn * a, const struct sbn * b);
 
 #ifdef SBN_CFG_IMPLEMENTATION
 
@@ -98,36 +100,6 @@ struct sbn {
 	/** The vector of digits */
 	struct _sbn_digits_vec digits[1];
 };
-
-/**
- * @brief Start iterating over the digits
- */
-static bool _sbn_digits_iter (struct sbn * a)
-{ return a && _sbn_digits_vec_iter(a->digits); }
-
-/**
- * @brief Are we still iterating over the digits?
- */
-static bool _sbn_digits_itering (struct sbn * a)
-{ return a && _sbn_digits_vec_itering(a->digits); }
-
-/**
- * @brief Advance the iterator to the next digit
- */
-static bool _sbn_digits_iter_next (struct sbn * a)
-{ return a && _sbn_digits_vec_iter_next(a->digits); }
-
-/**
- * @brief Stop iterating over the digits
- */
-static bool _sbn_digits_iter_end (struct sbn * a)
-{ return a && _sbn_digits_vec_iter_end(a->digits); }
-
-/**
- * @brief Get the current index of the iterator
- */
-static size_t _sbn_digits_iter_idx (const struct sbn * a)
-{ return a && _sbn_digits_vec_iter_idx(a->digits); }
 
 /**
  * @brief Reserve a total number of digits
@@ -180,6 +152,17 @@ static sbn_digit _sbn_add_digits (sbn_digit _a, sbn_digit _b, sbn_digit * _carry
 	return sbn_double_digit_lower_half(tmp);
 }
 
+static sbn_digit _sbn_sub_digits (sbn_digit _a, sbn_digit _b, sbn_digit * _carry)
+{
+	sbn_double_digit a = _a;
+	sbn_double_digit b = _b;
+	sbn_double_digit carry = *_carry;
+
+	sbn_double_digit tmp = a - b - carry;
+	*_carry = sbn_double_digit_upper_half(tmp);
+	return sbn_double_digit_lower_half(tmp);
+}
+
 /**
  * @brief Add a single digit to @a a, destructively, ignoring the sign
  */
@@ -189,15 +172,10 @@ bool sbn_add_digit_ud (struct sbn * a, sbn_digit dig)
 	if (dig == 0) return true;
 
 	sbn_digit carry = dig;
+	size_t ndigs = sbn_ndigits(a);
 
-	for (_sbn_digits_iter(a); carry > 0 && _sbn_digits_itering(a); _sbn_digits_iter_next(a)) {
-		size_t i = _sbn_digits_iter_idx(a);
-		sbn_digit ai = sbn_nth_digit(a, i);
-		sbn_digit r = _sbn_add_digits(ai, 0, &carry);
-		_sbn_set_nth_digit(a, i, r);
-	}
-
-	_sbn_digits_iter_end(a);
+	for (size_t i = 0; carry > 0 && i < ndigs; i++)
+		_sbn_set_nth_digit(a, i, _sbn_add_digits(sbn_nth_digit(a, i), 0, &carry));
 
 	return !carry || _sbn_push_digit(a, carry);
 }
@@ -278,7 +256,6 @@ size_t sbn_ndigits (const struct sbn * a)
  * @brief Add @a b to @a a
  *
  * TODO: Add numbers of different signs
- * TODO: `a` and `b` should be const
  *
  * Same sign:
  *  a +  b = a + b
@@ -288,7 +265,7 @@ size_t sbn_ndigits (const struct sbn * a)
  *  a + -b = a - b
  * -a +  b = b - a
  */
-struct sbn * sbn_add (struct sbn * a, struct sbn * b)
+struct sbn * sbn_add (const struct sbn * a, const struct sbn * b)
 {
 	struct sbn * ret = NULL;
 	bool is_a_negative = sbn_is_negative(a);
@@ -319,10 +296,8 @@ struct sbn * sbn_add_digit_u (struct sbn * a, sbn_digit dig)
 
 /**
  * @brief Add @a b to @a a, ignoring the sign
- *
- * TODO: `a` and `b` should be const
  */
-struct sbn * sbn_add_u (struct sbn * a, struct sbn * b)
+struct sbn * sbn_add_u (const struct sbn * a, const struct sbn * b)
 {
 	if (!a && !b)
 		return NULL;
@@ -345,7 +320,7 @@ struct sbn * sbn_add_u (struct sbn * a, struct sbn * b)
 	 */
 	if (andigs < bndigs) {
 		{
-			struct sbn * tmp = a;
+			const struct sbn * tmp = a;
 			a = b;
 			b = tmp;
 		}
@@ -361,21 +336,16 @@ struct sbn * sbn_add_u (struct sbn * a, struct sbn * b)
 	if (!ret) return NULL;
 	if (!_sbn_reserve(ret, andigs)) return sbn_free(ret), NULL;
 
+	size_t minndigs = _sbn_min(andigs, bndigs);
+	size_t maxndigs = _sbn_max(andigs, bndigs);
 	sbn_digit carry = 0;
 
 	/*
 	 * Add common digits
 	 */
-	for (_sbn_digits_iter(a), _sbn_digits_iter(b);
-			/* Checking `a` shouldn't be needed; just sanity */
-			_sbn_digits_itering(a) && _sbn_digits_itering(b);
-			_sbn_digits_iter_next(a), _sbn_digits_iter_next(b))
-	{
-		size_t ai = _sbn_digits_iter_idx(a);
-		size_t bi = _sbn_digits_iter_idx(b);
-
-		sbn_digit adig = sbn_nth_digit(a, ai);
-		sbn_digit bdig = sbn_nth_digit(b, bi);
+	for (size_t i = 0; i < minndigs; i++) {
+		sbn_digit adig = sbn_nth_digit(a, i);
+		sbn_digit bdig = sbn_nth_digit(b, i);
 
 		if (!_sbn_push_digit(ret, _sbn_add_digits(adig, bdig, &carry)))
 			return sbn_free(ret), NULL;
@@ -386,9 +356,8 @@ struct sbn * sbn_add_u (struct sbn * a, struct sbn * b)
 	 * of digits, if `a` is still iterating, then we still have digits to
 	 * add
 	 */
-	for (; _sbn_digits_itering(a); _sbn_digits_iter_next(a)) {
-		size_t ai = _sbn_digits_iter_idx(a);
-		sbn_digit adig = sbn_nth_digit(a, ai);
+	for (size_t i = minndigs; i < maxndigs; i++) {
+		sbn_digit adig = sbn_nth_digit(a, i);
 		if (!_sbn_push_digit(ret, _sbn_add_digits(adig, 0, &carry)))
 			return sbn_free(ret), NULL;
 	}
@@ -424,26 +393,25 @@ struct sbn * sbn_new (void)
 	return calloc(1, sizeof(struct sbn));
 }
 
-#if 0
 /**
  * @brief Subtract @a b from @a a, ignoring the sign
  *
  * TODO: Subtract numbers of different signs
- * TODO: `a` and `b` should be const
  *
  *  a -  b = a - b
  *  a - -b = a + b
  * -a -  b = -(a + b)
  * -a - -b = b - a
  */
-struct sbn * sbn_sub_u (struct sbn * a, struct sbn * b)
+struct sbn * sbn_sub_u (const struct sbn * a, const struct sbn * b)
 {
 	if (!a && !b)
 		return NULL;
 
 	size_t andigs = sbn_ndigits(a);
 	size_t bndigs = sbn_ndigits(b);
-	size_t maxdigs = (andigs < bndigs) ? bndigs : andigs;
+	size_t minndigs = _sbn_min(andigs, bndigs);
+	size_t maxndigs = _sbn_max(andigs, bndigs);
 
 	/* if `b` is 0 then there's nothing to do */
 	if (bndigs == 0)
@@ -455,22 +423,15 @@ struct sbn * sbn_sub_u (struct sbn * a, struct sbn * b)
 
 	struct sbn * ret = sbn_new();
 	if (!ret) return NULL;
-	if (!_sbn_reserve(ret, maxdigs)) return sbn_free(ret), NULL;
+	if (!_sbn_reserve(ret, maxndigs)) return sbn_free(ret), NULL;
 
 	sbn_digit carry = 0;
 
-	for (_sbn_digits_iter(a), _sbn_digits_iter(b);
-			/* Checking `a` shouldn't be needed; just sanity */
-			_sbn_digits_itering(a) && _sbn_digits_itering(b);
-			_sbn_digits_iter_next(a), _sbn_digits_iter_next(b))
-	{
-		size_t ai = _sbn_digits_iter_idx(a);
-		size_t bi = _sbn_digits_iter_idx(b);
-
-		sbn_digit adig = sbn_nth_digit(a, ai);
-		sbn_digit bdig = sbn_nth_digit(b, bi);
-
-		if (!_sbn_push_digit(ret, _sbn_add_digits(adig, bdig, &carry)))
+	for (size_t i = 0; i < minndigs; i++) {
+		if (!_sbn_push_digit(ret, _sbn_sub_digits(
+						sbn_nth_digit(a, i),
+						sbn_nth_digit(b, i),
+						&carry)))
 			return sbn_free(ret), NULL;
 	}
 
@@ -478,11 +439,15 @@ struct sbn * sbn_sub_u (struct sbn * a, struct sbn * b)
 	 * If `a` and `b` have a different number of digits, then one of them
 	 * is still iterating
 	 */
-	if (andigs != bndigs) {
-		if (andigs > bndigs) {
-		} else if (bndigs > andigs) {
-		}
-	}
+	if (andigs < bndigs)
+		a = b;
+
+	for (size_t i = minndigs; i < maxndigs; i++)
+		if (!_sbn_push_digit(ret, _sbn_sub_digits(
+						sbn_nth_digit(a, i),
+						0,
+						&carry)))
+			return sbn_free(ret), NULL;
 
 	/*
 	 * Finally, add the remaining carry
@@ -492,6 +457,5 @@ struct sbn * sbn_sub_u (struct sbn * a, struct sbn * b)
 
 	return ret;
 }
-#endif
 
 #endif /* SBN_CFG_IMPLEMENTATION */
