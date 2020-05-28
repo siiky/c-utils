@@ -75,7 +75,6 @@ struct sbn;
 
 bool         sbn_add_digit_ud (struct sbn * a, sbn_digit dig);
 bool         sbn_eq           (const struct sbn * a, const struct sbn * b);
-bool         sbn_free         (struct sbn * a);
 bool         sbn_ge           (const struct sbn * a, const struct sbn * b);
 bool         sbn_gt           (const struct sbn * a, const struct sbn * b);
 bool         sbn_is_negative  (const struct sbn * a);
@@ -95,6 +94,7 @@ struct sbn * sbn_add          (const struct sbn * a, const struct sbn * b);
 struct sbn * sbn_add_digit_u  (struct sbn * a, sbn_digit dig);
 struct sbn * sbn_add_u        (const struct sbn * a, const struct sbn * b);
 struct sbn * sbn_clone        (const struct sbn * a);
+struct sbn * sbn_free         (struct sbn * a);
 struct sbn * sbn_from_str     (size_t nchars, const char str[nchars], unsigned base);
 struct sbn * sbn_from_str_16  (size_t nchars, const char str[nchars]);
 struct sbn * sbn_new          (void);
@@ -217,14 +217,14 @@ struct sbn * sbn_new (void)
 /**
  * @brief Free @a a
  */
-bool sbn_free (struct sbn * a)
+struct sbn * sbn_free (struct sbn * a)
 {
 	if (a) {
 		*a->digits = _sbn_digits_vec_free(*a->digits);
 		a->is_negative = 0;
 		free(a);
 	}
-	return true;
+	return NULL;
 }
 
 /**
@@ -235,7 +235,7 @@ struct sbn * sbn_clone (const struct sbn * a)
 	struct sbn * ret = (a) ? sbn_new() : NULL;
 	if (ret) {
 		if (!_sbn_append_digits(ret, a))
-			return sbn_free(ret), NULL;
+			return sbn_free(ret);
 		ret->is_negative = a->is_negative;
 	}
 	return ret;
@@ -415,7 +415,7 @@ struct sbn * sbn_from_str_16 (size_t nchars, const char str[nchars])
 
 	struct sbn * ret = sbn_new();
 	if (!ret) return NULL;
-	if (!_sbn_reserve(ret, ndigs)) return sbn_free(ret), NULL;
+	if (!_sbn_reserve(ret, ndigs)) return sbn_free(ret);
 
 	/* TODO: Implement this */
 #if 0
@@ -474,7 +474,7 @@ struct sbn * sbn_add_digit_u (struct sbn * a, sbn_digit dig)
 {
 	struct sbn * ret = sbn_clone(a);
 	return (ret && !sbn_add_digit_ud(ret, dig)) ?
-		(sbn_free(ret), NULL):
+		sbn_free(ret):
 		ret;
 }
 
@@ -509,7 +509,7 @@ struct sbn * sbn_add_u (const struct sbn * a, const struct sbn * b)
 
 	struct sbn * ret = sbn_new();
 	if (!ret) return NULL;
-	if (!_sbn_reserve(ret, andigs)) return sbn_free(ret), NULL;
+	if (!_sbn_reserve(ret, andigs)) return sbn_free(ret);
 
 	size_t minndigs = _sbn_min(andigs, bndigs);
 	size_t maxndigs = _sbn_max(andigs, bndigs);
@@ -523,7 +523,7 @@ struct sbn * sbn_add_u (const struct sbn * a, const struct sbn * b)
 		sbn_digit bdig = sbn_nth_digit(b, i);
 
 		if (!_sbn_push_digit(ret, _sbn_add_digits(adig, bdig, &carry)))
-			return sbn_free(ret), NULL;
+			return sbn_free(ret);
 	}
 
 	/*
@@ -534,14 +534,14 @@ struct sbn * sbn_add_u (const struct sbn * a, const struct sbn * b)
 	for (size_t i = minndigs; i < maxndigs; i++) {
 		sbn_digit adig = sbn_nth_digit(a, i);
 		if (!_sbn_push_digit(ret, _sbn_add_digits(adig, 0, &carry)))
-			return sbn_free(ret), NULL;
+			return sbn_free(ret);
 	}
 
 	/*
 	 * Finally, add the remaining carry
 	 */
 	if (carry != 0 && !_sbn_push_digit(ret, carry))
-		return sbn_free(ret), NULL;
+		return sbn_free(ret);
 
 	return ret;
 }
@@ -600,7 +600,7 @@ struct sbn * sbn_sub_u (const struct sbn * a, const struct sbn * b)
 
 	struct sbn * ret = sbn_new();
 	if (!ret) return NULL;
-	if (!_sbn_reserve(ret, maxndigs)) return sbn_free(ret), NULL;
+	if (!_sbn_reserve(ret, maxndigs)) return sbn_free(ret);
 
 	sbn_digit carry = 0;
 
@@ -609,7 +609,7 @@ struct sbn * sbn_sub_u (const struct sbn * a, const struct sbn * b)
 						sbn_nth_digit(a, i),
 						sbn_nth_digit(b, i),
 						&carry)))
-			return sbn_free(ret), NULL;
+			return sbn_free(ret);
 	}
 
 	/*
@@ -624,13 +624,13 @@ struct sbn * sbn_sub_u (const struct sbn * a, const struct sbn * b)
 						sbn_nth_digit(a, i),
 						0,
 						&carry)))
-			return sbn_free(ret), NULL;
+			return sbn_free(ret);
 
 	/*
 	 * Finally, add the remaining carry
 	 */
 	if (carry != 0 && !_sbn_push_digit(ret, carry))
-		return sbn_free(ret), NULL;
+		return sbn_free(ret);
 
 	return ret;
 }
