@@ -1,5 +1,5 @@
 #include <stdio.h>
-#define debug_log(msg, ...) fprintf(stderr, "%s:%s():%u: " msg, __FILE__, __func__, __LINE__, __VA_ARGS__)
+#define debug_log(msg, ...) fprintf(stderr, "%s:%s():%u: " msg "\n", __FILE__, __func__, __LINE__, __VA_ARGS__)
 #define bool_to_str(b) ((b) ? "true" : "false")
 
 #define SBN_CFG_IMPLEMENTATION
@@ -12,53 +12,67 @@ void print_digs (const struct sbn * a)
 {
 	size_t ndigs = sbn_ndigits(a);
 	for (size_t i = 0; i < ndigs; i++)
-		debug_log("digit_%zu=%u\n", i, sbn_nth_digit(a, i));
+		debug_log("digit_%zu=%u", i, sbn_nth_digit(a, i));
 }
 
 int main (void)
 {
-	{
-		sbn_digit a = 0x12634978;
-		sbn_digit b = 0x12634979;
-		sbn_double_digit c = ((sbn_double_digit) a) + sbn_twos_compl((sbn_double_digit) b);
-
-		assert(c == (a - b));
-		debug_log("a=0x%x, b=0x%x, c=0x%lx\n", a, b, c);
-	}
-
-	{
+	{ /* Adding digits to an SBN, adding SBNs, and sbn->string */
 		struct sbn * a = sbn_new();
-
 		if (a) {
 			sbn_digit elem = ~0U;
-			debug_log("elem=%u\n", elem);
+			debug_log("elem=%u", elem);
 			for (size_t i = 0; i < 10; i++) {
-				debug_log("i=%zu,\tndigs=%zu\n", i, sbn_ndigits(a));
+				debug_log("i=%zu,\tndigs=%zu", i, sbn_ndigits(a));
 				print_digs(a);
 				puts("");
 
 				struct sbn * tmp = sbn_add_digit_u(a, elem);
-				debug_log("tmp=%p\n", (void*) tmp);
+				debug_log("tmp=%p", (void*) tmp);
 				if (tmp) {
 					a = sbn_free(a);
 					a = tmp;
 				}
 			}
 
-			debug_log("final ndigs=%zu\n", sbn_ndigits(a));
+			debug_log("final ndigs=%zu", sbn_ndigits(a));
 			print_digs(a);
 
-			char * str = sbn_to_str(a, 16);
-			if (str) {
-				debug_log("str(%p)=%s\n", (void*) str, str);
-				free(str);
+			char * astr = sbn_to_str(a, 16);
+			if (astr) {
+				debug_log("astr(%p)=%s", (void*) astr, astr);
+				free(astr);
 			}
 
 			struct sbn * b = sbn_clone(a);
 			if (b) {
-
+				struct sbn * c = sbn_add(a, b);
+				if (c) {
+					char * cstr = sbn_to_str_16(c);
+					if (cstr) {
+						debug_log("cstr(%p)=%s", (void*) cstr, cstr);
+						free(cstr);
+					}
+					print_digs(c);
+					c = sbn_free(c);
+				}
+				b = sbn_free(b);
 			}
+			a = sbn_free(a);
+		}
+	}
 
+	{ /* string->sbn */
+		const char from_str[] = "9fffffff6";
+		struct sbn * a = sbn_from_str_16(0, from_str);
+		if (a) {
+			debug_log("str->sbn(%p)", (void*) a);
+			print_digs(a);
+			char * to_str = sbn_to_str_16(a);
+			if (to_str) {
+				debug_log("str->sbn->str = %s", to_str);
+				free(to_str);
+			}
 			a = sbn_free(a);
 		}
 	}

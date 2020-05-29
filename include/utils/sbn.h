@@ -218,6 +218,38 @@ static size_t _sbn_str_strip_left_chr (size_t nchars, char str[nchars], char c)
 #endif
 
 /**
+ * @brief Calculate a digit from a string
+ */
+static bool _sbn_digit_from_str_16 (size_t nchars, const char str[nchars], sbn_digit * dig, size_t * processed)
+{
+	if (!str || !dig || !processed) return false;
+
+	size_t maxi = _sbn_min(nchars, sbn_digit_nquartets);
+	sbn_digit ret = 0;
+
+	for (size_t i = 0; i < maxi && str[i] != '\0'; i++) {
+		char c = str[i];
+		sbn_digit tmp = (c >= '0' && c <= '9') ?
+			((sbn_digit) (c - '0')):
+			(c >= 'a' && c <= 'f') ?
+			((sbn_digit) (0xa + c - 'a')):
+			42;
+
+		if (tmp > 15) {
+			debug_log("tmp=%u", tmp);
+			return false;
+		}
+
+		ret |= tmp;
+		ret <<= 4;
+	}
+
+	*processed = maxi;
+	*dig = ret;
+	return true;
+}
+
+/**
  * @brief Calculate the number significant quartets, i.e., the number of
  *        quartets in a digit, excluding zeroes to the left
  */
@@ -314,7 +346,7 @@ static sbn_digit _sbn_add_digits (sbn_digit _a, sbn_digit _b, sbn_digit * _carry
 	sbn_double_digit tmp = a + b + carry;
 	*_carry = sbn_double_digit_upper_half(tmp);
 	sbn_digit ret = sbn_double_digit_lower_half(tmp);
-	debug_log("ret=%u\n", ret);
+	debug_log("ret=%u", ret);
 	return ret;
 }
 
@@ -519,25 +551,37 @@ struct sbn * sbn_from_str_16 (size_t nchars, const char str[nchars])
 	if (!str) return NULL;
 
 	nchars = (nchars == 0) ? strlen(str) : nchars;
-	const size_t dig_nquarts = sbn_digit_nbits >> 2;
-	const size_t ndigs = nchars / dig_nquarts;
+	const size_t nwhole_digs = nchars / sbn_digit_nquartets;
+	const size_t last_dig = nchars % sbn_digit_nquartets;
+	const size_t ndigs = nwhole_digs + last_dig;
+	debug_log("nwhole_digs=%zu\tlast_dig=%zu\tndigs=%zu", nwhole_digs, last_dig, ndigs);
 
 	struct sbn * ret = sbn_new();
 	if (!ret) return NULL;
+	debug_log("ret(%p) != NULL!", (void*) ret);
 	if (!_sbn_reserve(ret, ndigs)) return sbn_free(ret);
+	debug_log("reseved %zu digits", ndigs);
 
-	/* TODO: Implement this */
-#if 0
-	sbn_digit dig = 0;
-	for (size_t di = 0; di < ndigs; di++) {
-		for (size_t qi = 0; qi < dig_nquarts; qi++) {
-			size_t ci = (di << 2) + qi;
-			size_t shift = sbn_digit_nbits - ((qi + 1) << 2);
-			(void) ci;
-			(void) shift;
+	while (nchars > 0) {
+		sbn_digit dig = 0;
+		size_t processed = _sbn_min(sbn_digit_nquartets, nchars);;
+		if (!_sbn_digit_from_str_16(processed, str + nchars - processed, &dig, &processed)) {
+			debug_log("Failed to convert str=\"%s\" to digit", str);
+			return sbn_free(ret);
 		}
+
+		debug_log("Converted str to digit: %u", dig);
+
+		if (!_sbn_push_digit(ret, dig))
+			return sbn_free(ret);
+
+		debug_log("Pushed digit to ret(%p)", (void*) ret);
+
+		nchars -= processed;
+		str += processed;
 	}
-#endif
+
+	debug_log("The loop is over, nchars=%zu", nchars);
 
 	return ret;
 }
@@ -570,19 +614,19 @@ bool sbn_add_digit_ud (struct sbn * a, const sbn_digit dig)
 	sbn_digit carry = dig;
 	size_t ndigs = sbn_ndigits(a);
 
-	debug_log("carry before=%u,\tndigs=%zu\n", carry, ndigs);
+	debug_log("carry before=%u,\tndigs=%zu", carry, ndigs);
 	for (size_t i = 0; carry > 0 && i < ndigs; i++) {
 		sbn_digit sum = _sbn_add_digits(sbn_nth_digit(a, i), 0, &carry);
 		bool succ = _sbn_set_nth_digit(a, i, sum);
-		debug_log("loop: carry=%u,\tsum=%u,\tsucc=%s\n", carry, sum, bool_to_str(succ));
+		debug_log("loop: carry=%u,\tsum=%u,\tsucc=%s", carry, sum, bool_to_str(succ));
 		if (!succ)
 			return false;
 	}
 
-	debug_log("carry after =%u\n", carry);
+	debug_log("carry after =%u", carry);
 
 	bool ret = !carry || _sbn_push_digit(a, carry);
-	debug_log("ret=%s\n", bool_to_str(ret));
+	debug_log("ret=%s", bool_to_str(ret));
 	return ret;
 }
 
