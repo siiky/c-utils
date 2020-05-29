@@ -237,7 +237,7 @@ static size_t _sbn_digit_left_non_0_quartets (sbn_digit dig)
 /**
  * @brief Convert a digit to a string in base 16
  */
-static void _sbn_digit_to_str_16 (char * str, sbn_digit dig, size_t dig_nquarts)
+static void _sbn_digit_to_str_16 (size_t nchars, char str[nchars], sbn_digit dig, size_t dig_nquarts)
 {
 	static const char map[16] = "0123456789abcdef";
 	const sbn_digit mod16 = 0xf;
@@ -248,11 +248,48 @@ static void _sbn_digit_to_str_16 (char * str, sbn_digit dig, size_t dig_nquarts)
 		const size_t shift = qi << 2;
 		const unsigned char c = (dig >> shift) & mod16;
 
-		const size_t ci = nquarts - qi - 1;
-		str[ci] = (c <= 0xf) ?
+		str[nquarts - qi - 1] = (c <= 0xf) ?
 			map[c]:
 			'!'; /* Shouldn't happen */
 	}
+}
+
+static char * _sbn_not_0_to_str_16 (const struct sbn * a)
+{
+	const size_t ndigs = sbn_ndigits(a);
+	const sbn_digit last_dig = sbn_nth_digit(a, ndigs - 1);
+	const size_t last_dig_nquarts = _sbn_digit_left_non_0_quartets(last_dig);
+	const size_t nchars = (ndigs - 1) * sbn_digit_nquartets + last_dig_nquarts;
+
+	char * ret = calloc(nchars + 1, sizeof(char));
+	if (!ret) return NULL;
+
+	_sbn_digit_to_str_16(last_dig_nquarts, ret, last_dig, last_dig_nquarts);
+	for (size_t di = 0; di < ndigs - 1; di--)
+		_sbn_digit_to_str_16(sbn_digit_nquartets, ret + nchars - ((di + 1) * sbn_digit_nquartets),
+				sbn_nth_digit(a, di),
+				0);
+
+	return ret;
+}
+
+static char * _sbn_0_to_str (void)
+{
+	char * ret = malloc(2 * sizeof(char));
+	if (ret) {
+		ret[0] = '0';
+		ret[1] = '\0';
+	}
+	return ret;
+}
+
+static char * _sbn_any_to_str (char * (*not_0_to_str) (const struct sbn *), const struct sbn * a)
+{
+	return (!a) ?
+		NULL:
+		(sbn_is_zero(a)) ?
+		_sbn_0_to_str():
+		not_0_to_str(a);
 }
 
 /**
@@ -344,6 +381,8 @@ struct sbn * sbn_clone (const struct sbn * a)
 
 /**
  * @brief Is @a a zero?
+ *
+ * TODO: Is an SBN 0 only when it has no digits?
  */
 bool sbn_is_zero (const struct sbn * a)
 { return a && sbn_ndigits(a) == 0; }
@@ -455,30 +494,9 @@ size_t sbn_ndigits (const struct sbn * a)
 
 /**
  * @brief Convert an SBN to a string in base 16
- *
- * TODO: Handle 0 correctly; Ideally, have this zero check outside, so it
- *       doesn't have to be repeated
  */
 char * sbn_to_str_16 (const struct sbn * a)
-{
-	if (!a) return NULL;
-
-	const size_t ndigs = sbn_ndigits(a);
-	const sbn_digit last_dig = sbn_nth_digit(a, ndigs - 1);
-	const size_t last_dig_nquarts = _sbn_digit_left_non_0_quartets(last_dig);
-	const size_t nchars = (ndigs - 1) * sbn_digit_nquartets + last_dig_nquarts;
-
-	char * ret = calloc(nchars + 1, sizeof(char));
-	if (!ret) return NULL;
-
-	_sbn_digit_to_str_16(ret, last_dig, last_dig_nquarts);
-	for (size_t di = 0; di < ndigs - 1; di--)
-		_sbn_digit_to_str_16(ret + nchars - ((di + 1) * sbn_digit_nquartets),
-				sbn_nth_digit(a, di),
-				0);
-
-	return ret;
-}
+{ return _sbn_any_to_str(_sbn_not_0_to_str_16, a); }
 
 /**
  * @brief Convert an SBN to a string
