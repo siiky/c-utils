@@ -1,4 +1,4 @@
-/* sbn - v2020.05.27-0
+/* sbn - vYYYY.MM.DD-0
  *
  * A bignum type inspired by
  *  * Scheme

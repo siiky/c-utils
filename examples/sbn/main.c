@@ -5,7 +5,6 @@
 #define SBN_CFG_IMPLEMENTATION
 #include <utils/sbn.h>
 
-#include <assert.h>
 #include <stdlib.h>
 
 void print_digs (const struct sbn * a)
