@@ -158,7 +158,6 @@ static bool _sbn_append_digits (struct sbn * restrict a, const struct sbn * rest
 	_sbn_digits_vec_set_len(a->digits, totdigs);
 	a->digits->capacity = totdigs;
 
-
 	return true;
 }
 
@@ -172,6 +171,7 @@ static bool _sbn_push_digit (struct sbn * a, sbn_digit dig)
  * Misc Functions *
  ******************/
 
+#if 0
 /**
  * @brief Reverse a string
  */
@@ -189,7 +189,6 @@ static bool _sbn_str_reverse (size_t nchars, char str[nchars])
 	return true;
 }
 
-#if 0
 /**
  * @brief Find the index of the first occurrence of a char that's not @a c
  */
@@ -218,7 +217,11 @@ static size_t _sbn_str_strip_left_chr (size_t nchars, char str[nchars], char c)
 }
 #endif
 
-static size_t _sbn_digit_non_left_0_quartets (sbn_digit dig)
+/**
+ * @brief Calculate the number significant quartets, i.e., the number of
+ *        quartets in a digit, excluding zeroes to the left
+ */
+static size_t _sbn_digit_left_non_0_quartets (sbn_digit dig)
 {
 	const sbn_digit mod16 = 0xf;
 	size_t ret = 0;
@@ -229,6 +232,27 @@ static size_t _sbn_digit_non_left_0_quartets (sbn_digit dig)
 			break;
 	}
 	return sbn_digit_nquartets - ret;
+}
+
+/**
+ * @brief Convert a digit to a string in base 16
+ */
+static void _sbn_digit_to_str_16 (char * str, sbn_digit dig, size_t dig_nquarts)
+{
+	static const char map[16] = "0123456789abcdef";
+	const sbn_digit mod16 = 0xf;
+
+	size_t nquarts = (dig_nquarts) ? dig_nquarts : sbn_digit_nquartets;
+
+	for (size_t qi = 0; qi < nquarts; qi++) {
+		const size_t shift = qi << 2;
+		const unsigned char c = (dig >> shift) & mod16;
+
+		const size_t ci = nquarts - qi - 1;
+		str[ci] = (c <= 0xf) ?
+			map[c]:
+			'!'; /* Shouldn't happen */
+	}
 }
 
 /**
@@ -439,43 +463,20 @@ char * sbn_to_str_16 (const struct sbn * a)
 {
 	if (!a) return NULL;
 
-	const sbn_digit mod16 = 0xf;
 	const size_t ndigs = sbn_ndigits(a);
 	const sbn_digit last_dig = sbn_nth_digit(a, ndigs - 1);
-	const size_t last_dig_nquarts = _sbn_digit_non_left_0_quartets(last_dig);
+	const size_t last_dig_nquarts = _sbn_digit_left_non_0_quartets(last_dig);
 	const size_t nchars = (ndigs - 1) * sbn_digit_nquartets + last_dig_nquarts;
 
 	char * ret = calloc(nchars + 1, sizeof(char));
 	if (!ret) return NULL;
 
-	for (size_t di = 0; di < (ndigs - 1); di++) {
-		const sbn_digit dig = sbn_nth_digit(a, di);
-		for (size_t qi = 0; qi < sbn_digit_nquartets; qi++) {
-			const size_t shift = qi << 2;
-			const unsigned char c = (dig >> shift) & mod16;
+	_sbn_digit_to_str_16(ret, last_dig, last_dig_nquarts);
+	for (size_t di = 0; di < ndigs - 1; di--)
+		_sbn_digit_to_str_16(ret + nchars - ((di + 1) * sbn_digit_nquartets),
+				sbn_nth_digit(a, di),
+				0);
 
-			const size_t ci = (di * sbn_digit_nquartets) + qi;
-			ret[ci] = (c <= 0x9) ?
-				((char) ('0' + c)):
-				(c >= 0xa && c <= 0xf) ?
-				((char) ('a' + c - 0xa)):
-				'!'; /* Shouldn't happen */
-		}
-	}
-
-	for (size_t qi = 0; qi < last_dig_nquarts; qi++) {
-		const size_t shift = qi << 2;
-		const unsigned char c = (last_dig >> shift) & mod16;
-
-		const size_t ci = ((ndigs - 1) * sbn_digit_nquartets) + qi;
-		ret[ci] = (c <= 0x9) ?
-			((char) ('0' + c)):
-			(c >= 0xa && c <= 0xf) ?
-			((char) ('a' + c - 0xa)):
-			'!'; /* Shouldn't happen */
-	}
-
-	_sbn_str_reverse(nchars, ret);
 	return ret;
 }
 
