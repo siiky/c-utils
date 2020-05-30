@@ -1,4 +1,4 @@
-/* vec - v2020.05.23-0
+/* vec - v2020.05.30-0
  *
  * A vector type inspired by
  *  * Rust's `Vec` type
@@ -59,6 +59,11 @@ size_t my_dtor_function (size_t elem)
 // Probably will raise `unused-function` warnings
 //#define VEC_CFG_STATIC
 
+// Optionally, define VEC_CFG_COPIABLE_DATA_TYPE so that operations that move
+// elements from one vector to another copy the element, instead of moving and
+// removing from the original; See VEC_APPEND
+#define VEC_CFG_COPIABLE_DATA_TYPE
+
 // Create implementation, instead of working as a header
 #define VEC_CFG_IMPLEMENTATION
 
@@ -68,8 +73,7 @@ size_t my_dtor_function (size_t elem)
 
 int main (void)
 {
-    struct my_uber_vec _vec = {0};
-    struct my_uber_vec * vec = &_vec;
+    struct my_uber_vec vec[1] = ({0});
 
     size_t used = 0;
     for (size_t i = 0; i < 100; i++)
@@ -98,7 +102,7 @@ int main (void)
 
     // If VEC_CFG_DTOR is defined, VEC_FREE() will automatically
     // call it on every element
-    _vec = my_free(_vec);
+    *vec = my_free(*vec);
 
     {
         bool empty = my_is_empty(vec);
@@ -668,6 +672,8 @@ VEC_CFG_STATIC VEC_CFG_DATA_TYPE VEC_REMOVE (struct VEC_CFG_VEC * self, size_t i
  * @param from The start index
  * @param to The end index (not including the element at this index)
  * @returns Same as VEC_MAP_RANGE()
+ *
+ * @see VEC_CFG_DTOR
  */
 VEC_CFG_STATIC bool VEC_FREE_RANGE (struct VEC_CFG_VEC * self, size_t from, size_t to)
 {
@@ -690,6 +696,8 @@ VEC_CFG_STATIC bool VEC_FREE_RANGE (struct VEC_CFG_VEC * self, size_t from, size
  * @param pred The predicate
  * @returns `false` if @a self is not a valid vector or @a pred is NULL, `true`
  *          otherwise
+ *
+ * @see VEC_CFG_DTOR
  */
 VEC_CFG_STATIC bool VEC_FILTER (struct VEC_CFG_VEC * self, bool pred (const VEC_CFG_DATA_TYPE *))
 {
@@ -748,6 +756,8 @@ VEC_CFG_STATIC VEC_CFG_DATA_TYPE VEC_POP (struct VEC_CFG_VEC * self)
  * @returns `false` if either @a self or @a other aren't valid vectors, @a self
  *          didn't have enough capacity and it wasn't possible to increase it,
  *          `true` otherwise
+ *
+ * @see VEC_CFG_COPIABLE_DATA_TYPE
  */
 VEC_CFG_STATIC bool VEC_APPEND (struct VEC_CFG_VEC * restrict self, struct VEC_CFG_VEC * restrict other)
 {
@@ -765,7 +775,9 @@ VEC_CFG_STATIC bool VEC_APPEND (struct VEC_CFG_VEC * restrict self, struct VEC_C
     memcpy(dest, src, n);
     self->length += other->length;
 
+# ifndef VEC_CFG_COPIABLE_DATA_TYPE
     other->length = 0;
+# endif
 
     return true;
 }
