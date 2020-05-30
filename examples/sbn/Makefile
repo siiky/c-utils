@@ -4,7 +4,7 @@ EXEC := sbn
 INC := -I../../include/
 OPT := -g -Og
 CFLAGS := $(FLAGS) $(INC) $(OPT)
-CPPFLAGS := -DNDEBUG
+CPPFLAGS := #-DNDEBUG
 
 HEADERS := \
     ../../include/utils/sbn.h

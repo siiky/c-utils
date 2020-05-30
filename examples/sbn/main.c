@@ -75,7 +75,7 @@ int main (void)
 	}
 #endif
 
-#if 1
+#if 0
 	{ /* string->sbn */
 		const char from_str[] = "9fffffff6";
 		struct sbn * a = sbn_from_str_16(0, from_str);
@@ -86,6 +86,27 @@ int main (void)
 			if (to_str) {
 				debug_log("str->sbn->str = %s", to_str);
 				free(to_str);
+			}
+			a = sbn_free(a);
+		}
+	}
+#endif
+
+#if 1
+	{
+		const char from_str[] = "9fffffff6";
+		struct sbn * a = sbn_from_str_16(0, from_str);
+		if (a) {
+			struct sbn * b = sbn_mul_digit_u(a, 16);
+			if (b) {
+				char * bstr = sbn_to_str_16(b);
+				if (bstr) {
+					debug_log("b=a*16=%s", bstr);
+					bstr = (free(bstr), NULL);
+				}
+				b = sbn_free(b);
+			} else {
+				debug_log("failed to multiply %s", from_str);
 			}
 			a = sbn_free(a);
 		}

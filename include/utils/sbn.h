@@ -151,6 +151,12 @@ static bool _sbn_append_digits (struct sbn * restrict a, const struct sbn * rest
 static bool _sbn_push_digit (struct sbn * a, sbn_digit dig)
 { return a && _sbn_digits_vec_push(a->digits, dig); }
 
+static bool _sbn_flush_digits (struct sbn * a)
+{
+	return a && _sbn_digits_vec_set_len(a->digits, 0)
+		&& _sbn_digits_vec_shrink_to_fit(a->digits);
+}
+
 /******************
  * Misc Functions *
  ******************/
@@ -347,6 +353,17 @@ static sbn_digit _sbn_sub_digits (sbn_digit _a, sbn_digit _b, sbn_digit * _carry
 	return sbn_double_digit_lower_half(tmp);
 }
 
+static sbn_digit _sbn_mul_digits (sbn_digit _a, sbn_digit _b, sbn_digit * _carry)
+{
+	sbn_double_digit a = _a;
+	sbn_double_digit b = _b;
+	sbn_double_digit carry = *_carry;
+
+	sbn_double_digit tmp = a * b + carry;
+	*_carry = sbn_double_digit_upper_half(tmp);
+	return sbn_double_digit_lower_half(tmp);
+}
+
 /************************
  ************************
  *** Public Functions ***
@@ -383,9 +400,11 @@ struct sbn * sbn_clone (const struct sbn * a)
 {
 	struct sbn * ret = (a) ? sbn_new() : NULL;
 	if (ret) {
-		if (!_sbn_append_digits(ret, a))
-			return sbn_free(ret);
-		ret->is_negative = a->is_negative;
+		bool succ = _sbn_append_digits(ret, a);
+		if (succ)
+			ret->is_negative = a->is_negative;
+		else
+			ret = sbn_free(ret);
 	}
 	return ret;
 }
@@ -572,6 +591,42 @@ struct sbn * sbn_from_str (size_t nchars, const char str[nchars], unsigned base)
  ************************/
 
 /**
+ * TODO: Optimise this
+ */
+bool sbn_digit_left_shift_d (struct sbn * a, size_t shift)
+{
+	if (!a) return false;
+	bool ret = true;
+	for (size_t i = 0; ret && i < shift; i++)
+		ret = _sbn_digits_vec_insert(a->digits, 0, 0);
+	return ret;
+}
+
+/**
+ * TODO: Optimise this
+ */
+bool sbn_digit_right_shift_d (struct sbn * a, size_t shift)
+{
+	if (!a) return false;
+	bool ret = true;
+	for (size_t i = 0; ret && i < shift; i++)
+		ret = _sbn_digits_vec_remove(a->digits, 0);
+	return ret;
+}
+
+struct sbn * sbn_digit_left_shift (const struct sbn * a, size_t shift)
+{
+	struct sbn * ret = sbn_clone(a);
+	return (sbn_digit_left_shift_d(ret, shift)) ? ret : sbn_free(ret);
+}
+
+struct sbn * sbn_digit_right_shift (const struct sbn * a, size_t shift)
+{
+	struct sbn * ret = sbn_clone(a);
+	return (sbn_digit_right_shift_d(ret, shift)) ? ret : sbn_free(ret);
+}
+
+/**
  * @brief Add a single digit to @a a, destructively, ignoring the sign
  */
 bool sbn_add_digit_ud (struct sbn * a, const sbn_digit dig)
@@ -581,14 +636,12 @@ bool sbn_add_digit_ud (struct sbn * a, const sbn_digit dig)
 
 	sbn_digit carry = dig;
 	size_t ndigs = sbn_ndigits(a);
+	bool ret = true;
 
-	for (size_t i = 0; carry > 0 && i < ndigs; i++) {
-		sbn_digit sum = _sbn_add_digits(sbn_nth_digit(a, i), 0, &carry);
-		if (!_sbn_set_nth_digit(a, i, sum))
-			return false;
-	}
+	for (size_t i = 0; ret && carry && i < ndigs; i++)
+		ret = _sbn_set_nth_digit(a, i, _sbn_add_digits(sbn_nth_digit(a, i), 0, &carry));
 
-	return !carry || _sbn_push_digit(a, carry);
+	return ret && (!carry || _sbn_push_digit(a, carry));
 }
 
 /**
@@ -610,16 +663,14 @@ struct sbn * sbn_add_u (const struct sbn * a, const struct sbn * b)
 	if (!a && !b)
 		return NULL;
 
-	size_t andigs = sbn_ndigits(a);
-	size_t bndigs = sbn_ndigits(b);
+	/* if `a` is 0 then we have to copy `b` to `a` */
+	if (sbn_is_zero(a)) return sbn_clone(b);
 
 	/* if `b` is 0 then there's nothing to do */
-	if (bndigs == 0)
-		return sbn_clone(a);
+	if (sbn_is_zero(b)) return sbn_clone(a);
 
-	/* if `a` is 0 then we have to copy `b` to `a` */
-	if (andigs == 0)
-		return sbn_clone(b);
+	size_t andigs = sbn_ndigits(a);
+	size_t bndigs = sbn_ndigits(b);
 
 	/*
 	 * Since we're going to clone one of `a` and `b`, might as well clone
@@ -664,7 +715,7 @@ struct sbn * sbn_add_u (const struct sbn * a, const struct sbn * b)
 	/*
 	 * Finally, add the remaining carry
 	 */
-	if (carry != 0 && !_sbn_push_digit(ret, carry))
+	if (carry && !_sbn_push_digit(ret, carry))
 		return sbn_free(ret);
 
 	return ret;
@@ -753,7 +804,7 @@ struct sbn * sbn_sub_u (const struct sbn * a, const struct sbn * b)
 	/*
 	 * Finally, add the remaining carry
 	 */
-	if (carry != 0 && !_sbn_push_digit(ret, carry))
+	if (carry && !_sbn_push_digit(ret, carry))
 		return sbn_free(ret);
 
 	return ret;
@@ -786,6 +837,51 @@ struct sbn * sbn_sub (const struct sbn * a, const struct sbn * b)
 			sbn_sub_u(a, b);
 		/* TODO: Set the right sign */
 	}
+
+	return ret;
+}
+
+bool sbn_mul_digit_ud (struct sbn * a, const sbn_digit dig)
+{
+	if (!a) return false;
+	if (sbn_is_zero(a)) return true;
+	if (dig == 0) return _sbn_flush_digits(a);
+
+	size_t ndigs = sbn_ndigits(a);
+	sbn_digit carry = 0;
+	bool ret = _sbn_set_nth_digit(a, 0, _sbn_mul_digits(sbn_nth_digit(a, 0), dig, &carry));
+	for (size_t i = 1; ret && i < ndigs && carry; i++)
+		ret = _sbn_set_nth_digit(a, i, _sbn_mul_digits(sbn_nth_digit(a, i), 1, &carry));
+
+	return ret && (!carry || _sbn_push_digit(a, carry));
+}
+
+struct sbn * sbn_mul_digit_u (const struct sbn * a, const sbn_digit dig)
+{
+	if (!a) return NULL;
+	if (dig == 0) return sbn_new();
+	struct sbn * ret = sbn_clone(a);
+	return (ret && !sbn_mul_digit_ud(ret, dig)) ?
+		sbn_free(ret):
+		ret;
+}
+
+struct sbn * sbn_mul_u (const struct sbn * a, const struct sbn * b)
+{
+	if (!a || !b) return NULL;
+
+	size_t andigs = sbn_ndigits(a);
+	size_t bndigs = sbn_ndigits(b);
+
+	if (sbn_is_zero(a) || sbn_is_zero(b)) return sbn_new();
+
+	if (andigs < bndigs) {
+		{ const struct sbn * tmp = a; a = b; b = tmp; }
+		{ size_t tmp = andigs; andigs = bndigs; bndigs = tmp; }
+	}
+
+	struct sbn * ret = sbn_clone(a);
+	if (!ret) return NULL;
 
 	return ret;
 }
