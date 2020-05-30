@@ -1,4 +1,4 @@
-/* vec - v2020.05.30-0
+/* vec - v2020.05.30-1
  *
  * A vector type inspired by
  *  * Rust's `Vec` type
@@ -236,7 +236,6 @@ VEC_CFG_DATA_TYPE         VEC_POP            (struct VEC_CFG_VEC * self);
 VEC_CFG_DATA_TYPE         VEC_REMOVE         (struct VEC_CFG_VEC * self, size_t index);
 VEC_CFG_DATA_TYPE         VEC_SWAP_REMOVE    (struct VEC_CFG_VEC * self, size_t index);
 VEC_CFG_DATA_TYPE *       VEC_AS_MUT_SLICE   (struct VEC_CFG_VEC * self);
-bool                      VEC_APPEND         (struct VEC_CFG_VEC * restrict self, struct VEC_CFG_VEC * restrict other);
 bool                      VEC_ELEM           (const struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE element);
 bool                      VEC_ELEM_SORTED    (const struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE element);
 bool                      VEC_FILTER         (struct VEC_CFG_VEC * self, bool pred (const VEC_CFG_DATA_TYPE *));
@@ -270,6 +269,12 @@ size_t                    VEC_ITER_IDX       (const struct VEC_CFG_VEC * self);
 size_t                    VEC_LEN            (const struct VEC_CFG_VEC * self);
 size_t                    VEC_SEARCH         (const struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE element);
 struct VEC_CFG_VEC        VEC_FREE           (struct VEC_CFG_VEC self);
+
+# ifdef VEC_CFG_COPIABLE_DATA_TYPE
+bool                      VEC_APPEND         (struct VEC_CFG_VEC * restrict self, const struct VEC_CFG_VEC * restrict other);
+# else /* VEC_CFG_COPIABLE_DATA_TYPE */
+bool                      VEC_APPEND         (struct VEC_CFG_VEC * restrict self, struct VEC_CFG_VEC * restrict other);
+# endif /* VEC_CFG_COPIABLE_DATA_TYPE */
 
 #ifdef VEC_CFG_IMPLEMENTATION
 
@@ -759,7 +764,11 @@ VEC_CFG_STATIC VEC_CFG_DATA_TYPE VEC_POP (struct VEC_CFG_VEC * self)
  *
  * @see VEC_CFG_COPIABLE_DATA_TYPE
  */
-VEC_CFG_STATIC bool VEC_APPEND (struct VEC_CFG_VEC * restrict self, struct VEC_CFG_VEC * restrict other)
+# ifdef VEC_CFG_COPIABLE_DATA_TYPE
+bool                      VEC_APPEND         (struct VEC_CFG_VEC * restrict self, const struct VEC_CFG_VEC * restrict other);
+# else /* VEC_CFG_COPIABLE_DATA_TYPE */
+bool                      VEC_APPEND         (struct VEC_CFG_VEC * restrict self, struct VEC_CFG_VEC * restrict other);
+# endif /* VEC_CFG_COPIABLE_DATA_TYPE */
 {
     if (self == NULL
     || other == NULL
