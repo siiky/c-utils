@@ -109,9 +109,10 @@ struct sbn * sbn_sub_u        (const struct sbn * a, const struct sbn * b);
 
 #ifdef SBN_CFG_IMPLEMENTATION
 
+#define VEC_CFG_COPIABLE_DATA_TYPE
 #define VEC_CFG_DATA_TYPE sbn_digit
-#define VEC_CFG_VEC _sbn_digits_vec
 #define VEC_CFG_IMPLEMENTATION
+#define VEC_CFG_VEC _sbn_digits_vec
 #include <utils/vec.h>
 
 struct sbn {
@@ -142,24 +143,7 @@ static bool _sbn_reserve (struct sbn * a, size_t total_digs)
  * @brief Append the digits of @a b to the end of @a a's digits
  */
 static bool _sbn_append_digits (struct sbn * restrict a, const struct sbn * restrict b)
-{
-	size_t andigs = sbn_ndigits(a);
-	size_t bndigs = sbn_ndigits(b);
-	size_t totdigs = andigs + bndigs;
-
-	if (!a || !b || !_sbn_reserve(a, totdigs))
-		return false;
-
-	sbn_digit * dest = a->digits->ptr + andigs;
-	sbn_digit * src = b->digits->ptr;
-	size_t n = bndigs * sizeof(sbn_digit);
-	memcpy(dest, src, n);
-
-	_sbn_digits_vec_set_len(a->digits, totdigs);
-	a->digits->capacity = totdigs;
-
-	return true;
-}
+{ return a && b && _sbn_digits_vec_append(a->digits, b->digits); }
 
 /**
  * @brief Append a new digit
