@@ -1,4 +1,4 @@
-/* vec - v2020.05.30-2
+/* vec - v2020.05.30-3
  *
  * A vector type inspired by
  *  * Rust's `Vec` type
@@ -772,10 +772,17 @@ bool                      VEC_APPEND         (struct VEC_CFG_VEC * restrict self
 {
     if (self == NULL
     || other == NULL
-    || self->ptr == NULL
-    || other->ptr == NULL
-    || self->ptr == other->ptr
-    || !VEC_RESERVE(self, self->length + other->length))
+    /* self->ptr==NULL is OK because realloc() will be called on it */
+    /* other->ptr may NULL only if it's empty */
+    || (other->ptr == NULL && other->length != 0)
+    || self->ptr == other->ptr)
+        return false;
+
+    /* Nothing to append */
+    if (other->length == 0)
+        return true;
+
+    if (!VEC_RESERVE(self, self->length + other->length))
         return false;
 
     VEC_CFG_DATA_TYPE * dest = self->ptr + self->length;
