@@ -1,4 +1,4 @@
-/* vec - v2020.05.30-1
+/* vec - v2020.05.30-2
  *
  * A vector type inspired by
  *  * Rust's `Vec` type
@@ -765,9 +765,9 @@ VEC_CFG_STATIC VEC_CFG_DATA_TYPE VEC_POP (struct VEC_CFG_VEC * self)
  * @see VEC_CFG_COPIABLE_DATA_TYPE
  */
 # ifdef VEC_CFG_COPIABLE_DATA_TYPE
-bool                      VEC_APPEND         (struct VEC_CFG_VEC * restrict self, const struct VEC_CFG_VEC * restrict other);
+bool                      VEC_APPEND         (struct VEC_CFG_VEC * restrict self, const struct VEC_CFG_VEC * restrict other)
 # else /* VEC_CFG_COPIABLE_DATA_TYPE */
-bool                      VEC_APPEND         (struct VEC_CFG_VEC * restrict self, struct VEC_CFG_VEC * restrict other);
+bool                      VEC_APPEND         (struct VEC_CFG_VEC * restrict self, struct VEC_CFG_VEC * restrict other)
 # endif /* VEC_CFG_COPIABLE_DATA_TYPE */
 {
     if (self == NULL
