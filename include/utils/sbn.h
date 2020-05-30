@@ -419,7 +419,7 @@ struct sbn * sbn_clone (const struct sbn * a)
  * TODO: Is an SBN 0 only when it has no digits?
  */
 bool sbn_is_zero (const struct sbn * a)
-{ return a && sbn_ndigits(a) == 0; }
+{ return sbn_ndigits(a) == 0; }
 
 /**
  * @brief Compare @a a and @a b a la `strcmp()`
