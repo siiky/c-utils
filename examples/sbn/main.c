@@ -16,6 +16,7 @@ void print_digs (const struct sbn * a)
 
 int main (void)
 {
+#if 0
 	{ /* Adding digits to an SBN, adding SBNs, and sbn->string */
 		struct sbn * a = sbn_new();
 		if (a) {
@@ -60,7 +61,21 @@ int main (void)
 			a = sbn_free(a);
 		}
 	}
+#endif
 
+#if 0
+	{
+		const char from_str[] = "9";
+		sbn_digit dig = 0;
+		size_t processed = 0;
+		if (_sbn_digit_from_str_16(strlen(from_str), from_str, &dig, &processed)) {
+			debug_log("str=\"%s\" -> dig=%u, processed=%zu\n", from_str, dig, processed);
+		}
+
+	}
+#endif
+
+#if 1
 	{ /* string->sbn */
 		const char from_str[] = "9fffffff6";
 		struct sbn * a = sbn_from_str_16(0, from_str);
@@ -75,6 +90,7 @@ int main (void)
 			a = sbn_free(a);
 		}
 	}
+#endif
 
 	return 0;
 }
