@@ -1,4 +1,4 @@
-/* map - v2022.01.11-0
+/* map - v2022.01.11-1
  *
  * A Hash Map type inspired by
  *  * [stb](https://github.com/nothings/stb)
@@ -428,13 +428,12 @@ static bool _MAP_INSERT_SORTED (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DAT
         self->table[tblidx].entries[i].key = key;
         self->table[tblidx].length++;
         self->cardinal++;
-
-        self->lc.valid = true;
-        self->lc.hash = hash;
-        self->lc.idx = i;
     }
 
     self->table[tblidx].entries[i].value = value;
+    self->lc.valid = true;
+    self->lc.hash = hash;
+    self->lc.idx = i;
 
     return true;
 }
