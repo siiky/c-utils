@@ -1,4 +1,4 @@
-/* vec - v2020.05.30-3
+/* vec - v2022.01.11-0
  *
  * A vector type inspired by
  *  * Rust's `Vec` type
@@ -176,7 +176,7 @@ struct VEC_CFG_VEC {
     /** Iterator index */
     size_t idx;
 
-    /** Should iterate from begginning or end */
+    /** Should iterate from beginning or end */
     unsigned char reverse : 1;
 
     /** Is currently iterating */
@@ -200,6 +200,7 @@ struct VEC_CFG_VEC {
 #define VEC_FREE_RANGE     VEC_CFG_MAKE_STR(free_range)
 #define VEC_FROM_RAW_PARTS VEC_CFG_MAKE_STR(from_raw_parts)
 #define VEC_GET_NTH        VEC_CFG_MAKE_STR(get_nth)
+#define VEC_GET_NTH_REF    VEC_CFG_MAKE_STR(get_nth_ref)
 #define VEC_INSERT         VEC_CFG_MAKE_STR(insert)
 #define VEC_INSERT_SORTED  VEC_CFG_MAKE_STR(insert_sorted)
 #define VEC_IS_EMPTY       VEC_CFG_MAKE_STR(is_empty)
@@ -236,6 +237,7 @@ VEC_CFG_DATA_TYPE         VEC_POP            (struct VEC_CFG_VEC * self);
 VEC_CFG_DATA_TYPE         VEC_REMOVE         (struct VEC_CFG_VEC * self, size_t index);
 VEC_CFG_DATA_TYPE         VEC_SWAP_REMOVE    (struct VEC_CFG_VEC * self, size_t index);
 VEC_CFG_DATA_TYPE *       VEC_AS_MUT_SLICE   (struct VEC_CFG_VEC * self);
+VEC_CFG_DATA_TYPE *       VEC_GET_NTH_REF    (const struct VEC_CFG_VEC * self, size_t nth);
 bool                      VEC_ELEM           (const struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE element);
 bool                      VEC_ELEM_SORTED    (const struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE element);
 bool                      VEC_FILTER         (struct VEC_CFG_VEC * self, bool pred (const VEC_CFG_DATA_TYPE *));
@@ -564,6 +566,21 @@ VEC_CFG_STATIC inline VEC_CFG_DATA_TYPE * VEC_AS_MUT_SLICE (struct VEC_CFG_VEC *
 }
 
 /**
+ * @brief Get a reference to the element at the @a nth index
+ * @param self The vector
+ * @param nth The index
+ * @returns The pointer to the element at index @a nth, or NULL if @a self is
+ *          not valid or @a nth is OOB.
+ * }
+ */
+VEC_CFG_STATIC VEC_CFG_DATA_TYPE * VEC_GET_NTH_REF (const struct VEC_CFG_VEC * self, size_t nth)
+{
+    return (!(self != NULL && self->ptr != NULL && nth < self->length)) ?
+      NULL:
+      &self->ptr[nth];
+}
+
+/**
  * @brief Set the length of @a self to @a len, without checks
  * @param self The vector
  * @param len The new length
@@ -773,7 +790,7 @@ bool                      VEC_APPEND         (struct VEC_CFG_VEC * restrict self
     if (self == NULL
     || other == NULL
     /* self->ptr==NULL is OK because realloc() will be called on it */
-    /* other->ptr may NULL only if it's empty */
+    /* other->ptr may be NULL only if it's empty */
     || (other->ptr == NULL && other->length != 0)
     || self->ptr == other->ptr)
         return false;
@@ -882,10 +899,9 @@ VEC_CFG_STATIC bool VEC_SPLIT_OFF (struct VEC_CFG_VEC * restrict self, struct VE
  */
 VEC_CFG_STATIC inline VEC_CFG_DATA_TYPE VEC_GET_NTH (const struct VEC_CFG_VEC * self, size_t nth)
 {
-    assert(self != NULL);
-    assert(self->ptr != NULL);
-    assert(nth < self->length);
-    return self->ptr[nth];
+    VEC_CFG_DATA_TYPE * ret = VEC_GET_NTH_REF(self, nth);
+    assert(ret != NULL);
+    return *ret;
 }
 
 /**
@@ -1126,7 +1142,7 @@ VEC_CFG_STATIC bool VEC_ITER_NEXT (struct VEC_CFG_VEC * self)
 
 /**
  * @brief Set the `reverse` flag, i.e., if the iterator should move from
- *        beggining to end or end to begginning
+ *        beginning to end or end to beginning
  * @param self The vector
  * @returns `false` if @a self is iterating or it is not a valid vector, `true`
  *          otherwise
@@ -1181,6 +1197,7 @@ VEC_CFG_STATIC bool VEC_ITER_REV (struct VEC_CFG_VEC * self, bool rev)
 #undef VEC_FREE_RANGE
 #undef VEC_FROM_RAW_PARTS
 #undef VEC_GET_NTH
+#undef VEC_GET_NTH_REF
 #undef VEC_INSERT
 #undef VEC_INSERT_SORTED
 #undef VEC_IS_EMPTY
