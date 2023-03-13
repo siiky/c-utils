@@ -5,7 +5,7 @@
  *  * [sort](https://github.com/swenson/sort)
  *
  * The most up to date version of this file can be found at
- * `include/utils/bs.h` on [siiky/c-utils](https://github.com/siiky/c-utils)
+ * `include/utils/bs.h` on [siiky/c-utils](https://git.sr.ht/~siiky/c-utils)
  * More usage examples can be found at `examples/bs` on the link above
  */
 #ifndef _BS_H
