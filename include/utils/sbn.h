@@ -1,4 +1,4 @@
-/* sbn - v2023.03.13-1
+/* sbn - v2023.03.13-2
  *
  * A bignum type inspired by
  *  * Scheme
@@ -62,6 +62,7 @@
 /* I don't like it as an opaque structure, but I can't think of a workaround */
 struct sbn;
 
+bool         sbn_abs          (struct sbn * a);
 bool         sbn_add_digit_ud (struct sbn * a, const sbn_digit dig);
 bool         sbn_eq           (const struct sbn * a, const struct sbn * b);
 bool         sbn_ge           (const struct sbn * a, const struct sbn * b);
@@ -643,6 +644,11 @@ struct sbn * sbn_digit_right_shift (const struct sbn * a, size_t shift)
 {
 	struct sbn * ret = sbn_clone(a);
 	return (sbn_digit_right_shift_d(ret, shift)) ? ret : sbn_free(ret);
+}
+
+bool sbn_abs (struct sbn * a)
+{
+	return sbn_set_sign(a, false);
 }
 
 /**
