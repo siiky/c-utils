@@ -1,4 +1,4 @@
-/* sbn - v2023.03.13-5
+/* sbn - v2023.03.13-6
  *
  * A bignum type inspired by
  *  * Scheme
@@ -84,6 +84,7 @@ struct sbn * sbn_add          (const struct sbn * a, const struct sbn * b);
 struct sbn * sbn_add_digit_u  (const struct sbn * a, const sbn_digit dig);
 struct sbn * sbn_add_u        (const struct sbn * a, const struct sbn * b);
 struct sbn * sbn_clone        (const struct sbn * a);
+struct sbn * sbn_clone_to     (struct sbn * d, struct sbn * s);
 struct sbn * sbn_free         (struct sbn * a);
 struct sbn * sbn_from_str     (size_t nchars, const char str[nchars], unsigned base);
 struct sbn * sbn_from_str_16  (size_t nchars, const char str[nchars]);
@@ -409,9 +410,20 @@ struct sbn * sbn_free (struct sbn * a)
 	if (a) {
 		*a->digits = _sbn_digits_vec_free(*a->digits);
 		a->is_negative = 0;
+		/* TODO: This isn't always right, `struct sbn` can be stack allocated */
 		free(a);
 	}
 	return NULL;
+}
+
+struct sbn * sbn_clone_to (struct sbn * d, struct sbn * s)
+{
+	if (!d || !s) return false;
+	if (_sbn_append_digits(d, s))
+		d->is_negative = s->is_negative;
+	else
+		return sbn_free(d); /* TODO */
+	return d;
 }
 
 /**
@@ -419,15 +431,10 @@ struct sbn * sbn_free (struct sbn * a)
  */
 struct sbn * sbn_clone (const struct sbn * a)
 {
-	struct sbn * ret = (a) ? sbn_new() : NULL;
-	if (ret) {
-		bool succ = _sbn_append_digits(ret, a);
-		if (succ)
-			ret->is_negative = a->is_negative;
-		else
-			ret = sbn_free(ret);
-	}
-	return ret;
+	if (!a) return NULL;
+	struct sbn * ret = sbn_new();
+	bool succ = sbn_clone_to(ret, a);
+	return (succ) ? ret : NULL;
 }
 
 /************************
