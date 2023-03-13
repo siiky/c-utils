@@ -1,11 +1,11 @@
-/* bs - v2019.05.01-0
+/* bs - v2023.03.13-0
  *
  * A BitSet type inspired by
  *  * [stb](https://github.com/nothings/stb)
  *  * [sort](https://github.com/swenson/sort)
  *
  * The most up to date version of this file can be found at
- * `include/utils/bs.h` on [siiky/c-utils](https://github.com/siiky/c-utils)
+ * `include/utils/bs.h` on [siiky/c-utils](https://git.sr.ht/~siiky/c-utils)
  * More usage examples can be found at `examples/bs` on the link above
  */
 #ifndef _BS_H
@@ -179,11 +179,11 @@ bool bs_set (struct bs * self, unsigned nth, bool _val)
     unsigned segidx = bs_nth2segidx(nth);
     unsigned char bitidx = bs_nth2bitidx(nth);
     segment m = 1UL << bitidx;
-    segment val = -((segment) _val);
+    segment val = ((_val) ? ~0UL : 0UL) & m;
     return _bs_valid(self)
         && nth < self->nbits
         && bitidx < bs_bits_per_seg
-        && ((seg = (seg & ~m) | (val & m)), true);
+        && ((seg = (seg & ~m) | val), true);
 #undef seg
 }
 

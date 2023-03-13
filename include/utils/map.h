@@ -1,11 +1,11 @@
-/* map - v2020.01.08-0
+/* map - v2022.01.11-1
  *
  * A Hash Map type inspired by
  *  * [stb](https://github.com/nothings/stb)
  *  * [sort](https://github.com/swenson/sort)
  *
  * The most up to date version of this file can be found at
- * `include/utils/map.h` on [siiky/c-utils](https://github.com/siiky/c-utils)
+ * `include/utils/map.h` on [siiky/c-utils](https://git.sr.ht/~siiky/c-utils)
  * More usage examples can be found at `examples/map` on the link above
  */
 
@@ -424,17 +424,16 @@ static bool _MAP_INSERT_SORTED (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DAT
                     &self->table[tblidx].entries[i],
                     sizeof(*self->table[tblidx].entries) * (len - i));
 
+        self->table[tblidx].entries[i].hash = hash;
+        self->table[tblidx].entries[i].key = key;
+        self->table[tblidx].length++;
         self->cardinal++;
-
-        self->lc.valid = true;
-        self->lc.hash = hash;
-        self->lc.idx = i;
     }
 
-    self->table[tblidx].entries[i].hash = hash;
-    self->table[tblidx].entries[i].key = key;
     self->table[tblidx].entries[i].value = value;
-    self->table[tblidx].length++;
+    self->lc.valid = true;
+    self->lc.hash = hash;
+    self->lc.idx = i;
 
     return true;
 }

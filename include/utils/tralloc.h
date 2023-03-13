@@ -5,7 +5,7 @@
  *  * [sort](https://github.com/swenson/sort)
  *
  * The most up to date version of this file can be found at
- * `include/utils/tralloc.h` on [siiky/c-utils](https://github.com/siiky/c-utils)
+ * `include/utils/tralloc.h` on [siiky/c-utils](https://git.sr.ht/~siiky/c-utils)
  * More usage examples can be found at `examples/tralloc` on the link above
  *
  * This implementation depends on `vec.h`, which can be found at

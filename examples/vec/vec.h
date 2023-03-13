@@ -44,4 +44,9 @@
         struct ivec * : ivec_swap_remove           \
         )((vec), (elem))
 
+#define vec_insert_sorted(vec, elem) _Generic((vec), \
+        struct cvec * : cvec_insert_sorted,          \
+        struct ivec * : ivec_insert_sorted           \
+        )((vec), (elem))
+
 #endif /* _VEC_H */
