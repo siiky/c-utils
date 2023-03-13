@@ -1,4 +1,4 @@
-/* bs - v2019.05.01-0
+/* bs - v2023.03.13-0
  *
  * A BitSet type inspired by
  *  * [stb](https://github.com/nothings/stb)
@@ -179,11 +179,11 @@ bool bs_set (struct bs * self, unsigned nth, bool _val)
     unsigned segidx = bs_nth2segidx(nth);
     unsigned char bitidx = bs_nth2bitidx(nth);
     segment m = 1UL << bitidx;
-    segment val = -((segment) _val);
+    segment val = ((_val) ? ~0UL : 0UL) & m;
     return _bs_valid(self)
         && nth < self->nbits
         && bitidx < bs_bits_per_seg
-        && ((seg = (seg & ~m) | (val & m)), true);
+        && ((seg = (seg & ~m) | val), true);
 #undef seg
 }
 
