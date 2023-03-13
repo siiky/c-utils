@@ -1,10 +1,7 @@
 (import
-  chicken.base
-  chicken.foreign
-  chicken.format
-  chicken.process-context
-  scheme
-  srfi-1
+  (chicken foreign)
+  (chicken process-context)
+  (srfi 1)
   )
 
 #>
