@@ -16,23 +16,19 @@ void print_digs (const struct sbn * a)
 
 int main (void)
 {
-#if 0
+#if 1
 	{ /* Adding digits to an SBN, adding SBNs, and sbn->string */
 		struct sbn * a = sbn_new();
 		if (a) {
 			sbn_digit elem = ~0U;
 			debug_log("elem=%u", elem);
 			for (size_t i = 0; i < 10; i++) {
+				puts("");
 				debug_log("i=%zu,\tndigs=%zu", i, sbn_ndigits(a));
 				print_digs(a);
-				puts("");
 
-				struct sbn * tmp = sbn_add_digit_u(a, elem);
-				debug_log("tmp=%p", (void*) tmp);
-				if (tmp) {
-					a = sbn_free(a);
-					a = tmp;
-				}
+				bool succ = sbn_add_digit_ud(a, elem);
+                debug_log("succ=%s", succ ? "true" : "false");
 			}
 
 			debug_log("final ndigs=%zu", sbn_ndigits(a));
@@ -63,7 +59,7 @@ int main (void)
 	}
 #endif
 
-#if 0
+#if 1
 	{
 		const char from_str[] = "9";
 		sbn_digit dig = 0;
@@ -75,7 +71,7 @@ int main (void)
 	}
 #endif
 
-#if 0
+#if 1
 	{ /* string->sbn */
 		const char from_str[] = "9fffffff6";
 		struct sbn * a = sbn_from_str_16(0, from_str);
