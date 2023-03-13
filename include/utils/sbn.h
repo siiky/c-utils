@@ -1,4 +1,4 @@
-/* sbn - v2023.03.13-7
+/* sbn - v2023.03.13-8
  *
  * A bignum type inspired by
  *  * Scheme
@@ -71,7 +71,6 @@ bool         sbn_is_negative  (const struct sbn * a);
 bool         sbn_is_zero      (const struct sbn * a);
 bool         sbn_le           (const struct sbn * a, const struct sbn * b);
 bool         sbn_lt           (const struct sbn * a, const struct sbn * b);
-bool         sbn_negate       (struct sbn * a);
 bool         sbn_neq          (const struct sbn * a, const struct sbn * b);
 bool         sbn_set_sign     (struct sbn * a, bool is_negative);
 char *       sbn_to_str       (const struct sbn * a, unsigned base);
@@ -88,6 +87,7 @@ struct sbn * sbn_clone_to     (struct sbn * d, struct sbn * s);
 struct sbn * sbn_free         (struct sbn * a);
 struct sbn * sbn_from_str     (size_t nchars, const char str[nchars], unsigned base);
 struct sbn * sbn_from_str_16  (size_t nchars, const char str[nchars]);
+struct sbn * sbn_negate       (struct sbn * a);
 struct sbn * sbn_new          (void);
 struct sbn * sbn_sub          (const struct sbn * a, const struct sbn * b);
 struct sbn * sbn_sub_u        (const struct sbn * a, const struct sbn * b);
@@ -527,8 +527,11 @@ bool sbn_is_negative (const struct sbn * a)
 /**
  * @brief Negate @a a
  */
-bool sbn_negate (struct sbn * a)
-{return sbn_set_sign(a, !sbn_is_negative(a)); }
+struct sbn * sbn_negate (struct sbn * a)
+{
+	if (a) a->is_negative = !a->is_negative;
+	return a;
+}
 
 /**
  * @brief Set @a a's sign
@@ -760,19 +763,15 @@ struct sbn * sbn_add_u (const struct sbn * a, const struct sbn * b)
 struct sbn * sbn_add (const struct sbn * a, const struct sbn * b)
 {
 	if (sbn_is_negative(a)) {
-		if (sbn_is_negative(b)) { /* -a + -b = -(a + b) */
-			struct sbn * ret = sbn_add_u(a, b);
-			sbn_negate(ret); /* No need to check the result; only false if ret is NULL */
-			return ret;
-		} else { /* -a + b = b - a */
+		if (sbn_is_negative(b)) /* -a + -b = -(a + b) */
+			return sbn_negate(sbn_add_u(a, b));
+		else /* -a + b = b - a */
 			return sbn_sub_u(b, a);
-		}
 	} else {
-		if (sbn_is_negative(b)) { /* a + -b = a - b */
+		if (sbn_is_negative(b)) /* a + -b = a - b */
 			return sbn_sub_u(a, b);
-		} else { /* a + b = a + b */
+		else /* a + b = a + b */
 			return sbn_add_u(a, b);
-		}
 	}
 }
 
@@ -832,19 +831,15 @@ struct sbn * sbn_sub_u (const struct sbn * a, const struct sbn * b)
 struct sbn * sbn_sub (const struct sbn * a, const struct sbn * b)
 {
 	if (sbn_is_negative(a)) {
-		if (sbn_is_negative(b)) { /* -a - -b = b - a */
+		if (sbn_is_negative(b)) /* -a - -b = b - a */
 			return sbn_sub_u(b, a);
-		} else { /* -a - b = -(a + b) */
-			struct sbn * ret = sbn_add_u(a, b);
-			sbn_negate(ret); /* No need to check the result; only false if ret is NULL */
-			return ret;
-		}
+		else /* -a - b = -(a + b) */
+			return sbn_negate(sbn_add_u(a, b));
 	} else {
-		if (sbn_is_negative(b)) { /* a - -b = a + b */
+		if (sbn_is_negative(b)) /* a - -b = a + b */
 			return sbn_add_u(a, b);
-		} else { /* a - b = a - b */
+		else /* a - b = a - b */
 			return sbn_sub_u(a, b);
-		}
 	}
 }
 
