@@ -1,4 +1,4 @@
-/* sbn - v2023.03.13-0
+/* sbn - v2023.03.13-1
  *
  * A bignum type inspired by
  *  * Scheme
@@ -51,8 +51,9 @@
  *   size_t
  *
  *  <string.h>
- *   memmove()
  *   memcpy()
+ *   memmove()
+ *   strlen()
  */
 #include <stdbool.h>
 #include <stddef.h>
@@ -344,11 +345,11 @@ static bool _sbn_set_nth_digit (struct sbn * a, size_t i, sbn_digit dig)
  */
 static sbn_digit _sbn_add_digits (sbn_digit _a, sbn_digit _b, sbn_digit * _carry)
 {
-	sbn_double_digit a = _a;
-	sbn_double_digit b = _b;
 	sbn_double_digit carry = *_carry;
+	sbn_double_digit a = _a;
+	sbn_double_digit b = _b + carry;
 
-	sbn_double_digit tmp = a + b + carry;
+	sbn_double_digit tmp = a + b;
 	*_carry = sbn_double_digit_upper_half(tmp);
 	return sbn_double_digit_lower_half(tmp);
 }
@@ -358,13 +359,17 @@ static sbn_digit _sbn_add_digits (sbn_digit _a, sbn_digit _b, sbn_digit * _carry
  */
 static sbn_digit _sbn_sub_digits (sbn_digit _a, sbn_digit _b, sbn_digit * _carry)
 {
-	sbn_double_digit a = _a;
-	sbn_double_digit b = _b;
 	sbn_double_digit carry = *_carry;
+	sbn_double_digit a = _a;
+	sbn_double_digit b = _b + carry;
 
-	sbn_double_digit tmp = a - b - carry;
-	*_carry = sbn_double_digit_upper_half(tmp);
-	return sbn_double_digit_lower_half(tmp);
+	if (a >= b) {
+		*_carry = 0;
+		return a - b;
+	} else {
+		*_carry = 1;
+		return b - a;
+	}
 }
 
 static sbn_digit _sbn_mul_digits (sbn_digit _a, sbn_digit _b, sbn_digit * _carry)
@@ -577,7 +582,7 @@ struct sbn * sbn_from_str_16 (size_t nchars, const char str[nchars])
 
 	while (nchars > 0) {
 		sbn_digit dig = 0;
-		size_t processed = _sbn_min(sbn_digit_nquartets, nchars);;
+		size_t processed = _sbn_min(sbn_digit_nquartets, nchars);
 		if (!_sbn_digit_from_str_16(processed, str + nchars - processed, &dig, &processed)
 				|| !_sbn_push_digit(ret, dig))
 			return sbn_free(ret);
@@ -771,28 +776,20 @@ struct sbn * sbn_add (const struct sbn * a, const struct sbn * b)
  */
 struct sbn * sbn_sub_u (const struct sbn * a, const struct sbn * b)
 {
-	if (!a && !b)
-		return NULL;
+	size_t bndigs = sbn_ndigits(b);
+	/* if `b` is 0 then there's nothing to do */
+	if (bndigs == 0) return sbn_clone(a);
 
 	size_t andigs = sbn_ndigits(a);
-	size_t bndigs = sbn_ndigits(b);
-	size_t minndigs = _sbn_min(andigs, bndigs);
+	/* if `a` is 0 then we have to copy `b` and negate it (TODO) */
+	if (andigs == 0) return sbn_clone(b);
+
 	size_t maxndigs = _sbn_max(andigs, bndigs);
-
-	/* if `b` is 0 then there's nothing to do */
-	if (bndigs == 0)
-		return sbn_clone(a);
-
-	/* if `a` is 0 then we have to copy `b` to `a` */
-	if (andigs == 0)
-		return sbn_clone(b);
-
 	struct sbn * ret = sbn_new();
-	if (!ret) return NULL;
-	if (!_sbn_reserve(ret, maxndigs)) return sbn_free(ret);
+	if (!ret || !_sbn_reserve(ret, maxndigs)) return sbn_free(ret);
 
+	size_t minndigs = _sbn_min(andigs, bndigs);
 	sbn_digit carry = 0;
-
 	for (size_t i = 0; i < minndigs; i++) {
 		if (!_sbn_push_digit(ret, _sbn_sub_digits(
 						sbn_nth_digit(a, i),
