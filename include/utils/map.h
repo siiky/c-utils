@@ -1,4 +1,4 @@
-/* map - v2022.01.11-1
+/* map - v2023.03.13-0
  *
  * A Hash Map type inspired by
  *  * [stb](https://github.com/nothings/stb)
@@ -129,7 +129,7 @@ struct MAP_CFG_MAP {
 #define MAP_ITER_KEY  MAP_CFG_MAKE_STR(iter_key)
 #define MAP_ITER_NEXT MAP_CFG_MAKE_STR(iter_next)
 #define MAP_ITER_VAL  MAP_CFG_MAKE_STR(iter_val)
-#define MAP_NEW       MAP_CFG_MAKE_STR(new)
+#define MAP_INIT       MAP_CFG_MAKE_STR(init)
 #define MAP_REMOVE    MAP_CFG_MAKE_STR(remove)
 #define MAP_RESIZE    MAP_CFG_MAKE_STR(resize)
 #define MAP_WITH_SIZE MAP_CFG_MAKE_STR(with_size)
@@ -147,7 +147,7 @@ bool                    MAP_ITER      (struct MAP_CFG_MAP * self);
 bool                    MAP_ITERING   (const struct MAP_CFG_MAP * self);
 bool                    MAP_ITER_END  (struct MAP_CFG_MAP * self);
 bool                    MAP_ITER_NEXT (struct MAP_CFG_MAP * self);
-bool                    MAP_NEW       (struct MAP_CFG_MAP * self);
+bool                    MAP_INIT      (struct MAP_CFG_MAP * self);
 bool                    MAP_REMOVE    (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DATA_TYPE key, MAP_CFG_VALUE_DATA_TYPE * value);
 bool                    MAP_RESIZE    (struct MAP_CFG_MAP * self, unsigned new_size);
 bool                    MAP_WITH_SIZE (struct MAP_CFG_MAP * self, unsigned size);
@@ -453,9 +453,8 @@ MAP_CFG_KEY_DATA_TYPE MAP_ITER_KEY (const struct MAP_CFG_MAP * self)
 }
 
 /**
- * @brief Gets the value associated with a given key
- *        The map must have been successfully initialized with
- *        MAP_NEW() or MAP_WITH_SIZE()
+ * @brief Gets the value associated with a given key The map must have been
+ *        successfully initialized with MAP_INIT() or MAP_WITH_SIZE()
  * @param self The map
  * @param key The key (must be the key of an entry in the map)
  * @returns The value associated with @a key
@@ -490,9 +489,9 @@ MAP_CFG_VALUE_DATA_TYPE MAP_ITER_VAL (const struct MAP_CFG_MAP * self)
 }
 
 /**
- * @brief Adds or updates an entry to the map with @a key and @a value.
- *        The map must have been successfully initialized with
- *        MAP_NEW() or MAP_WITH_SIZE()
+ * @brief Adds or updates an entry to the map with @a key and @a value. The map
+ *        must have been successfully initialized with MAP_INIT() or
+ *        MAP_WITH_SIZE()
  * @param self The map
  * @param key The key
  * @param value The value
@@ -615,7 +614,7 @@ bool MAP_ITER_NEXT (struct MAP_CFG_MAP * self)
  * @param self The map
  * @returns `true` if it successfully initialized the map
  */
-MAP_CFG_STATIC bool MAP_NEW (struct MAP_CFG_MAP * self)
+MAP_CFG_STATIC bool MAP_INIT (struct MAP_CFG_MAP * self)
 {
     return MAP_WITH_SIZE(self, MAP_CFG_DEFAULT_SIZE);
 }
@@ -831,7 +830,7 @@ unsigned MAP_CARDINAL (const struct MAP_CFG_MAP * self)
 #undef MAP_ITER_KEY
 #undef MAP_ITER_NEXT
 #undef MAP_ITER_VAL
-#undef MAP_NEW
+#undef MAP_INIT
 #undef MAP_REMOVE
 #undef MAP_RESIZE
 #undef MAP_WITH_SIZE
