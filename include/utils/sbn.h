@@ -1,4 +1,4 @@
-/* sbn - v2023.03.13-2
+/* sbn - v2023.03.13-3
  *
  * A bignum type inspired by
  *  * Scheme
@@ -88,6 +88,7 @@ struct sbn * sbn_free         (struct sbn * a);
 struct sbn * sbn_from_str     (size_t nchars, const char str[nchars], unsigned base);
 struct sbn * sbn_from_str_16  (size_t nchars, const char str[nchars]);
 struct sbn * sbn_new          (void);
+struct sbn * sbn_sub          (const struct sbn * a, const struct sbn * b);
 struct sbn * sbn_sub_u        (const struct sbn * a, const struct sbn * b);
 
 #ifdef SBN_CFG_IMPLEMENTATION
@@ -829,33 +830,22 @@ struct sbn * sbn_sub_u (const struct sbn * a, const struct sbn * b)
 
 /**
  * @brief Subtract @a b from @a a
- *
- * TODO: Subtract numbers of different signs
- *
- * Same sign:
- *  a -  b = a - b
- * -a - -b = b - a
- *
- * Different sign:
- *  a - -b = a + b
- * -a -  b = -(a + b)
  */
 struct sbn * sbn_sub (const struct sbn * a, const struct sbn * b)
 {
-	struct sbn * ret = NULL;
 	bool is_a_negative = sbn_is_negative(a);
-
-	if (is_a_negative != sbn_is_negative(b)) {
-		ret = sbn_add_u(a, b);
-		sbn_set_sign(ret, is_a_negative);
-	} else {
-		ret = (is_a_negative) ?
-			sbn_sub_u(b, a):
-			sbn_sub_u(a, b);
-		/* TODO: Set the right sign */
+	bool is_b_negative = sbn_is_negative(b);
+	if (!is_a_negative && !is_b_negative) { /* a - b = a - b */
+		return sbn_sub_u(a, b);
+	} else if (is_a_negative && is_b_negative) {  /* -a - -b = b - a */
+		return sbn_sub_u(b, a);
+	} else if (!is_a_negative && is_b_negative) { /* a - -b = a + b */
+		return sbn_add_u(a, b);
+	} else if (is_a_negative && !is_b_negative) { /* -a - b = -(a + b) */
+		struct sbn * ret = sbn_add_u(a, b);
+		sbn_negate(ret); /* No need to check the result; only false if ret is NULL */
+		return ret;
 	}
-
-	return ret;
 }
 
 bool sbn_mul_digit_ud (struct sbn * a, const sbn_digit dig)
