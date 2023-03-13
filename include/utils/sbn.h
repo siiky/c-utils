@@ -1,4 +1,4 @@
-/* sbn - v2023.03.13-6
+/* sbn - v2023.03.13-7
  *
  * A bignum type inspired by
  *  * Scheme
@@ -759,19 +759,20 @@ struct sbn * sbn_add_u (const struct sbn * a, const struct sbn * b)
  */
 struct sbn * sbn_add (const struct sbn * a, const struct sbn * b)
 {
-	bool is_a_negative = sbn_is_negative(a);
-	bool is_b_negative = sbn_is_negative(b);
-	if (!is_a_negative && !is_b_negative) { /* a + b = a + b */
-		return sbn_add_u(a, b);
-	} else if (is_a_negative && is_b_negative) {  /* -a + -b = -(a + b) */
-		struct sbn * ret = sbn_add_u(a, b);
-		sbn_negate(ret); /* No need to check the result; only false if ret is NULL */
-		return ret;
-		return sbn_sub_u(b, a);
-	} else if (!is_a_negative && is_b_negative) { /* a + -b = a - b */
-		return sbn_sub_u(a, b);
-	} else if (is_a_negative && !is_b_negative) { /* -a + b = b - a */
-		return sbn_sub_u(b, a);
+	if (sbn_is_negative(a)) {
+		if (sbn_is_negative(b)) { /* -a + -b = -(a + b) */
+			struct sbn * ret = sbn_add_u(a, b);
+			sbn_negate(ret); /* No need to check the result; only false if ret is NULL */
+			return ret;
+		} else { /* -a + b = b - a */
+			return sbn_sub_u(b, a);
+		}
+	} else {
+		if (sbn_is_negative(b)) { /* a + -b = a - b */
+			return sbn_sub_u(a, b);
+		} else { /* a + b = a + b */
+			return sbn_add_u(a, b);
+		}
 	}
 }
 
@@ -830,18 +831,20 @@ struct sbn * sbn_sub_u (const struct sbn * a, const struct sbn * b)
  */
 struct sbn * sbn_sub (const struct sbn * a, const struct sbn * b)
 {
-	bool is_a_negative = sbn_is_negative(a);
-	bool is_b_negative = sbn_is_negative(b);
-	if (!is_a_negative && !is_b_negative) { /* a - b = a - b */
-		return sbn_sub_u(a, b);
-	} else if (is_a_negative && is_b_negative) {  /* -a - -b = b - a */
-		return sbn_sub_u(b, a);
-	} else if (!is_a_negative && is_b_negative) { /* a - -b = a + b */
-		return sbn_add_u(a, b);
-	} else if (is_a_negative && !is_b_negative) { /* -a - b = -(a + b) */
-		struct sbn * ret = sbn_add_u(a, b);
-		sbn_negate(ret); /* No need to check the result; only false if ret is NULL */
-		return ret;
+	if (sbn_is_negative(a)) {
+		if (sbn_is_negative(b)) { /* -a - -b = b - a */
+			return sbn_sub_u(b, a);
+		} else { /* -a - b = -(a + b) */
+			struct sbn * ret = sbn_add_u(a, b);
+			sbn_negate(ret); /* No need to check the result; only false if ret is NULL */
+			return ret;
+		}
+	} else {
+		if (sbn_is_negative(b)) { /* a - -b = a + b */
+			return sbn_add_u(a, b);
+		} else { /* a - b = a - b */
+			return sbn_sub_u(a, b);
+		}
 	}
 }
 
