@@ -20,6 +20,7 @@ int main (void)
     puts("INT");
     struct ivec ivec = {0};
     if (vec_init(&ivec, NELEMS)) {
+        vec_print(&ivec);
         printf("len: %zu\tcap: %zu\n", vec_len(&ivec), vec_cap(&ivec));
 
         while (!vec_is_empty(&ivec))
@@ -28,6 +29,13 @@ int main (void)
         vec_print(&ivec);
         ivec = vec_free(ivec);
     }
+
+    for (int i = 0; i < 100; i++) {
+	vec_insert_sorted(&ivec, 100 - i);
+    }
+    printf("len: %zu\tcap: %zu\n", vec_len(&ivec), vec_cap(&ivec));
+    vec_print(&ivec);
+    ivec = vec_free(ivec);
 # endif /* INT */
 
 # ifdef CHAR
