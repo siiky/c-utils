@@ -1,4 +1,4 @@
-/* sbn - v2023.03.13-4
+/* sbn - v2023.03.13-5
  *
  * A bignum type inspired by
  *  * Scheme
@@ -367,10 +367,10 @@ static sbn_digit _sbn_sub_digits (sbn_digit _a, sbn_digit _b, sbn_digit * _carry
 
 	if (a >= b) {
 		*_carry = 0;
-		return a - b;
+		return sbn_double_digit_lower_half(a - b);
 	} else {
 		*_carry = 1;
-		return b - a;
+		return sbn_double_digit_lower_half(b - a);
 	}
 }
 
