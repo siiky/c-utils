@@ -1,4 +1,4 @@
-/* sbn - vYYYY.MM.DD-0
+/* sbn - v2023.03.13-0
  *
  * A bignum type inspired by
  *  * Scheme
@@ -6,7 +6,7 @@
  *  * [sort](https://github.com/swenson/sort)
  *
  * The most up to date version of this file can be found at
- * `include/utils/sbn.h` on [siiky/c-utils](https://github.com/siiky/c-utils).
+ * `include/utils/sbn.h` on [siiky/c-utils](https://git.sr.ht/~siiky/c-utils).
  *
  * It depends on `vec.h` which can be found next to this file in the link above.
  *
@@ -23,17 +23,9 @@
 #   error "Must define sbn_digit when using SBN_CFG_NO_STDINT"
 #  endif /* sbn_digit */
 
-#  ifndef sbn_digit_nbits
-#   error "Must define sbn_digit_nbits when using SBN_CFG_NO_STDINT"
-#  endif /* sbn_digit_nbits */
-
 #  ifndef sbn_double_digit
 #   error "Must define sbn_double_digit when using SBN_CFG_NO_STDINT"
 #  endif /* sbn_double_digit */
-
-#  ifndef sbn_double_digit_nbits
-#   error "Must define sbn_double_digit_nbits when using SBN_CFG_NO_STDINT"
-#  endif /* sbn_double_digit_nbits */
 
 # else /* SBN_CFG_NO_STDINT */
 
@@ -45,20 +37,9 @@
 #  include <stdint.h>
 
 #  define sbn_digit              uint32_t
-#  define sbn_digit_nbits        32U
 #  define sbn_double_digit       uint64_t
-#  define sbn_double_digit_nbits 64U
 
 # endif /* SBN_CFG_NO_STDINT */
-
-# define sbn_digit_nquartets              (sbn_digit_nbits >> 2)
-# define sbn_digit_nbytes                 (sbn_digit_nbits >> 3)
-# define sbn_nbits_diff                   (sbn_double_digit_nbits - sbn_digit_nbits)
-# define sbn_double_digit_upper_half(dig) ((sbn_digit) ((dig) >> sbn_nbits_diff))
-# define sbn_double_digit_lower_half(dig) sbn_double_digit_upper_half((dig) << sbn_nbits_diff)
-# define sbn_twos_compl(dig)              (~(dig) + 1)
-# define _sbn_min(a, b)                   (((a) < (b)) ? (a) : (b))
-# define _sbn_max(a, b)                   (((a) > (b)) ? (a) : (b))
 
 /*
  * <stdbool.h>
@@ -114,6 +95,39 @@ struct sbn * sbn_sub_u        (const struct sbn * a, const struct sbn * b);
 #define VEC_CFG_IMPLEMENTATION
 #define VEC_CFG_VEC _sbn_digits_vec
 #include <utils/vec.h>
+
+# ifdef SBN_CFG_NO_STDINT
+
+#  ifndef sbn_digit_nbits
+#   error "Must define sbn_digit_nbits when using SBN_CFG_NO_STDINT"
+#  endif /* sbn_digit_nbits */
+
+#  ifndef sbn_double_digit_nbits
+#   error "Must define sbn_double_digit_nbits when using SBN_CFG_NO_STDINT"
+#  endif /* sbn_double_digit_nbits */
+
+# else /* SBN_CFG_NO_STDINT */
+
+/*
+ * <stdint.h>
+ *  uint32_t
+ *  uint64_t
+ */
+#  include <stdint.h>
+
+#  define sbn_digit_nbits        32U
+#  define sbn_double_digit_nbits 64U
+
+# endif /* SBN_CFG_NO_STDINT */
+
+# define sbn_digit_nquartets              (sbn_digit_nbits >> 2)
+# define sbn_digit_nbytes                 (sbn_digit_nbits >> 3)
+# define sbn_nbits_diff                   (sbn_double_digit_nbits - sbn_digit_nbits)
+# define sbn_double_digit_upper_half(dig) ((sbn_digit) ((dig) >> sbn_nbits_diff))
+# define sbn_double_digit_lower_half(dig) sbn_double_digit_upper_half((dig) << sbn_nbits_diff)
+# define sbn_twos_compl(dig)              (~(dig) + 1)
+# define _sbn_min(a, b)                   (((a) < (b)) ? (a) : (b))
+# define _sbn_max(a, b)                   (((a) > (b)) ? (a) : (b))
 
 struct sbn {
 	/** Is this SBN negative? */
