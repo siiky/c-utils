@@ -1,4 +1,4 @@
-/* sbn - v2023.03.13-8
+/* sbn - v2023.03.14-0
  *
  * A bignum type inspired by
  *  * Scheme
@@ -62,7 +62,6 @@
 /* I don't like it as an opaque structure, but I can't think of a workaround */
 struct sbn;
 
-bool         sbn_abs          (struct sbn * a);
 bool         sbn_add_digit_ud (struct sbn * a, const sbn_digit dig);
 bool         sbn_eq           (const struct sbn * a, const struct sbn * b);
 bool         sbn_ge           (const struct sbn * a, const struct sbn * b);
@@ -72,13 +71,13 @@ bool         sbn_is_zero      (const struct sbn * a);
 bool         sbn_le           (const struct sbn * a, const struct sbn * b);
 bool         sbn_lt           (const struct sbn * a, const struct sbn * b);
 bool         sbn_neq          (const struct sbn * a, const struct sbn * b);
-bool         sbn_set_sign     (struct sbn * a, bool is_negative);
 char *       sbn_to_str       (const struct sbn * a, unsigned base);
 char *       sbn_to_str_16    (const struct sbn * a);
 int          sbn_cmp          (const struct sbn * a, const struct sbn * b);
 int          sbn_sign         (const struct sbn * a);
 sbn_digit    sbn_nth_digit    (const struct sbn * a, size_t nth);
 size_t       sbn_ndigits      (const struct sbn * a);
+struct sbn * sbn_abs          (struct sbn * a);
 struct sbn * sbn_add          (const struct sbn * a, const struct sbn * b);
 struct sbn * sbn_add_digit_u  (const struct sbn * a, const sbn_digit dig);
 struct sbn * sbn_add_u        (const struct sbn * a, const struct sbn * b);
@@ -89,6 +88,7 @@ struct sbn * sbn_from_str     (size_t nchars, const char str[nchars], unsigned b
 struct sbn * sbn_from_str_16  (size_t nchars, const char str[nchars]);
 struct sbn * sbn_negate       (struct sbn * a);
 struct sbn * sbn_new          (void);
+struct sbn * sbn_set_sign     (struct sbn * a, bool is_negative);
 struct sbn * sbn_sub          (const struct sbn * a, const struct sbn * b);
 struct sbn * sbn_sub_u        (const struct sbn * a, const struct sbn * b);
 
@@ -350,7 +350,7 @@ static sbn_digit _sbn_add_digits (sbn_digit _a, sbn_digit _b, sbn_digit * _carry
 {
 	sbn_double_digit carry = *_carry;
 	sbn_double_digit a = _a;
-	sbn_double_digit b = _b + carry;
+	sbn_double_digit b = _b; b += carry;
 
 	sbn_double_digit tmp = a + b;
 	*_carry = sbn_double_digit_upper_half(tmp);
@@ -364,7 +364,7 @@ static sbn_digit _sbn_sub_digits (sbn_digit _a, sbn_digit _b, sbn_digit * _carry
 {
 	sbn_double_digit carry = *_carry;
 	sbn_double_digit a = _a;
-	sbn_double_digit b = _b + carry;
+	sbn_double_digit b = _b; b += carry;
 
 	if (a >= b) {
 		*_carry = 0;
@@ -536,8 +536,11 @@ struct sbn * sbn_negate (struct sbn * a)
 /**
  * @brief Set @a a's sign
  */
-bool sbn_set_sign (struct sbn * a, bool is_negative)
-{ return a && ((a->is_negative = is_negative), true); }
+struct sbn * sbn_set_sign (struct sbn * a, bool is_negative)
+{
+    if (a) a->is_negative = is_negative;
+    return a;
+}
 
 /**
  * @brief Get the sign of @a a
@@ -657,10 +660,8 @@ struct sbn * sbn_digit_right_shift (const struct sbn * a, size_t shift)
 	return (sbn_digit_right_shift_d(ret, shift)) ? ret : sbn_free(ret);
 }
 
-bool sbn_abs (struct sbn * a)
-{
-	return sbn_set_sign(a, false);
-}
+struct sbn * sbn_abs (struct sbn * a)
+{ return sbn_set_sign(a, false); }
 
 /**
  * @brief Add a single digit to @a a, destructively, ignoring the sign
