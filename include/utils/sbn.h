@@ -1,4 +1,4 @@
-/* sbn - v2023.03.14-3
+/* sbn - v2023.03.14-4
  *
  * A bignum type inspired by
  *  * Scheme
@@ -60,8 +60,18 @@
 #include <stddef.h>
 #include <string.h>
 
-/* I don't like it as an opaque structure, but I can't think of a workaround */
-struct sbn;
+#define VEC_CFG_COPIABLE_DATA_TYPE
+#define VEC_CFG_DATA_TYPE sbn_digit
+#define VEC_CFG_VEC _sbn_digits_vec
+#include <utils/vec.h>
+
+struct sbn {
+	/** Is this SBN negative? */
+	unsigned char is_negative : 1;
+
+	/** The vector of digits */
+	struct _sbn_digits_vec digits[1];
+};
 
 bool         sbn_add_digit_ud (struct sbn * a, const sbn_digit dig);
 bool         sbn_eq           (const struct sbn * a, const struct sbn * b);
@@ -95,6 +105,7 @@ struct sbn * sbn_sub_u        (const struct sbn * a, const struct sbn * b);
 
 #ifdef SBN_CFG_IMPLEMENTATION
 
+#define VEC_CFG_NO_REDEFINE_VEC
 #define VEC_CFG_COPIABLE_DATA_TYPE
 #define VEC_CFG_DATA_TYPE sbn_digit
 #define VEC_CFG_IMPLEMENTATION
@@ -133,14 +144,6 @@ struct sbn * sbn_sub_u        (const struct sbn * a, const struct sbn * b);
 # define sbn_twos_compl(dig)              (~(dig) + 1)
 # define _sbn_min(a, b)                   (((a) < (b)) ? (a) : (b))
 # define _sbn_max(a, b)                   (((a) > (b)) ? (a) : (b))
-
-struct sbn {
-	/** Is this SBN negative? */
-	unsigned char is_negative : 1;
-
-	/** The vector of digits */
-	struct _sbn_digits_vec digits[1];
-};
 
 /*************************
  *************************
