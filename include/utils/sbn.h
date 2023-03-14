@@ -1,4 +1,4 @@
-/* sbn - v2023.03.14-4
+/* sbn - v2023.03.14-5
  *
  * A bignum type inspired by
  *  * Scheme
@@ -102,6 +102,18 @@ struct sbn * sbn_new          (void);
 struct sbn * sbn_set_sign     (struct sbn * a, bool is_negative);
 struct sbn * sbn_sub          (const struct sbn * a, const struct sbn * b);
 struct sbn * sbn_sub_u        (const struct sbn * a, const struct sbn * b);
+
+/*
+ * For each OP of [ add, sub, mul, div ], these will be all the functions defined:
+ * bool sbn_OP(struct sbn * r, const struct sbn * a, const struct sbn * b);
+ * bool sbn_OP_d(struct sbn * a, const struct sbn * b);
+ * bool sbn_OP_u(struct sbn * r, const struct sbn * a, const struct sbn * b);
+ * bool sbn_OP_ud(struct sbn * a, const struct sbn * b);
+ * bool sbn_OP_digit(struct sbn * r, const struct sbn * a, const sbn_digit d);
+ * bool sbn_OP_digit_d(struct sbn * a, const sbn_digit d);
+ * bool sbn_OP_digit_u(struct sbn * r, const struct sbn * a, const sbn_digit d);
+ * bool sbn_OP_digit_ud(struct sbn * a, const sbn_digit d);
+ */
 
 #ifdef SBN_CFG_IMPLEMENTATION
 
