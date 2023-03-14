@@ -1,4 +1,4 @@
-/* vec - v2022.01.11-0
+/* vec - v2023.03.14-0
  *
  * A vector type inspired by
  *  * Rust's `Vec` type
@@ -160,6 +160,7 @@ int main (void)
 #  define VEC_CFG_PREFIX VEC_CFG_MAKE_STR1(VEC_CFG_VEC, _)
 # endif /* VEC_CFG_PREFIX */
 
+# ifndef VEC_CFG_NO_REDEFINE_VEC
 /**
  * @brief The vector type
  */
@@ -182,6 +183,7 @@ struct VEC_CFG_VEC {
     /** Is currently iterating */
     unsigned char iterating : 1;
 };
+# endif /* VEC_CFG_NO_REDEFINE_VEC */
 
 /*==========================================================
  * Function names
@@ -1229,8 +1231,10 @@ VEC_CFG_STATIC bool VEC_ITER_REV (struct VEC_CFG_VEC * self, bool rev)
  */
 #undef VEC_CFG_CONCAT
 #undef VEC_CFG_DATA_TYPE
+#undef VEC_CFG_IMPLEMENTATION
 #undef VEC_CFG_MAKE_STR
 #undef VEC_CFG_MAKE_STR1
+#undef VEC_CFG_NO_REDEFINE_VEC
 #undef VEC_CFG_PREFIX
 #undef VEC_CFG_VEC
 
