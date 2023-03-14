@@ -1,4 +1,4 @@
-/* sbn - v2023.03.14-0
+/* sbn - v2023.03.14-1
  *
  * A bignum type inspired by
  *  * Scheme
@@ -886,7 +886,10 @@ struct sbn * sbn_mul_u (const struct sbn * a, const struct sbn * b)
 	struct sbn * ret = sbn_clone(a);
 	if (!ret) return NULL;
 
-	return ret;
+	/* TODO */
+
+	/* Resulting sign is negative if the two operands' signs are different */
+	return sbn_set_sign(ret, sbn_is_negative(a) != sbn_is_negative(b));
 }
 
 #endif /* SBN_CFG_IMPLEMENTATION */
