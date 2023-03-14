@@ -1,4 +1,4 @@
-/* sbn - v2023.03.14-1
+/* sbn - v2023.03.14-2
  *
  * A bignum type inspired by
  *  * Scheme
@@ -14,6 +14,7 @@
  * there can be only one implementation.
  *
  * _Modern Computer Arithmetic_ is used as a reference; you can get it here:
+ * https://maths-people.anu.edu.au/~brent/pd/mca-cup-0.5.9.pdf
  * https://members.loria.fr/PZimmermann/mca/pub226.html
  */
 
