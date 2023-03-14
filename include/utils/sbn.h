@@ -1,4 +1,4 @@
-/* sbn - v2023.03.14-2
+/* sbn - v2023.03.14-3
  *
  * A bignum type inspired by
  *  * Scheme
@@ -83,7 +83,7 @@ struct sbn * sbn_add          (const struct sbn * a, const struct sbn * b);
 struct sbn * sbn_add_digit_u  (const struct sbn * a, const sbn_digit dig);
 struct sbn * sbn_add_u        (const struct sbn * a, const struct sbn * b);
 struct sbn * sbn_clone        (const struct sbn * a);
-struct sbn * sbn_clone_to     (struct sbn * d, struct sbn * s);
+struct sbn * sbn_clone_to     (struct sbn * d, const struct sbn * s);
 struct sbn * sbn_free         (struct sbn * a);
 struct sbn * sbn_from_str     (size_t nchars, const char str[nchars], unsigned base);
 struct sbn * sbn_from_str_16  (size_t nchars, const char str[nchars]);
@@ -417,7 +417,7 @@ struct sbn * sbn_free (struct sbn * a)
 	return NULL;
 }
 
-struct sbn * sbn_clone_to (struct sbn * d, struct sbn * s)
+struct sbn * sbn_clone_to (struct sbn * d, const struct sbn * s)
 {
 	if (!d || !s) return false;
 	if (_sbn_append_digits(d, s))
