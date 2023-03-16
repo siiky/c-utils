@@ -16,50 +16,49 @@ void print_digs (const struct sbn * a)
 
 int main (void)
 {
-#if 1
+#if 0
 	{ /* Adding digits to an SBN, adding SBNs, and sbn->string */
-		struct sbn * a = sbn_new();
-		if (a) {
-			sbn_digit elem = ~0U;
-			debug_log("elem=%u", elem);
-			for (size_t i = 0; i < 10; i++) {
-				puts("");
-				debug_log("i=%zu,\tndigs=%zu", i, sbn_ndigits(a));
-				print_digs(a);
+		struct sbn sbns[3];
+		struct sbn * a = sbns + 0;
+		struct sbn * b = sbns + 1;
+		struct sbn * c = sbns + 2;
 
-				bool succ = sbn_add_digit_ud(a, elem);
-                debug_log("succ=%s", succ ? "true" : "false");
-			}
-
-			debug_log("final ndigs=%zu", sbn_ndigits(a));
+		sbn_digit elem = ~0U;
+		debug_log("elem=%u", elem);
+		for (size_t i = 0; i < 10; i++) {
+			puts("");
+			debug_log("i=%zu,\tndigs=%zu", i, sbn_ndigits(a));
 			print_digs(a);
 
-			char * astr = sbn_to_str(a, 16);
-			if (astr) {
-				debug_log("astr(%p)=%s", (void*) astr, astr);
-				free(astr);
-			}
-
-			struct sbn * b = sbn_clone(a);
-			if (b) {
-				struct sbn * c = sbn_add(a, b);
-				if (c) {
-					char * cstr = sbn_to_str_16(c);
-					if (cstr) {
-						debug_log("cstr(%p)=%s", (void*) cstr, cstr);
-						free(cstr);
-					}
-					print_digs(c);
-					c = sbn_free(c);
-				}
-				b = sbn_free(b);
-			}
-			a = sbn_free(a);
+			bool succ = sbn_add_digit_ud(a, elem);
+			debug_log("succ=%s", succ ? "true" : "false");
 		}
+
+		debug_log("final ndigs=%zu", sbn_ndigits(a));
+		print_digs(a);
+
+		char * astr = sbn_to_str(a, 16);
+		if (astr) {
+			debug_log("astr(%p)=%s", (void*) astr, astr);
+			free(astr);
+		}
+
+		sbn_clone_to(b, a);
+		sbn_add(c, a, b);
+			char * cstr = sbn_to_str_16(c);
+			if (cstr) {
+				debug_log("cstr(%p)=%s", (void*) cstr, cstr);
+				free(cstr);
+			}
+			print_digs(c);
+
+		sbn_free(c);
+		sbn_free(b);
+		sbn_free(a);
 	}
 #endif
 
-#if 1
+#if 0
 	{
 		const char from_str[] = "9";
 		sbn_digit dig = 0;
@@ -71,11 +70,11 @@ int main (void)
 	}
 #endif
 
-#if 1
+#if 0
 	{ /* string->sbn */
+		struct sbn a[1];
 		const char from_str[] = "9fffffff6";
-		struct sbn * a = sbn_from_str_16(0, from_str);
-		if (a) {
+		if (sbn_from_str_16(a, strlen(from_str), from_str)) {
 			debug_log("str->sbn(%p)", (void*) a);
 			print_digs(a);
 			char * to_str = sbn_to_str_16(a);
@@ -83,16 +82,16 @@ int main (void)
 				debug_log("str->sbn->str = %s", to_str);
 				free(to_str);
 			}
-			a = sbn_free(a);
+			sbn_destroy(a);
 		}
 	}
 #endif
 
-#if 1
+#if 0
 	{
+		struct sbn a[1];
 		const char from_str[] = "9fffffff6";
-		struct sbn * a = sbn_from_str_16(0, from_str);
-		if (a) {
+		if (sbn_from_str_16(a, strlen(from_str), from_str)) {
 			struct sbn * b = sbn_mul_digit_u(a, 16);
 			if (b) {
 				char * bstr = sbn_to_str_16(b);
@@ -104,7 +103,36 @@ int main (void)
 			} else {
 				debug_log("failed to multiply %s", from_str);
 			}
-			a = sbn_free(a);
+			sbn_destroy(a);
+		}
+	}
+#endif
+
+#if 1
+	{ /* Subtracting two numbers */
+		struct sbn a[1] = {0};
+		struct sbn b[1] = {0};
+		struct sbn c[1] = {0};
+		const char astr[] = "100000000000000000000"; /* 2^80 */
+		const char bstr[] = "2000000000000000000"; /* 2^73 */
+		const char expected[] = "fe000000000000000000";
+
+		if (sbn_from_str_16(a, strlen(astr), astr)) {
+			if (sbn_from_str_16(b, strlen(bstr), bstr)) {
+				if (sbn_sub(c, a, b)) {
+					char * cstr = sbn_to_str_16(c);
+					if (cstr) {
+						printf("a=%s, b=%s, a-b=%s, got: %s\n",
+							astr,
+							bstr,
+							expected,
+							cstr
+						);
+					}
+				}
+				sbn_destroy(b);
+			}
+			sbn_destroy(a);
 		}
 	}
 #endif

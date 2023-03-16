@@ -9,7 +9,7 @@ CPPFLAGS := #-DNDEBUG
 HEADERS := \
     ../../include/utils/sbn.h
 
-SRC := main.c
+SRC := main.c $(HEADERS)
 
 OBJS := $(SRC:.c=.o)
 DEPS := $(HEADERS) $(OBJS)
