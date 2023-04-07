@@ -1,4 +1,4 @@
-/* map - v2023.03.13-0
+/* map - v2023.04.07-0
  *
  * A Hash Map type inspired by
  *  * [stb](https://github.com/nothings/stb)
@@ -684,11 +684,15 @@ MAP_CFG_STATIC bool MAP_REMOVE (struct MAP_CFG_MAP * self, const MAP_CFG_KEY_DAT
  */
 MAP_CFG_STATIC bool MAP_RESIZE (struct MAP_CFG_MAP * self, unsigned new_size)
 {
-    struct MAP_CFG_MAP ret = {0};
-    if (self == NULL || !MAP_WITH_SIZE(&ret, new_size))
-        return false;
+    if (self == NULL) return false;
 
     unsigned cur_size = self->size;
+    if (cur_size == new_size) return true;
+
+    struct MAP_CFG_MAP ret = {0};
+    if (!MAP_WITH_SIZE(&ret, new_size))
+        return false;
+
     for (unsigned tblidx = 0; tblidx < cur_size; tblidx++) {
         unsigned length = self->table[tblidx].length;
 
