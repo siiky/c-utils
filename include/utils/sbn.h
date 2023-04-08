@@ -1,4 +1,4 @@
-/* sbn - v2023.04.08-5
+/* sbn - v2023.04.08-6
  *
  * A bignum type inspired by
  *  * Scheme
@@ -94,6 +94,8 @@ bool         sbn_lt           (const struct sbn * a, const struct sbn * b);
 bool         sbn_mul_digit_u  (struct sbn * r, const struct sbn * a, const sbn_digit d);
 bool         sbn_mul_digit_ud (struct sbn * a, const sbn_digit d);
 bool         sbn_neq          (const struct sbn * a, const struct sbn * b);
+bool         sbn_shl_d        (struct sbn * a, size_t n);
+bool         sbn_shr_d        (struct sbn * a, size_t n);
 bool         sbn_sub          (struct sbn * r, const struct sbn * a, const struct sbn * b);
 bool         sbn_sub_u        (struct sbn * r, const struct sbn * a, const struct sbn * b);
 char *       sbn_to_str       (const struct sbn * a, unsigned base);
@@ -896,11 +898,39 @@ bool sbn_sub (struct sbn * r, const struct sbn * a, const struct sbn * b)
 	}
 }
 
+/**
+ * @brief Shift @a a @a n digits (not bits) to the left.
+ */
+bool sbn_shl_d (struct sbn * a, size_t n)
+{
+	if (!a) return false;
+	size_t ndigs = sbn_ndigits(a);
+	if (ndigs == 0) return true;
+	bool ret = _sbn_digits_vec_reserve(a->digits, ndigs + n);
+	/* TODO: Optimize this */
+	/* if reserve succeeds inserts shouldn't fail -- just sanity check */
+	for (; ret && n > 0; n--) ret = _sbn_digits_vec_insert(a->digits, 0, 0);
+	return ret;
+}
+
+/**
+ * @brief Shift @a a @a n digits (not bits) to the right.
+ */
+bool sbn_shr_d (struct sbn * a, size_t n)
+{
+	if (!a) return false;
+	size_t ndigs = sbn_ndigits(a);
+	if (ndigs <= n) return _sbn_flush_digits(a), true;
+	/* TODO: Optimize this */
+	for (; n > 0; n--) _sbn_digits_vec_remove(a->digits, 0);
+	return true;
+}
+
 bool sbn_mul_digit_ud (struct sbn * a, const sbn_digit d)
 {
 	if (!a) return false;
 	if (sbn_is_zero(a)) return true;
-	if (d == 0) return _sbn_flush_digits(a);
+	if (d == 0) return _sbn_flush_digits(a), true;
 
 	size_t ndigs = sbn_ndigits(a);
 	sbn_digit carry = 0;
