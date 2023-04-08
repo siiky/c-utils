@@ -1,28 +1,29 @@
 include ../../defaults.mk
 
+INCDIR := ../../include
+INCLUDES := -I$(INCDIR)
 EXEC := sbn
-INC := -I../../include/
 OPT := -g -Og
-CFLAGS := $(FLAGS) $(INC) $(OPT)
+CFLAGS := $(FLAGS) $(INCLUDES) $(OPT)
 CPPFLAGS := #-DNDEBUG
 
-HEADERS := \
-    ../../include/utils/sbn.h
+HEADERS := $(INCDIR)/utils/sbn.h $(INCDIR)/utils/vec.h
 
 SRC := main.c $(HEADERS)
 
 OBJS := $(SRC:.c=.o)
-DEPS := $(HEADERS) $(OBJS)
 
 all: $(EXEC)
 
-$(EXEC): $(DEPS)
-	$(CC) $(CFLAGS) $(OBJS) -o $@
+$(EXEC): main.c
+	$(CC) $(CFLAGS) $< -o $@
+
+main.c: $(HEADERS)
 
 clean:
-	$(RM) $(OBJS) $(EXEC)
+	$(RM) $(EXEC)
 
 check: $(SRC) $(HEADERS)
-	cppcheck --std=c11 -f --language=c --enable=all $(INC) $(SRC) $(HEADERS)
+	cppcheck --std=c11 -f --language=c --enable=all $(INCLUDES) $(SRC) $(HEADERS) -DSBN_CFG_IMPLEMENTATION -Dsbn_digit='uint32_t' -Dsbn_double_digit='uint64_t' -Dsbn_digit_nbits=32 -Dsbn_double_digit_nbits=64
 
 .PHONY: all check clean
