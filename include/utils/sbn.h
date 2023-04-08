@@ -1,4 +1,4 @@
-/* sbn - v2023.04.08-11
+/* sbn - v2023.04.08-12
  *
  * A bignum type inspired by
  *  * Scheme
@@ -679,7 +679,7 @@ bool sbn_add_digit_ud (struct sbn * a, const sbn_digit dig)
  */
 bool sbn_add_u (struct sbn * r, const struct sbn * a, const struct sbn * b)
 {
-	if (!r) return false;
+	if (!_sbn_flush_digits(r)) return false;
 
 	size_t andigs = sbn_ndigits(a);
 	if (!andigs) return sbn_clone_to(r, b);
@@ -705,15 +705,13 @@ bool sbn_add_u (struct sbn * r, const struct sbn * a, const struct sbn * b)
 
 	bool ret = true;
 
-	/*
-	 * Add common digits
-	 */
+	/* Add common digits */
 	for (size_t i = 0; ret && i < minndigs; i++) {
 		sbn_digit adig = sbn_nth_digit(a, i);
 		sbn_digit bdig = sbn_nth_digit(b, i);
 		ret = _sbn_push_digit(r, _sbn_add_digits(adig, bdig, &carry));
 	}
-	if (!ret) return false;
+	if (!ret) return _sbn_flush_digits(r), false;
 
 	/*
 	 * Add `a`'s remaining digits, if any; Since `a` >= `b` in the number of
@@ -723,11 +721,9 @@ bool sbn_add_u (struct sbn * r, const struct sbn * a, const struct sbn * b)
 		sbn_digit adig = sbn_nth_digit(a, i);
 		ret = _sbn_push_digit(r, _sbn_add_digits(adig, 0, &carry));
 	}
-	if (!ret) return false;
+	if (!ret) return _sbn_flush_digits(r), false;
 
-	/*
-	 * Finally, add the remaining carry
-	 */
+	/* Finally, add the remaining carry */
 	return !carry || _sbn_push_digit(r, carry);
 }
 
