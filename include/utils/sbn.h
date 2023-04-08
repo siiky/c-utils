@@ -1,4 +1,4 @@
-/* sbn - v2023.04.08-10
+/* sbn - v2023.04.08-11
  *
  * A bignum type inspired by
  *  * Scheme
@@ -91,6 +91,7 @@ bool         sbn_is_negative  (const struct sbn * a);
 bool         sbn_is_zero      (const struct sbn * a);
 bool         sbn_le           (const struct sbn * a, const struct sbn * b);
 bool         sbn_lt           (const struct sbn * a, const struct sbn * b);
+bool         sbn_mul          (struct sbn * r, const struct sbn * a, const struct sbn * b);
 bool         sbn_mul_digit_u  (struct sbn * r, const struct sbn * a, const sbn_digit d);
 bool         sbn_mul_digit_ud (struct sbn * a, const sbn_digit d);
 bool         sbn_mul_u        (struct sbn * r, const struct sbn * a, const struct sbn * b);
@@ -779,6 +780,7 @@ bool sbn_add_digit_u (struct sbn * r, const struct sbn * a, const sbn_digit d)
 	return sbn_clone_to(r, a) && sbn_add_digit_ud(r, d);
 }
 
+/* TODO: Optimize to modify a in-place */
 bool sbn_add_ud (struct sbn * a, const struct sbn * b)
 {
 	struct sbn r[1];
@@ -923,18 +925,44 @@ bool sbn_mul_u (struct sbn * r, const struct sbn * a, const struct sbn * b)
 
 	if (sbn_is_zero(a) || sbn_is_zero(b)) return _sbn_flush_digits(r), true;
 
+	/* Traversing the number of fewer digits results in fewer operations */
 	if (andigs < bndigs) {
 		{ const struct sbn * tmp = a; a = b; b = tmp; }
 		{ size_t tmp = andigs; andigs = bndigs; bndigs = tmp; }
 	}
 
-	if (!sbn_clone_to(r, a)) return false;
+	if (!_sbn_flush_digits(r) || !_sbn_reserve(r, andigs+bndigs-1)) return false;
 
-	/* TODO */
+	/* MCA§1.3.1 Algorithm 1.2 BasecaseMultiply */
+	if (!sbn_mul_digit_u(r, a, sbn_nth_digit(b, 0))) /* c <- a*b0 */
+		return false;
 
-	/* Resulting sign is negative if the two operands' signs are different */
-	sbn_set_sign(r, sbn_is_negative(a) != sbn_is_negative(b));
-	return true;
+	struct sbn c[1] = {{0}};
+	struct sbn d[1] = {{0}};
+	bool ret = true;
+	for (size_t i = 1; ret && i < bndigs; i++) {
+		ret = sbn_mul_digit_u(c, a, sbn_nth_digit(b, i)) /* a*bi */
+			/* TODO: avoid shift -- specialized add starting at index? */
+			&& sbn_shl_d(c, i) /* B^i*(a*bi) */
+			/* TODO: optimize sbn_add_ud to modify r in-place */
+			&& sbn_add_u(d, r, c) /* c + B^i*(a*bi) */
+			&& sbn_clone_to(r, d); /* c <- c + B^i*(a*bi) */
+	}
+
+	sbn_destroy(c);
+	sbn_destroy(d);
+
+	return ret || (_sbn_flush_digits(r), false);
+}
+
+bool sbn_mul (struct sbn * r, const struct sbn * a, const struct sbn * b)
+{
+	if (sbn_mul_u(r, a, b)) {
+		/* Resulting sign is negative if the two operands' signs are different */
+		sbn_set_sign(r, sbn_is_negative(a) != sbn_is_negative(b));
+		return true;
+	}
+	return false;
 }
 
 /*
