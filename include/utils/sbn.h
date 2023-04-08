@@ -1,4 +1,4 @@
-/* sbn - v2023.04.08-6
+/* sbn - v2023.04.08-7
  *
  * A bignum type inspired by
  *  * Scheme
@@ -93,6 +93,7 @@ bool         sbn_le           (const struct sbn * a, const struct sbn * b);
 bool         sbn_lt           (const struct sbn * a, const struct sbn * b);
 bool         sbn_mul_digit_u  (struct sbn * r, const struct sbn * a, const sbn_digit d);
 bool         sbn_mul_digit_ud (struct sbn * a, const sbn_digit d);
+bool         sbn_mul_u        (struct sbn * r, const struct sbn * a, const struct sbn * b);
 bool         sbn_neq          (const struct sbn * a, const struct sbn * b);
 bool         sbn_shl_d        (struct sbn * a, size_t n);
 bool         sbn_shr_d        (struct sbn * a, size_t n);
@@ -949,27 +950,27 @@ bool sbn_mul_digit_u (struct sbn * r, const struct sbn * a, const sbn_digit d)
 	return sbn_mul_digit_ud(r, d);
 }
 
-struct sbn * sbn_mul_u (const struct sbn * a, const struct sbn * b)
+bool sbn_mul_u (struct sbn * r, const struct sbn * a, const struct sbn * b)
 {
-	if (!a || !b) return NULL;
+	if (!a || !b) return false;
 
 	size_t andigs = sbn_ndigits(a);
 	size_t bndigs = sbn_ndigits(b);
 
-	if (sbn_is_zero(a) || sbn_is_zero(b)) return sbn_new();
+	if (sbn_is_zero(a) || sbn_is_zero(b)) return _sbn_flush_digits(r), true;
 
 	if (andigs < bndigs) {
 		{ const struct sbn * tmp = a; a = b; b = tmp; }
 		{ size_t tmp = andigs; andigs = bndigs; bndigs = tmp; }
 	}
 
-	struct sbn * ret = sbn_clone(a);
-	if (!ret) return NULL;
+	if (!sbn_clone_to(r, a)) return false;
 
 	/* TODO */
 
 	/* Resulting sign is negative if the two operands' signs are different */
-	return sbn_set_sign(ret, sbn_is_negative(a) != sbn_is_negative(b));
+	sbn_set_sign(r, sbn_is_negative(a) != sbn_is_negative(b));
+	return true;
 }
 
 /*
