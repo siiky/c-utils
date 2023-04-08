@@ -79,6 +79,20 @@ void mul_digit (void)
 	sbn_destroy(a);
 }
 
+void mul_sbns (void)
+{
+	struct sbn a[1] = {{0}};
+	struct sbn b[1] = {{0}};
+	const char from_str[] = "9fffffff60";
+	assert(sbn_from_str_16(a, strlen(from_str), from_str));
+	assert(sbn_mul_u(b, a, a));
+	char * to_str = sbn_to_str_16(b);
+	assert(to_str != NULL);
+	debug_log("bstr=\"%s\"", to_str);
+	assert(streq(to_str, "63ffffff380000006400"));
+	free(to_str);
+}
+
 /* Subtracting two numbers */
 void subtraction (void)
 {
@@ -131,6 +145,7 @@ int main (void)
 	run(mul_digit);
 	run(subtraction);
 	run(from_to_big_string);
+	run(mul_sbns);
 
 	return 0;
 }
