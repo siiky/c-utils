@@ -1,4 +1,4 @@
-/* sbn - v2023.04.08-3
+/* sbn - v2023.04.08-4
  *
  * A bignum type inspired by
  *  * Scheme
@@ -391,9 +391,11 @@ static sbn_digit _sbn_sub_digits (sbn_digit _a, sbn_digit _b, sbn_digit * _carry
 	sbn_double_digit a = _a;
 	sbn_double_digit b = _b; b += carry;
 
-	return (a >= b) ?
-		(*_carry = 0), sbn_double_digit_lower_half(a - b):
-		(*_carry = 1), sbn_double_digit_lower_half(b - a);
+	sbn_double_digit r = (a >= b) ?
+		((*_carry = 0), (a - b)):
+		((*_carry = 1), (b - a));
+
+	return sbn_double_digit_lower_half(r);
 }
 
 static sbn_digit _sbn_mul_digits (sbn_digit _a, sbn_digit _b, sbn_digit * _carry)
