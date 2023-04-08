@@ -1,4 +1,5 @@
 #define VEC_CFG_IMPLEMENTATION
+#define VEC_CFG_ITERATORS
 #define VEC_CFG_DATA_TYPE int
 #include <utils/vec.h>
 

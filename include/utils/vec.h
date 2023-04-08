@@ -1,4 +1,4 @@
-/* vec - v2022.01.11-0
+/* vec - v2023.04.08-0
  *
  * A vector type inspired by
  *  * Rust's `Vec` type
@@ -173,6 +173,7 @@ struct VEC_CFG_VEC {
     /** Number of elements the vector can hold currently */
     size_t capacity;
 
+# ifdef VEC_CFG_ITERATORS
     /** Iterator index */
     size_t idx;
 
@@ -181,6 +182,7 @@ struct VEC_CFG_VEC {
 
     /** Is currently iterating */
     unsigned char iterating : 1;
+# endif /* VEC_CFG_ITERATORS */
 };
 
 /*==========================================================
@@ -204,12 +206,6 @@ struct VEC_CFG_VEC {
 #define VEC_INSERT         VEC_CFG_MAKE_STR(insert)
 #define VEC_INSERT_SORTED  VEC_CFG_MAKE_STR(insert_sorted)
 #define VEC_IS_EMPTY       VEC_CFG_MAKE_STR(is_empty)
-#define VEC_ITER           VEC_CFG_MAKE_STR(iter)
-#define VEC_ITERING        VEC_CFG_MAKE_STR(itering)
-#define VEC_ITER_END       VEC_CFG_MAKE_STR(iter_end)
-#define VEC_ITER_IDX       VEC_CFG_MAKE_STR(iter_idx)
-#define VEC_ITER_NEXT      VEC_CFG_MAKE_STR(iter_next)
-#define VEC_ITER_REV       VEC_CFG_MAKE_STR(iter_rev)
 #define VEC_LEN            VEC_CFG_MAKE_STR(len)
 #define VEC_MAP            VEC_CFG_MAKE_STR(map)
 #define VEC_MAP_RANGE      VEC_CFG_MAKE_STR(map_range)
@@ -226,6 +222,14 @@ struct VEC_CFG_VEC {
 #define VEC_SWAP_REMOVE    VEC_CFG_MAKE_STR(swap_remove)
 #define VEC_TRUNCATE       VEC_CFG_MAKE_STR(truncate)
 #define VEC_WITH_CAP       VEC_CFG_MAKE_STR(with_cap)
+# ifdef VEC_CFG_ITERATORS
+#define VEC_ITER           VEC_CFG_MAKE_STR(iter)
+#define VEC_ITERING        VEC_CFG_MAKE_STR(itering)
+#define VEC_ITER_END       VEC_CFG_MAKE_STR(iter_end)
+#define VEC_ITER_IDX       VEC_CFG_MAKE_STR(iter_idx)
+#define VEC_ITER_NEXT      VEC_CFG_MAKE_STR(iter_next)
+#define VEC_ITER_REV       VEC_CFG_MAKE_STR(iter_rev)
+# endif /* VEC_CFG_ITERATORS */
 
 /*==========================================================
  * Function prototypes
@@ -248,11 +252,6 @@ bool                      VEC_FROM_RAW_PARTS (struct VEC_CFG_VEC * self, VEC_CFG
 bool                      VEC_INSERT         (struct VEC_CFG_VEC * self, size_t index, VEC_CFG_DATA_TYPE element);
 bool                      VEC_INSERT_SORTED  (struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE element);
 bool                      VEC_IS_EMPTY       (const struct VEC_CFG_VEC * self);
-bool                      VEC_ITER           (struct VEC_CFG_VEC * self);
-bool                      VEC_ITERING        (const struct VEC_CFG_VEC * self);
-bool                      VEC_ITER_END       (struct VEC_CFG_VEC * self);
-bool                      VEC_ITER_NEXT      (struct VEC_CFG_VEC * self);
-bool                      VEC_ITER_REV       (struct VEC_CFG_VEC * self, bool rev);
 bool                      VEC_MAP            (struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE f (VEC_CFG_DATA_TYPE));
 bool                      VEC_MAP_RANGE      (struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE f (VEC_CFG_DATA_TYPE), size_t from, size_t to);
 bool                      VEC_PUSH           (struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE element);
@@ -267,10 +266,18 @@ bool                      VEC_WITH_CAP       (struct VEC_CFG_VEC * self, size_t 
 const VEC_CFG_DATA_TYPE * VEC_AS_SLICE       (const struct VEC_CFG_VEC * self);
 size_t                    VEC_CAP            (const struct VEC_CFG_VEC * self);
 size_t                    VEC_FIND           (const struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE element);
-size_t                    VEC_ITER_IDX       (const struct VEC_CFG_VEC * self);
 size_t                    VEC_LEN            (const struct VEC_CFG_VEC * self);
 size_t                    VEC_SEARCH         (const struct VEC_CFG_VEC * self, VEC_CFG_DATA_TYPE element);
 struct VEC_CFG_VEC        VEC_FREE           (struct VEC_CFG_VEC self);
+
+# ifdef VEC_CFG_ITERATORS
+bool                      VEC_ITER           (struct VEC_CFG_VEC * self);
+bool                      VEC_ITERING        (const struct VEC_CFG_VEC * self);
+bool                      VEC_ITER_END       (struct VEC_CFG_VEC * self);
+bool                      VEC_ITER_NEXT      (struct VEC_CFG_VEC * self);
+bool                      VEC_ITER_REV       (struct VEC_CFG_VEC * self, bool rev);
+size_t                    VEC_ITER_IDX       (const struct VEC_CFG_VEC * self);
+# endif /* VEC_CFG_ITERATORS */
 
 # ifdef VEC_CFG_COPIABLE_DATA_TYPE
 bool                      VEC_APPEND         (struct VEC_CFG_VEC * restrict self, const struct VEC_CFG_VEC * restrict other);
@@ -1054,6 +1061,8 @@ VEC_CFG_STATIC bool VEC_FOREACH (const struct VEC_CFG_VEC * self, void f (const 
         && VEC_FOREACH_RANGE(self, f, 0, self->length);
 }
 
+# ifdef VEC_CFG_ITERATORS
+
 /**
  * @brief Start iterating over @a self. If @a self is already iterating, do
  *        nothing
@@ -1154,6 +1163,8 @@ VEC_CFG_STATIC bool VEC_ITER_REV (struct VEC_CFG_VEC * self, bool rev)
         && ((self->reverse = rev), true);
 }
 
+# endif /* VEC_CFG_ITERATORS */
+
 /*==========================================================
  * Implementation clean up
  *=========================================================*/
@@ -1201,12 +1212,6 @@ VEC_CFG_STATIC bool VEC_ITER_REV (struct VEC_CFG_VEC * self, bool rev)
 #undef VEC_INSERT
 #undef VEC_INSERT_SORTED
 #undef VEC_IS_EMPTY
-#undef VEC_ITER
-#undef VEC_ITERING
-#undef VEC_ITER_END
-#undef VEC_ITER_IDX
-#undef VEC_ITER_NEXT
-#undef VEC_ITER_REV
 #undef VEC_LEN
 #undef VEC_MAP
 #undef VEC_MAP_RANGE
@@ -1224,11 +1229,21 @@ VEC_CFG_STATIC bool VEC_ITER_REV (struct VEC_CFG_VEC * self, bool rev)
 #undef VEC_TRUNCATE
 #undef VEC_WITH_CAP
 
+# ifdef VEC_CFG_ITERATORS
+#undef VEC_ITER
+#undef VEC_ITERING
+#undef VEC_ITER_END
+#undef VEC_ITER_IDX
+#undef VEC_ITER_NEXT
+#undef VEC_ITER_REV
+# endif /* VEC_CFG_ITERATORS */
+
 /*
  * Other
  */
 #undef VEC_CFG_CONCAT
 #undef VEC_CFG_DATA_TYPE
+#undef VEC_CFG_ITERATORS
 #undef VEC_CFG_MAKE_STR
 #undef VEC_CFG_MAKE_STR1
 #undef VEC_CFG_PREFIX
