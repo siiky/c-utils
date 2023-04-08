@@ -1,4 +1,4 @@
-/* sbn - v2023.04.08-9
+/* sbn - v2023.04.08-10
  *
  * A bignum type inspired by
  *  * Scheme
@@ -95,7 +95,9 @@ bool         sbn_mul_digit_u  (struct sbn * r, const struct sbn * a, const sbn_d
 bool         sbn_mul_digit_ud (struct sbn * a, const sbn_digit d);
 bool         sbn_mul_u        (struct sbn * r, const struct sbn * a, const struct sbn * b);
 bool         sbn_neq          (const struct sbn * a, const struct sbn * b);
+bool         sbn_shl          (struct sbn * r, const struct sbn * a, size_t n);
 bool         sbn_shl_d        (struct sbn * a, size_t n);
+bool         sbn_shr          (struct sbn * r, const struct sbn * a, size_t n);
 bool         sbn_shr_d        (struct sbn * a, size_t n);
 bool         sbn_sub          (struct sbn * r, const struct sbn * a, const struct sbn * b);
 bool         sbn_sub_u        (struct sbn * r, const struct sbn * a, const struct sbn * b);
@@ -870,6 +872,9 @@ bool sbn_shl_d (struct sbn * a, size_t n)
 	return ret;
 }
 
+bool sbn_shl (struct sbn * r, const struct sbn * a, size_t n)
+{ return sbn_clone_to(r, a) && sbn_shl_d(r, n); }
+
 /**
  * @brief Shift @a a @a n digits (not bits) to the right.
  */
@@ -882,6 +887,9 @@ bool sbn_shr_d (struct sbn * a, size_t n)
 	for (; n > 0; n--) _sbn_digits_vec_remove(a->digits, 0);
 	return true;
 }
+
+bool sbn_shr (struct sbn * r, const struct sbn * a, size_t n)
+{ return sbn_clone_to(r, a) && sbn_shr_d(r, n); }
 
 bool sbn_mul_digit_ud (struct sbn * a, const sbn_digit d)
 {
