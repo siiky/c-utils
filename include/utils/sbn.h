@@ -1,4 +1,4 @@
-/* sbn - v2023.04.08-4
+/* sbn - v2023.04.08-5
  *
  * A bignum type inspired by
  *  * Scheme
@@ -91,6 +91,8 @@ bool         sbn_is_negative  (const struct sbn * a);
 bool         sbn_is_zero      (const struct sbn * a);
 bool         sbn_le           (const struct sbn * a, const struct sbn * b);
 bool         sbn_lt           (const struct sbn * a, const struct sbn * b);
+bool         sbn_mul_digit_u  (struct sbn * r, const struct sbn * a, const sbn_digit d);
+bool         sbn_mul_digit_ud (struct sbn * a, const sbn_digit d);
 bool         sbn_neq          (const struct sbn * a, const struct sbn * b);
 bool         sbn_sub          (struct sbn * r, const struct sbn * a, const struct sbn * b);
 bool         sbn_sub_u        (struct sbn * r, const struct sbn * a, const struct sbn * b);
@@ -398,6 +400,9 @@ static sbn_digit _sbn_sub_digits (sbn_digit _a, sbn_digit _b, sbn_digit * _carry
 	return sbn_double_digit_lower_half(r);
 }
 
+/**
+ * @brief Calculate the result and carry of multiplying two digits
+ */
 static sbn_digit _sbn_mul_digits (sbn_digit _a, sbn_digit _b, sbn_digit * _carry)
 {
 	sbn_double_digit a = _a;
@@ -891,29 +896,27 @@ bool sbn_sub (struct sbn * r, const struct sbn * a, const struct sbn * b)
 	}
 }
 
-bool sbn_mul_digit_ud (struct sbn * a, const sbn_digit dig)
+bool sbn_mul_digit_ud (struct sbn * a, const sbn_digit d)
 {
 	if (!a) return false;
 	if (sbn_is_zero(a)) return true;
-	if (dig == 0) return _sbn_flush_digits(a);
+	if (d == 0) return _sbn_flush_digits(a);
 
 	size_t ndigs = sbn_ndigits(a);
 	sbn_digit carry = 0;
-	bool ret = _sbn_set_nth_digit(a, 0, _sbn_mul_digits(sbn_nth_digit(a, 0), dig, &carry));
-	for (size_t i = 1; ret && i < ndigs && carry; i++)
-		ret = _sbn_set_nth_digit(a, i, _sbn_mul_digits(sbn_nth_digit(a, i), 1, &carry));
+	bool ret = true;
+	for (size_t i = 0; ret && i < ndigs; i++)
+		ret = _sbn_set_nth_digit(a, i, _sbn_mul_digits(sbn_nth_digit(a, i), d, &carry));
 
 	return ret && (!carry || _sbn_push_digit(a, carry));
 }
 
-struct sbn * sbn_mul_digit_u (const struct sbn * a, const sbn_digit dig)
+bool sbn_mul_digit_u (struct sbn * r, const struct sbn * a, const sbn_digit d)
 {
-	if (!a) return NULL;
-	if (dig == 0) return sbn_new();
-	struct sbn * ret = sbn_clone(a);
-	return (ret && !sbn_mul_digit_ud(ret, dig)) ?
-		sbn_free(ret):
-		ret;
+	if (!a || !r) return false;
+	if (d == 0) return _sbn_flush_digits(r), true;
+	if (!sbn_clone_to(r, a)) return _sbn_flush_digits(r), false;
+	return sbn_mul_digit_ud(r, d);
 }
 
 struct sbn * sbn_mul_u (const struct sbn * a, const struct sbn * b)
