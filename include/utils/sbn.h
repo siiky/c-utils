@@ -1,4 +1,4 @@
-/* sbn - v2023.04.08-1
+/* sbn - v2023.04.08-2
  *
  * A bignum type inspired by
  *  * Scheme
@@ -158,8 +158,8 @@ struct sbn * sbn_set_sign     (struct sbn * a, bool is_negative);
 # define sbn_double_digit_upper_half(dig) ((sbn_digit) ((dig) >> sbn_nbits_diff))
 # define sbn_double_digit_lower_half(dig) sbn_double_digit_upper_half((dig) << sbn_nbits_diff)
 # define sbn_twos_compl(dig)              (~(dig) + 1)
-# define _sbn_min(a, b)                   (((a) < (b)) ? (a) : (b))
-# define _sbn_max(a, b)                   (((a) > (b)) ? (a) : (b))
+# define sbn_min(a, b)                   (((a) < (b)) ? (a) : (b))
+# define sbn_max(a, b)                   (((a) > (b)) ? (a) : (b))
 
 /*************************
  *************************
@@ -251,7 +251,7 @@ static bool _sbn_digit_from_str_16 (size_t nchars, const char str[nchars], sbn_d
 {
 	if (!str || !dig || !processed) return false;
 
-	size_t maxi = _sbn_min(nchars, sbn_digit_nquartets);
+	size_t maxi = sbn_min(nchars, sbn_digit_nquartets);
 	sbn_digit ret = 0;
 
 	for (size_t i = 0; i < maxi && str[i] != '\0'; i++) {
@@ -628,7 +628,7 @@ bool sbn_from_str_16 (struct sbn * r, size_t nchars, const char str[nchars])
 	bool ret = true;
 	while (ret && nchars > 0) {
 		sbn_digit dig = 0;
-		size_t processed = _sbn_min(sbn_digit_nquartets, nchars);
+		size_t processed = sbn_min(sbn_digit_nquartets, nchars);
 		ret = _sbn_digit_from_str_16(processed, str + nchars - processed, &dig, &processed)
 			&& _sbn_push_digit(r, dig);
 		nchars -= processed;
@@ -837,11 +837,11 @@ bool sbn_sub_u (struct sbn * r, const struct sbn * a, const struct sbn * b)
 	size_t bndigs = sbn_ndigits(b);
 	if (bndigs == 0) return sbn_clone_to(r, a);
 
-	size_t maxndigs = _sbn_max(andigs, bndigs);
+	size_t maxndigs = sbn_max(andigs, bndigs);
 	if (!r || !_sbn_reserve(r, maxndigs)) return _sbn_flush_digits(r), false;
 
 	bool succ = true;
-	size_t minndigs = _sbn_min(andigs, bndigs);
+	size_t minndigs = sbn_min(andigs, bndigs);
 	sbn_digit carry = 0;
 	for (size_t i = 0; succ && i < minndigs; i++)
 		succ = _sbn_push_digit(r, _sbn_sub_digits(
@@ -938,5 +938,12 @@ struct sbn * sbn_mul_u (const struct sbn * a, const struct sbn * b)
 	/* Resulting sign is negative if the two operands' signs are different */
 	return sbn_set_sign(ret, sbn_is_negative(a) != sbn_is_negative(b));
 }
+
+/*
+ * Implementation clean up
+ */
+
+#undef SBN_CFG_IMPLEMENTATION
+#undef SBN_CFG_NO_STDINT
 
 #endif /* SBN_CFG_IMPLEMENTATION */
