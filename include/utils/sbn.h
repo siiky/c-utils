@@ -1,4 +1,4 @@
-/* sbn - v2023.04.08-8
+/* sbn - v2023.04.08-9
  *
  * A bignum type inspired by
  *  * Scheme
@@ -258,9 +258,9 @@ static bool _sbn_digit_from_str_16 (size_t nchars, const char str[nchars], sbn_d
 
 	for (size_t i = 0; i < maxi && str[i] != '\0'; i++) {
 		/*
-		 * The shift is at the top of the loop to avoid shifting on the
-		 * last iteration; Since ret=0 in the first iteration, it
-		 * doesn't change value
+		 * The shift is at the top of the loop to avoid shifting on the last
+		 * iteration; Since ret=0 in the first iteration, it doesn't change
+		 * value
 		 */
 		ret <<= 4;
 
@@ -685,9 +685,9 @@ bool sbn_add_u (struct sbn * r, const struct sbn * a, const struct sbn * b)
 	if (!bndigs) return sbn_clone_to(r, a);
 
 	/*
-	 * Since we're going to clone one of `a` and `b`, might as well clone
-	 * the one with more digits; from this `if` forward, `a` >= `b` in the
-	 * number of digits
+	 * Since we're going to clone one of `a` and `b`, might as well clone the
+	 * one with more digits; from this `if` forward, `a` >= `b` in the number
+	 * of digits
 	 */
 	if (andigs < bndigs) {
 		{ const struct sbn * tmp = a; a = b; b = tmp; }
@@ -713,9 +713,8 @@ bool sbn_add_u (struct sbn * r, const struct sbn * a, const struct sbn * b)
 	if (!ret) return false;
 
 	/*
-	 * Add `a`'s remaining digits, if any; Since `a` >= `b` in the number
-	 * of digits, if `a` is still iterating, then we still have digits to
-	 * add
+	 * Add `a`'s remaining digits, if any; Since `a` >= `b` in the number of
+	 * digits, if `a` is still iterating, then we still have digits to add
 	 */
 	for (size_t i = minndigs; ret && i < maxndigs; i++) {
 		sbn_digit adig = sbn_nth_digit(a, i);
