@@ -1,4 +1,4 @@
-/* sbn - v2023.04.08-2
+/* sbn - v2023.04.08-3
  *
  * A bignum type inspired by
  *  * Scheme
@@ -190,9 +190,7 @@ static bool _sbn_push_digit (struct sbn * a, sbn_digit dig)
 { return a && _sbn_digits_vec_push(a->digits, dig); }
 
 static bool _sbn_flush_digits (struct sbn * a)
-{
-	return a && _sbn_digits_vec_set_len(a->digits, 0);
-}
+{ return a && _sbn_digits_vec_set_len(a->digits, 0); }
 
 /******************
  * Misc Functions *
@@ -379,9 +377,9 @@ static sbn_digit _sbn_add_digits (sbn_digit _a, sbn_digit _b, sbn_digit * _carry
 	sbn_double_digit a = _a;
 	sbn_double_digit b = _b; b += carry;
 
-	sbn_double_digit tmp = a + b;
-	*_carry = sbn_double_digit_upper_half(tmp);
-	return sbn_double_digit_lower_half(tmp);
+	sbn_double_digit r = a + b;
+	*_carry = sbn_double_digit_upper_half(r);
+	return sbn_double_digit_lower_half(r);
 }
 
 /**
@@ -404,9 +402,9 @@ static sbn_digit _sbn_mul_digits (sbn_digit _a, sbn_digit _b, sbn_digit * _carry
 	sbn_double_digit b = _b;
 	sbn_double_digit carry = *_carry;
 
-	sbn_double_digit tmp = a * b + carry;
-	*_carry = sbn_double_digit_upper_half(tmp);
-	return sbn_double_digit_lower_half(tmp);
+	sbn_double_digit r = a * b + carry;
+	*_carry = sbn_double_digit_upper_half(r);
+	return sbn_double_digit_lower_half(r);
 }
 
 /************************
@@ -826,6 +824,8 @@ bool sbn_add_ud (struct sbn * a, const struct sbn * b)
 
 /**
  * @brief Subtract @a b from @a a, ignoring the sign
+ *
+ * @a r MUST NOT be @a a nor @a b!
  */
 bool sbn_sub_u (struct sbn * r, const struct sbn * a, const struct sbn * b)
 {
@@ -851,8 +851,8 @@ bool sbn_sub_u (struct sbn * r, const struct sbn * a, const struct sbn * b)
 	if (!succ) return _sbn_flush_digits(r), false;
 
 	/*
-	 * If `a` and `b` have a different number of digits, then one of them
-	 * is still iterating
+	 * If `a` and `b` have a different number of digits, then one of them is
+	 * still iterating
 	 */
 	if (andigs < bndigs)
 		a = b;
@@ -864,9 +864,7 @@ bool sbn_sub_u (struct sbn * r, const struct sbn * a, const struct sbn * b)
 						&carry));
 	if (!succ) return _sbn_flush_digits(r), false;
 
-	/*
-	 * Finally, add the remaining carry
-	 */
+	/* Finally, add the remaining carry */
 	if (carry && !_sbn_push_digit(r, carry))
 		return _sbn_flush_digits(r), false;
 
