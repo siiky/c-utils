@@ -1,4 +1,4 @@
-/* sbn - v2023.04.08-7
+/* sbn - v2023.04.08-8
  *
  * A bignum type inspired by
  *  * Scheme
@@ -109,7 +109,6 @@ struct sbn * sbn_abs          (struct sbn * a);
 struct sbn * sbn_clone        (const struct sbn * a);
 struct sbn * sbn_free         (struct sbn * a);
 struct sbn * sbn_negate       (struct sbn * a);
-struct sbn * sbn_new          (void);
 struct sbn * sbn_set_sign     (struct sbn * a, bool is_negative);
 
 /*
@@ -163,8 +162,8 @@ struct sbn * sbn_set_sign     (struct sbn * a, bool is_negative);
 # define sbn_double_digit_upper_half(dig) ((sbn_digit) ((dig) >> sbn_nbits_diff))
 # define sbn_double_digit_lower_half(dig) sbn_double_digit_upper_half((dig) << sbn_nbits_diff)
 # define sbn_twos_compl(dig)              (~(dig) + 1)
-# define sbn_min(a, b)                   (((a) < (b)) ? (a) : (b))
-# define sbn_max(a, b)                   (((a) > (b)) ? (a) : (b))
+# define sbn_min(a, b)                    (((a) < (b)) ? (a) : (b))
+# define sbn_max(a, b)                    (((a) > (b)) ? (a) : (b))
 
 /*************************
  *************************
@@ -427,12 +426,6 @@ static sbn_digit _sbn_mul_digits (sbn_digit _a, sbn_digit _b, sbn_digit * _carry
  * Memory Management Functions *
  *******************************/
 
-/**
- * @brief Create a new SBN
- */
-struct sbn * sbn_new (void)
-{ return calloc(1, sizeof(struct sbn)); }
-
 struct sbn * sbn_destroy (struct sbn * a)
 {
 	if (a) {
@@ -466,7 +459,7 @@ bool sbn_clone_to (struct sbn * d, const struct sbn * s)
 struct sbn * sbn_clone (const struct sbn * a)
 {
 	if (!a) return NULL;
-	struct sbn * ret = sbn_new();
+	struct sbn * ret = calloc(1, sizeof(struct sbn));
 	if (!sbn_clone_to(ret, a)) {
 		sbn_free(ret);
 		ret = NULL;
@@ -656,42 +649,6 @@ bool sbn_from_str (struct sbn * r, size_t nchars, const char str[nchars], unsign
 /************************
  * Arithmetic Functions *
  ************************/
-
-/**
- * TODO: Optimise this
- */
-bool sbn_digit_left_shift_d (struct sbn * a, size_t shift)
-{
-	if (!a) return false;
-	bool ret = true;
-	for (size_t i = 0; ret && i < shift; i++)
-		ret = _sbn_digits_vec_insert(a->digits, 0, 0);
-	return ret;
-}
-
-/**
- * TODO: Optimise this
- */
-bool sbn_digit_right_shift_d (struct sbn * a, size_t shift)
-{
-	if (!a) return false;
-	bool ret = true;
-	for (size_t i = 0; ret && i < shift; i++)
-		ret = _sbn_digits_vec_remove(a->digits, 0);
-	return ret;
-}
-
-struct sbn * sbn_digit_left_shift (const struct sbn * a, size_t shift)
-{
-	struct sbn * ret = sbn_clone(a);
-	return (sbn_digit_left_shift_d(ret, shift)) ? ret : sbn_free(ret);
-}
-
-struct sbn * sbn_digit_right_shift (const struct sbn * a, size_t shift)
-{
-	struct sbn * ret = sbn_clone(a);
-	return (sbn_digit_right_shift_d(ret, shift)) ? ret : sbn_free(ret);
-}
 
 struct sbn * sbn_abs (struct sbn * a)
 { return sbn_set_sign(a, false); }
