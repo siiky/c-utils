@@ -1,4 +1,4 @@
-/* sbn - v2023.03.16-0
+/* sbn - v2023.04.08-0
  *
  * A bignum type inspired by
  *  * Scheme
@@ -279,12 +279,14 @@ static bool _sbn_digit_from_str_16 (size_t nchars, const char str[nchars], sbn_d
 
 /**
  * @brief Calculate the number significant quartets, i.e., the number of
- *        quartets in a digit, excluding zeroes to the left
+ *        quartets in a digit, excluding zeros to the left
  */
 static size_t _sbn_digit_left_non_0_quartets (sbn_digit dig)
 {
+	if (dig == 0) return 0; /* Shouldn't happen, but... */
 	const sbn_digit mod16 = 0xf;
 	size_t ret = 0;
+	/* Scan left to right for the first zero quartet (MSB are to the left) */
 	for (; ret < sbn_digit_nquartets; ret++) {
 		size_t shift = (sbn_digit_nquartets - ret - 1) << 2;
 		size_t quart = (dig >> shift) & mod16;
@@ -314,12 +316,15 @@ static void _sbn_digit_to_str_16 (size_t nchars, char str[nchars], sbn_digit dig
 	}
 }
 
+/**
+ * @brief Convert a non-zero SBN to its string representation in base 16.
+ */
 static char * _sbn_not_0_to_str_16 (const struct sbn * a)
 {
 	const size_t ndigs = sbn_ndigits(a);
 	const sbn_digit last_dig = sbn_nth_digit(a, ndigs - 1);
 	const size_t last_dig_nquarts = _sbn_digit_left_non_0_quartets(last_dig);
-	const size_t minus_i = ((sbn_is_negative(a) ? 1 : 0));
+	const size_t minus_i = sbn_is_negative(a) ? 1 : 0;
 	const size_t nchars = (ndigs - 1) * sbn_digit_nquartets + last_dig_nquarts + minus_i;
 
 	char * ret = calloc(nchars + 1, sizeof(char));
@@ -328,7 +333,7 @@ static char * _sbn_not_0_to_str_16 (const struct sbn * a)
 	*ret = '-'; /* The minus sign will be overridden if a isn't negative */
 
 	_sbn_digit_to_str_16(last_dig_nquarts, ret + minus_i, last_dig, last_dig_nquarts);
-	for (size_t di = 0; di < ndigs - 1; di--)
+	for (size_t di = 0; di < ndigs - 1; di++)
 		_sbn_digit_to_str_16(sbn_digit_nquartets, ret + minus_i + nchars - ((di + 1) * sbn_digit_nquartets),
 				sbn_nth_digit(a, di),
 				0);
@@ -562,8 +567,8 @@ struct sbn * sbn_negate (struct sbn * a)
  */
 struct sbn * sbn_set_sign (struct sbn * a, bool is_negative)
 {
-    if (a) a->is_negative = is_negative;
-    return a;
+	if (a) a->is_negative = is_negative;
+	return a;
 }
 
 /**
@@ -608,7 +613,7 @@ char * sbn_to_str (const struct sbn * a, unsigned base)
  */
 bool sbn_from_str_16 (struct sbn * r, size_t nchars, const char str[nchars])
 {
-	if (!str) return false;
+	if (!r || !str) return false;
 	if (!nchars) return _sbn_flush_digits(r);
 
 	const size_t nwhole_digs = nchars / sbn_digit_nquartets;
