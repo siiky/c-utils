@@ -1,4 +1,4 @@
-/* sbn - v2023.04.09-3
+/* sbn - v2023.04.09-4
  *
  * A bignum type inspired by
  *  * Scheme
@@ -670,9 +670,9 @@ bool sbn_add_u (struct sbn * r, const struct sbn * a, const struct sbn * b)
 	if (!_sbn_flush_digits(r)) return false;
 
 	size_t andigs = sbn_ndigits(a);
-	if (!andigs) return sbn_clone_to(r, b);
-
 	size_t bndigs = sbn_ndigits(b);
+	if (!andigs && !bndigs) return _sbn_flush_digits(r), true;
+	if (!andigs) return sbn_clone_to(r, b);
 	if (!bndigs) return sbn_clone_to(r, a);
 
 	/*
