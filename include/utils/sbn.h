@@ -1,4 +1,4 @@
-/* sbn - v2023.04.08-12
+/* sbn - v2023.04.09-0
  *
  * A bignum type inspired by
  *  * Scheme
@@ -617,7 +617,13 @@ char * sbn_to_str (const struct sbn * a, unsigned base)
  */
 bool sbn_from_str_16 (struct sbn * r, size_t nchars, const char str[nchars])
 {
-	if (!r || !str) return false;
+	if (!r || !str || nchars == 0) return false;
+
+	if (str[0] == '-') {
+		sbn_set_sign(r, true);
+		nchars--;
+		str++;
+	}
 
 	while (nchars > 0 && str[0] == '0') nchars--;
 	if (nchars == 0) return _sbn_flush_digits(r);
