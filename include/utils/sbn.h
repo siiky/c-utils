@@ -1,4 +1,4 @@
-/* sbn - v2023.04.09-2
+/* sbn - v2023.04.09-3
  *
  * A bignum type inspired by
  *  * Scheme
@@ -30,15 +30,22 @@
 
 # else /* SBN_CFG_NO_STDINT */
 
+#  if !defined(sbn_digit) && !defined(sbn_double_digit)
 /*
  * <stdint.h>
  *  uint32_t
  *  uint64_t
  */
-#  include <stdint.h>
+#   include <stdint.h>
+#  endif
 
-#  define sbn_digit        uint32_t
-#  define sbn_double_digit uint64_t
+#  ifndef sbn_digit
+#   define sbn_digit uint32_t
+#  endif /* sbn_digit */
+
+#  ifndef sbn_double_digit
+#   define sbn_double_digit uint64_t
+#  endif /* sbn_double_digit */
 
 # endif /* SBN_CFG_NO_STDINT */
 
