@@ -1,4 +1,4 @@
-/* sbn - v2023.04.09-1
+/* sbn - v2023.04.09-2
  *
  * A bignum type inspired by
  *  * Scheme
@@ -37,8 +37,8 @@
  */
 #  include <stdint.h>
 
-#  define sbn_digit              uint32_t
-#  define sbn_double_digit       uint64_t
+#  define sbn_digit        uint32_t
+#  define sbn_double_digit uint64_t
 
 # endif /* SBN_CFG_NO_STDINT */
 
@@ -109,8 +109,6 @@ int          sbn_sign         (const struct sbn * a);
 sbn_digit    sbn_nth_digit    (const struct sbn * a, size_t nth);
 size_t       sbn_ndigits      (const struct sbn * a);
 struct sbn * sbn_abs          (struct sbn * a);
-struct sbn * sbn_clone        (const struct sbn * a);
-struct sbn * sbn_free         (struct sbn * a);
 struct sbn * sbn_negate       (struct sbn * a);
 struct sbn * sbn_set_sign     (struct sbn * a, bool is_negative);
 
@@ -438,15 +436,6 @@ struct sbn * sbn_destroy (struct sbn * a)
 	return a;
 }
 
-/**
- * @brief Free @a a
- */
-struct sbn * sbn_free (struct sbn * a)
-{
-	if (a) free(sbn_destroy(a));
-	return NULL;
-}
-
 bool sbn_clone_to (struct sbn * d, const struct sbn * s)
 {
 	if (d && s && _sbn_flush_digits(d) && _sbn_append_digits(d, s)) {
@@ -454,20 +443,6 @@ bool sbn_clone_to (struct sbn * d, const struct sbn * s)
 		return true;
 	}
 	return false;
-}
-
-/**
- * @brief Clone @a a
- */
-struct sbn * sbn_clone (const struct sbn * a)
-{
-	if (!a) return NULL;
-	struct sbn * ret = calloc(1, sizeof(struct sbn));
-	if (!sbn_clone_to(ret, a)) {
-		sbn_free(ret);
-		ret = NULL;
-	}
-	return ret;
 }
 
 /************************
