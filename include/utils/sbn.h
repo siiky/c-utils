@@ -1,4 +1,4 @@
-/* sbn - v2023.04.09-0
+/* sbn - v2023.04.09-1
  *
  * A bignum type inspired by
  *  * Scheme
@@ -740,14 +740,18 @@ bool sbn_add (struct sbn * r, const struct sbn * a, const struct sbn * b)
 {
 	if (sbn_is_negative(a)) {
 		if (sbn_is_negative(b)) /* -a + -b = -(a + b) */
-			return sbn_add_u(r, a, b) && (sbn_negate(r), true);
+			return sbn_add_u(r, a, b)
+				&& (sbn_set_sign(r, true), true);
 		else /* -a + b = b - a */
-			return sbn_sub_u(r, b, a);
+			return sbn_sub_u(r, b, a)
+				&& (sbn_set_sign(r, sbn_lt(b, a)), true);
 	} else {
 		if (sbn_is_negative(b)) /* a + -b = a - b */
-			return sbn_sub_u(r, a, b);
+			return sbn_sub_u(r, a, b)
+				&& (sbn_set_sign(r, sbn_lt(a, b)), true);
 		else /* a + b = a + b */
-			return sbn_add_u(r, a, b);
+			return sbn_add_u(r, a, b)
+				&& (sbn_set_sign(r, false), true);
 	}
 }
 
