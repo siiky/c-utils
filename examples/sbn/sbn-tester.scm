@@ -33,7 +33,7 @@
              (if normal-exit?
                (let ((ret (alist-ref exit-status/signal exit-codes = 'UNEXPECTED)))
                  (print ret)
-                 (unless (or (eq? 'OK) (eq? 'UNIMPLEMENTED))
+                 (unless (or (eq? ret 'OK) (eq? ret 'UNIMPLEMENTED))
                    (exit exit-status/signal)))
                (begin
                  (print "EXITED W/ SIGNAL " exit-status/signal)
