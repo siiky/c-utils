@@ -1,4 +1,4 @@
-/* sbn - v2023.04.10-11
+/* sbn - v2023.04.10-12
  *
  * A bignum type inspired by
  *  * Scheme
@@ -611,7 +611,7 @@ bool sbn_from_str_16 (struct sbn * r, size_t nchars, const char str[nchars])
 		str++;
 	}
 
-	while (nchars > 0 && str[0] == '0') nchars--;
+	while (nchars > 0 && str[0] == '0') str++, nchars--;
 	if (nchars == 0) return _sbn_flush_digits(r);
 
 	const size_t nwhole_digs = nchars / sbn_digit_nquartets;
