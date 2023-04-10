@@ -50,12 +50,12 @@
   (match-lambda
     ((tc-number (op a b) '-> expected)
      (let ((fn (op->fn op))
+           (op (op->s op))
            (a (abs a))
            (b (abs b)))
-       (let ((op (op->s op))
-             (a (n->s a))
+       (let ((a (n->s a))
              (b (n->s b))
-             (expected (n->s (abs (fn a b)))))
+             (expected (n->s (fn a b))))
          (define args `(,op ,a ,b ,expected))
          (with-output-to-port
            (current-error-port)
