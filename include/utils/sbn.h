@@ -1,4 +1,4 @@
-/* sbn - v2023.04.10-3
+/* sbn - v2023.04.10-4
  *
  * A bignum type inspired by
  *  * Scheme
@@ -94,20 +94,20 @@ bool         sbn_add_digit_ud (struct sbn * a, const sbn_digit d);
 bool         sbn_add_u        (struct sbn * r, const struct sbn * a, const struct sbn * b);
 bool         sbn_add_ud       (struct sbn * a, const struct sbn * b);
 bool         sbn_clone_to     (struct sbn * d, const struct sbn * s);
-bool         sbn_eq           (const struct sbn * a, const struct sbn * b);
+bool         sbn_eq_u         (const struct sbn * a, const struct sbn * b);
 bool         sbn_from_str     (struct sbn * r, size_t nchars, const char str[nchars], unsigned base);
 bool         sbn_from_str_16  (struct sbn * r, size_t nchars, const char str[nchars]);
-bool         sbn_ge           (const struct sbn * a, const struct sbn * b);
-bool         sbn_gt           (const struct sbn * a, const struct sbn * b);
+bool         sbn_ge_u         (const struct sbn * a, const struct sbn * b);
+bool         sbn_gt_u         (const struct sbn * a, const struct sbn * b);
 bool         sbn_is_negative  (const struct sbn * a);
 bool         sbn_is_zero      (const struct sbn * a);
-bool         sbn_le           (const struct sbn * a, const struct sbn * b);
-bool         sbn_lt           (const struct sbn * a, const struct sbn * b);
+bool         sbn_le_u         (const struct sbn * a, const struct sbn * b);
+bool         sbn_lt_u         (const struct sbn * a, const struct sbn * b);
 bool         sbn_mul          (struct sbn * r, const struct sbn * a, const struct sbn * b);
 bool         sbn_mul_digit_u  (struct sbn * r, const struct sbn * a, const sbn_digit d);
 bool         sbn_mul_digit_ud (struct sbn * a, const sbn_digit d);
 bool         sbn_mul_u        (struct sbn * r, const struct sbn * a, const struct sbn * b);
-bool         sbn_neq          (const struct sbn * a, const struct sbn * b);
+bool         sbn_neq_u        (const struct sbn * a, const struct sbn * b);
 bool         sbn_shl          (struct sbn * r, const struct sbn * a, size_t n);
 bool         sbn_shl_d        (struct sbn * a, size_t n);
 bool         sbn_shr          (struct sbn * r, const struct sbn * a, size_t n);
@@ -116,7 +116,7 @@ bool         sbn_sub          (struct sbn * r, const struct sbn * a, const struc
 bool         sbn_sub_u        (struct sbn * r, const struct sbn * a, const struct sbn * b);
 char *       sbn_to_str       (const struct sbn * a, unsigned base);
 char *       sbn_to_str_16    (const struct sbn * a);
-int          sbn_cmp          (const struct sbn * a, const struct sbn * b);
+int          sbn_cmp_u        (const struct sbn * a, const struct sbn * b);
 int          sbn_sign         (const struct sbn * a);
 sbn_digit    sbn_nth_digit    (const struct sbn * a, size_t nth);
 size_t       sbn_ndigits      (const struct sbn * a);
@@ -486,7 +486,7 @@ bool sbn_is_zero (const struct sbn * a)
 /**
  * @brief Compare @a a and @a b a la `strcmp()`
  */
-int sbn_cmp (const struct sbn * a, const struct sbn * b)
+int sbn_cmp_u (const struct sbn * a, const struct sbn * b)
 {
 	if (a == b) return 0;
 	if (!a) return -1;
@@ -499,15 +499,11 @@ int sbn_cmp (const struct sbn * a, const struct sbn * b)
 	if (andigs > bndigs) return 1;
 
 	int ret = 0;
-	for (size_t i = 0; i < andigs && ret == 0; i++) {
+	for (size_t i = 0; !ret && i < andigs; i++) {
 		size_t nth = andigs - i - 1;
 		sbn_digit adig = sbn_nth_digit(a, nth);
 		sbn_digit bdig = sbn_nth_digit(b, nth);
-		ret = (adig < bdig) ?
-			-1:
-			(adig > bdig) ?
-			1:
-			0;
+		ret = (adig < bdig) ? -1 : (adig > bdig) ? 1 : 0;
 	}
 	return ret;
 }
@@ -515,38 +511,38 @@ int sbn_cmp (const struct sbn * a, const struct sbn * b)
 /**
  * @brief @a a == @a b
  */
-bool sbn_eq (const struct sbn * a, const struct sbn * b)
-{ return sbn_cmp(a, b) == 0; }
+bool sbn_eq_u (const struct sbn * a, const struct sbn * b)
+{ return sbn_cmp_u(a, b) == 0; }
 
 /**
  * @brief @a a != @a b
  */
-bool sbn_neq (const struct sbn * a, const struct sbn * b)
-{ return sbn_cmp(a, b) != 0; }
+bool sbn_neq_u (const struct sbn * a, const struct sbn * b)
+{ return sbn_cmp_u(a, b) != 0; }
 
 /**
  * @brief @a a > @a b
  */
-bool sbn_gt (const struct sbn * a, const struct sbn * b)
-{ return sbn_cmp(a, b) > 0; }
+bool sbn_gt_u (const struct sbn * a, const struct sbn * b)
+{ return sbn_cmp_u(a, b) > 0; }
 
 /**
  * @brief @a a < @a b
  */
-bool sbn_lt (const struct sbn * a, const struct sbn * b)
-{ return sbn_cmp(a, b) < 0; }
+bool sbn_lt_u (const struct sbn * a, const struct sbn * b)
+{ return sbn_cmp_u(a, b) < 0; }
 
 /**
  * @brief @a a >= @a b
  */
-bool sbn_ge (const struct sbn * a, const struct sbn * b)
-{ return sbn_cmp(a, b) >= 0; }
+bool sbn_ge_u (const struct sbn * a, const struct sbn * b)
+{ return sbn_cmp_u(a, b) >= 0; }
 
 /**
  * @brief @a a <= @a b
  */
-bool sbn_le (const struct sbn * a, const struct sbn * b)
-{ return sbn_cmp(a, b) <= 0; }
+bool sbn_le_u (const struct sbn * a, const struct sbn * b)
+{ return sbn_cmp_u(a, b) <= 0; }
 
 /******************
  * Misc Functions *
@@ -745,11 +741,11 @@ bool sbn_add (struct sbn * r, const struct sbn * a, const struct sbn * b)
 				&& (sbn_set_sign(r, true), true);
 		else /* -a + b = b - a */
 			return sbn_sub_u(r, b, a)
-				&& (sbn_set_sign(r, sbn_lt(b, a)), true);
+				&& (sbn_set_sign(r, sbn_lt_u(b, a)), true);
 	} else {
 		if (sbn_is_negative(b)) /* a + -b = a - b */
 			return sbn_sub_u(r, a, b)
-				&& (sbn_set_sign(r, sbn_lt(a, b)), true);
+				&& (sbn_set_sign(r, sbn_lt_u(a, b)), true);
 		else /* a + b = a + b */
 			return sbn_add_u(r, a, b)
 				&& (sbn_set_sign(r, false), true);
