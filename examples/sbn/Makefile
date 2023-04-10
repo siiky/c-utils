@@ -16,15 +16,11 @@ OBJS := $(SRC:.c=.o)
 
 all: $(SBN) $(SBN_TESTER)
 
-$(SBN): main.c
+$(SBN): main.c $(HEADERS)
 	$(CC) $(CFLAGS) $< -o $@
 
-$(SBN_TESTER): sbn-tester.c
+$(SBN_TESTER): sbn-tester.c $(HEADERS)
 	$(CC) $(CFLAGS) $< -o $@
-
-main.c: $(HEADERS)
-
-sbn-tester.c: $(HEADERS)
 
 clean:
 	$(RM) $(SBN)
