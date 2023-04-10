@@ -1,4 +1,4 @@
-/* sbn - v2023.04.10-0
+/* sbn - v2023.04.10-1
  *
  * A bignum type inspired by
  *  * Scheme
@@ -459,7 +459,14 @@ bool sbn_clone_to (struct sbn * d, const struct sbn * s)
  * TODO: Is an SBN 0 only when it has no digits?
  */
 bool sbn_is_zero (const struct sbn * a)
-{ return sbn_ndigits(a) == 0; }
+{
+	size_t ndigs = sbn_ndigits(a);
+	if (ndigs == 0) return true;
+	bool all_zero = true;
+	for (size_t i = ndigs; all_zero && i > 0; i--)
+		all_zero = sbn_nth_digit(a, i-1) == 0;
+	return all_zero;
+}
 
 /**
  * @brief Compare @a a and @a b a la `strcmp()`
