@@ -1,4 +1,4 @@
-/* sbn - v2023.04.10-14
+/* sbn - v2023.04.10-15
  *
  * A bignum type inspired by
  *  * Scheme
@@ -273,14 +273,12 @@ static bool _sbn_drop_left_zeros (struct sbn * a)
 /**
  * @brief Calculate a digit from a string
  */
-static bool _sbn_digit_from_str_16 (size_t nchars, const char str[nchars], sbn_digit * dig, size_t * processed)
+static bool _sbn_digit_from_str_16 (size_t nchars, const char str[nchars], sbn_digit * dig)
 {
-	if (!str || !dig || !processed) return false;
+	if (!str || !dig) return false;
 
-	size_t maxi = sbn_min(nchars, sbn_digit_nquartets);
 	sbn_digit ret = 0;
-
-	for (size_t i = 0; i < maxi && str[i] != '\0'; i++) {
+	for (size_t i = 0; i < nchars && str[i] != '\0'; i++) {
 		/*
 		 * The shift is at the top of the loop to avoid shifting on the last
 		 * iteration; Since ret=0 in the first iteration, it doesn't change
@@ -298,7 +296,6 @@ static bool _sbn_digit_from_str_16 (size_t nchars, const char str[nchars], sbn_d
 		ret |= tmp;
 	}
 
-	*processed = maxi;
 	*dig = ret;
 	return true;
 }
@@ -614,20 +611,19 @@ bool sbn_from_str_16 (struct sbn * r, size_t nchars, const char str[nchars])
 	if (nchars == 0) return _sbn_flush_digits(r);
 
 	const size_t nwhole_digs = nchars / sbn_digit_nquartets;
-	const size_t last_dig = nchars % sbn_digit_nquartets;
-	const size_t ndigs = nwhole_digs + last_dig;
-
-	if (!_sbn_reserve(r, ndigs))
-		return false;
+	const size_t last_dig_nquarts = nchars % sbn_digit_nquartets;
+	const size_t ndigs = nwhole_digs + (last_dig_nquarts ? 1 : 0);
+	if (!_sbn_reserve(r, ndigs)) return false;
 
 	bool ret = true;
 	while (ret && nchars > 0) {
 		sbn_digit dig = 0;
 		size_t processed = sbn_min(sbn_digit_nquartets, nchars);
-		ret = _sbn_digit_from_str_16(processed, str + nchars - processed, &dig, &processed)
-			&& _sbn_push_digit(r, dig);
 		nchars -= processed;
+		ret = _sbn_digit_from_str_16(processed, str + nchars, &dig)
+			&& _sbn_push_digit(r, dig);
 	}
+
 	return ret;
 }
 
