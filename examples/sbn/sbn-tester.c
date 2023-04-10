@@ -10,6 +10,8 @@
 #define EXIT_OPFAIL 2
 #define EXIT_BADRESULT 3
 
+#define streq(s1, s2) (strcmp((s1), (s2)) == 0)
+
 bool unimplemented (struct sbn * r, const struct sbn * a, const struct sbn * b)
 {
     (void) r;
@@ -22,7 +24,7 @@ bool ensure_equal_string (const struct sbn * a, const char * s)
 {
     char * astr = sbn_to_str_16(a);
     assert(astr != NULL);
-    return strcmp(astr, s) == 0;
+    return streq(astr, s);
 }
 
 int main (int argc, char ** argv)
@@ -35,10 +37,10 @@ int main (int argc, char ** argv)
     const char * expected = argv[4];
 
     bool (*op) (struct sbn *, const struct sbn *, const struct sbn *) =
-        strcmp(opstr, "+") == 0 ? sbn_add_u :
-        strcmp(opstr, "-") == 0 ? sbn_sub_u :
-        strcmp(opstr, "*") == 0 ? sbn_mul_u :
-        strcmp(opstr, "/") == 0 ? unimplemented :
+        streq(opstr, "+") ? sbn_add_u :
+        streq(opstr, "-") ? sbn_sub_u :
+        streq(opstr, "*") ? sbn_mul_u :
+        streq(opstr, "/") ? unimplemented :
         NULL;
 
     assert(op != NULL);
@@ -59,5 +61,5 @@ int main (int argc, char ** argv)
     char * rstr = sbn_to_str_16(r);
     assert(rstr != NULL);
 
-    return strcmp(rstr, expected) == 0 ? EXIT_OK : EXIT_BADRESULT;
+    return streq(rstr, expected) ? EXIT_OK : EXIT_BADRESULT;
 }

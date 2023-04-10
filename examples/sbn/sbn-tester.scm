@@ -55,7 +55,7 @@
        (let ((op (op->s op))
              (a (n->s a))
              (b (n->s b))
-             (expected (n->s (fn a b))))
+             (expected (n->s (abs (fn a b)))))
          (define args `(,op ,a ,b ,expected))
          (with-output-to-port
            (current-error-port)
