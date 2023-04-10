@@ -1,4 +1,4 @@
-/* sbn - v2023.04.10-13
+/* sbn - v2023.04.10-14
  *
  * A bignum type inspired by
  *  * Scheme
@@ -564,7 +564,7 @@ struct sbn * sbn_set_sign (struct sbn * a, bool is_negative)
  * @brief Get the sign of @a a
  */
 int sbn_sign (const struct sbn * a)
-{ return (sbn_is_zero(a)) ? 0: (sbn_is_negative(a)) ? -1: 1; }
+{ return sbn_is_zero(a) ? 0: sbn_is_negative(a) ? -1: 1; }
 
 /**
  * @brief Get the @a nth digit of @a a
