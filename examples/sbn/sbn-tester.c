@@ -46,9 +46,9 @@ int main (int argc, char ** argv)
     assert(op != NULL);
     if (op == unimplemented) return EXIT_UNIMPLEMENTED;
 
-    struct sbn a[1] = {{0}};
-    struct sbn b[1] = {{0}};
-    struct sbn r[1] = {{0}};
+    struct sbn a[1] = {0};
+    struct sbn b[1] = {0};
+    struct sbn r[1] = {0};
 
     assert(sbn_from_str_16(a, strlen(astr), astr));
     assert(ensure_equal_string(a, astr));

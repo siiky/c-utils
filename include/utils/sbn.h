@@ -1,4 +1,4 @@
-/* sbn - v2023.04.10-1
+/* sbn - v2023.04.10-2
  *
  * A bignum type inspired by
  *  * Scheme
@@ -72,6 +72,11 @@
 #define VEC_CFG_VEC _sbn_digits_vec
 #include <utils/vec.h>
 
+/*
+ * TODO: optimize space usage -- `digits` uses 40b while `is_negative` uses 8b
+ * (because of alignment?). Won't be a problem once the `digits` vector is
+ * "inlined".
+ */
 struct sbn {
 	/** Is this SBN negative? */
 	unsigned char is_negative : 1;
@@ -929,8 +934,8 @@ bool sbn_mul_u (struct sbn * r, const struct sbn * a, const struct sbn * b)
 	if (!sbn_mul_digit_u(r, a, sbn_nth_digit(b, 0))) /* c <- a*b0 */
 		return false;
 
-	struct sbn c[1] = {{0}};
-	struct sbn d[1] = {{0}};
+	struct sbn c[1] = {0};
+	struct sbn d[1] = {0};
 	bool ret = true;
 	for (size_t i = 1; ret && i < bndigs; i++) {
 		ret = sbn_mul_digit_u(c, a, sbn_nth_digit(b, i)) /* a*bi */
