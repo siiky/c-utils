@@ -1,4 +1,4 @@
-/* sbn - v2023.04.10-7
+/* sbn - v2023.04.10-8
  *
  * A bignum type inspired by
  *  * Scheme
@@ -494,11 +494,7 @@ int sbn_cmp_u (const struct sbn * a, const struct sbn * b)
 
 	size_t andigs = sbn_ndigits(a);
 	size_t bndigs = sbn_ndigits(b);
-
-	if (andigs < bndigs) return -1;
-	if (andigs > bndigs) return 1;
-
-	int ret = 0;
+	int ret = (andigs < bndigs) ? -1 : (andigs > bndigs) ? 1 : 0;
 	for (size_t i = 0; !ret && i < andigs; i++) {
 		size_t nth = andigs - i - 1;
 		sbn_digit adig = sbn_nth_digit(a, nth);
