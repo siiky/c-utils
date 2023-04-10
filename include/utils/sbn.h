@@ -1,4 +1,4 @@
-/* sbn - v2023.04.10-12
+/* sbn - v2023.04.10-13
  *
  * A bignum type inspired by
  *  * Scheme
@@ -317,41 +317,40 @@ static size_t _sbn_digit_significant_nquartets (sbn_digit dig)
 /**
  * @brief Convert a digit to a string in base 16
  */
-static void _sbn_digit_to_str_16 (size_t nchars, char str[nchars], sbn_digit dig, size_t dig_nquarts)
+static void _sbn_digit_to_str_16 (sbn_digit dig, size_t nquarts, char str[nquarts])
 {
 	static const char map[16] = "0123456789abcdef";
 	const sbn_digit mod16 = 0xf;
-
-	size_t nquarts = (dig_nquarts) ? dig_nquarts : sbn_digit_nquartets;
-
-	for (size_t qi = 0; qi < nquarts; qi++) {
-		const size_t shift = qi << 2;
-		const unsigned char c = (dig >> shift) & mod16;
-		str[nquarts - qi - 1] = (c <= 0xf) ? map[c] : '!'; /* Shouldn't happen */
+	for (size_t qi = 1; qi <= nquarts; qi++) {
+		str[nquarts - qi] = map[dig & mod16];
+		dig >>= 4;
 	}
 }
 
 /**
- * @brief Convert a non-zero SBN to its string representation in base 16.
+ * @brief Convert a non-zero sbn to its string representation in base 16.
  */
 static char * _sbn_not_0_to_str_16 (const struct sbn * a)
 {
 	const size_t ndigs = sbn_ndigits(a);
 	const sbn_digit last_dig = sbn_nth_digit(a, ndigs - 1);
 	const size_t last_dig_nquarts = _sbn_digit_significant_nquartets(last_dig);
-	const size_t minus_i = sbn_is_negative(a) ? 1 : 0;
-	const size_t nchars = (ndigs - 1) * sbn_digit_nquartets + last_dig_nquarts + minus_i;
+	const size_t minus = sbn_is_negative(a) ? 1 : 0;
+	const size_t nchars = (ndigs - 1) * sbn_digit_nquartets + last_dig_nquarts + minus;
 
 	char * ret = calloc(nchars + 1, sizeof(char));
 	if (!ret) return NULL;
 
 	*ret = '-'; /* The minus sign will be overridden if a isn't negative */
 
-	_sbn_digit_to_str_16(last_dig_nquarts, ret + minus_i, last_dig, last_dig_nquarts);
-	for (size_t di = 0; di < ndigs - 1; di++)
-		_sbn_digit_to_str_16(sbn_digit_nquartets, ret + minus_i + nchars - ((di + 1) * sbn_digit_nquartets),
-				sbn_nth_digit(a, di),
-				0);
+	char * str = ret + minus;
+	_sbn_digit_to_str_16(last_dig, last_dig_nquarts, str);
+	str += last_dig_nquarts;
+	for (size_t di = ndigs-1; di > 0; di--) {
+		sbn_digit adig = sbn_nth_digit(a, di-1);
+		_sbn_digit_to_str_16(adig, sbn_digit_nquartets, str);
+		str += sbn_digit_nquartets;
+	}
 
 	return ret;
 }
