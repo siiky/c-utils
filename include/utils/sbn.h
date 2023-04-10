@@ -1,4 +1,4 @@
-/* sbn - v2023.04.10-5
+/* sbn - v2023.04.10-6
  *
  * A bignum type inspired by
  *  * Scheme
@@ -804,11 +804,19 @@ bool sbn_sub_u (struct sbn * r, const struct sbn * a, const struct sbn * b)
 {
 	if (!r || !_sbn_flush_digits(r)) return false;
 
+	/* Let's make life easier for ourselves... */
+	bool is_negative = sbn_lt_u(a, b);
+	if (is_negative) {
+		const struct sbn * tmp = a;
+		a = b;
+		b = tmp;
+	}
+
 	size_t azero = sbn_is_zero(a);
 	size_t bzero = sbn_is_zero(b);
-	if (azero && bzero) return _sbn_flush_digits(r), true;
-	if (azero) return sbn_clone_to(r, b);
-	if (bzero) return sbn_clone_to(r, a);
+	if (azero && bzero) return true;
+	if (azero) return sbn_clone_to(r, b) && sbn_set_sign(r, is_negative);
+	if (bzero) return sbn_clone_to(r, a) && sbn_set_sign(r, is_negative);
 
 	size_t andigs = sbn_ndigits(a);
 	size_t bndigs = sbn_ndigits(b);
@@ -838,6 +846,7 @@ bool sbn_sub_u (struct sbn * r, const struct sbn * a, const struct sbn * b)
 						&carry));
 	if (!succ) return _sbn_flush_digits(r), false;
 
+	sbn_set_sign(r, is_negative);
 	/* Finally, add the remaining carry */
 	//if (carry && !_sbn_push_digit(r, carry))
 	//	return _sbn_flush_digits(r), false;
