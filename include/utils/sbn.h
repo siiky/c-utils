@@ -1,4 +1,4 @@
-/* sbn - v2023.04.10-4
+/* sbn - v2023.04.10-5
  *
  * A bignum type inspired by
  *  * Scheme
@@ -802,7 +802,7 @@ bool sbn_add_ud (struct sbn * a, const struct sbn * b)
  */
 bool sbn_sub_u (struct sbn * r, const struct sbn * a, const struct sbn * b)
 {
-	if (!_sbn_flush_digits(r)) return false;
+	if (!r || !_sbn_flush_digits(r)) return false;
 
 	size_t azero = sbn_is_zero(a);
 	size_t bzero = sbn_is_zero(b);
@@ -813,7 +813,7 @@ bool sbn_sub_u (struct sbn * r, const struct sbn * a, const struct sbn * b)
 	size_t andigs = sbn_ndigits(a);
 	size_t bndigs = sbn_ndigits(b);
 	size_t maxndigs = sbn_max(andigs, bndigs);
-	if (!r || !_sbn_reserve(r, maxndigs)) return _sbn_flush_digits(r), false;
+	if (!_sbn_reserve(r, maxndigs)) return _sbn_flush_digits(r), false;
 
 	bool succ = true;
 	size_t minndigs = sbn_min(andigs, bndigs);
