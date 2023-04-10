@@ -1,4 +1,4 @@
-/* sbn - v2023.04.10-2
+/* sbn - v2023.04.10-3
  *
  * A bignum type inspired by
  *  * Scheme
@@ -258,6 +258,16 @@ static size_t _sbn_str_strip_left_chr (size_t nchars, char str[nchars], char c)
 	return newlen;
 }
 #endif
+
+static bool _sbn_drop_left_zeros (struct sbn * a)
+{
+	size_t ndigs = sbn_ndigits(a);
+	while (ndigs > 0 && sbn_nth_digit(a, ndigs-1) == 0) {
+		_sbn_digits_vec_pop(a->digits);
+		ndigs--;
+	}
+	return true;
+}
 
 /**
  * @brief Calculate a digit from a string
@@ -798,12 +808,14 @@ bool sbn_sub_u (struct sbn * r, const struct sbn * a, const struct sbn * b)
 {
 	if (!_sbn_flush_digits(r)) return false;
 
+	size_t azero = sbn_is_zero(a);
+	size_t bzero = sbn_is_zero(b);
+	if (azero && bzero) return _sbn_flush_digits(r), true;
+	if (azero) return sbn_clone_to(r, b);
+	if (bzero) return sbn_clone_to(r, a);
+
 	size_t andigs = sbn_ndigits(a);
-	if (andigs == 0) return sbn_clone_to(r, b);
-
 	size_t bndigs = sbn_ndigits(b);
-	if (bndigs == 0) return sbn_clone_to(r, a);
-
 	size_t maxndigs = sbn_max(andigs, bndigs);
 	if (!r || !_sbn_reserve(r, maxndigs)) return _sbn_flush_digits(r), false;
 
@@ -821,8 +833,7 @@ bool sbn_sub_u (struct sbn * r, const struct sbn * a, const struct sbn * b)
 	 * If `a` and `b` have a different number of digits, then one of them is
 	 * still iterating
 	 */
-	if (andigs < bndigs)
-		a = b;
+	if (andigs < bndigs) a = b;
 
 	for (size_t i = minndigs; succ && i < maxndigs; i++)
 		succ = _sbn_push_digit(r, _sbn_sub_digits(
@@ -832,10 +843,10 @@ bool sbn_sub_u (struct sbn * r, const struct sbn * a, const struct sbn * b)
 	if (!succ) return _sbn_flush_digits(r), false;
 
 	/* Finally, add the remaining carry */
-	if (carry && !_sbn_push_digit(r, carry))
-		return _sbn_flush_digits(r), false;
+	//if (carry && !_sbn_push_digit(r, carry))
+	//	return _sbn_flush_digits(r), false;
 
-	return true;
+	return _sbn_drop_left_zeros(r);
 }
 
 /**
