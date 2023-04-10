@@ -1,4 +1,4 @@
-/* sbn - v2023.04.10-15
+/* sbn - v2023.04.10-16
  *
  * A bignum type inspired by
  *  * Scheme
@@ -398,17 +398,17 @@ static sbn_digit _sbn_add_digits (sbn_digit _a, sbn_digit _b, sbn_digit * _carry
 /**
  * @brief Calculate the result and borrow of subtracting two digits
  */
-static sbn_digit _sbn_sub_digits (sbn_digit _a, sbn_digit _b, sbn_digit * _borrow)
+static sbn_digit _sbn_sub_digits (sbn_digit a, sbn_digit b, sbn_digit * _borrow)
 {
-	sbn_double_digit borrow = *_borrow;
-	sbn_double_digit a = _a;
-	sbn_double_digit b = _b; b += borrow;
-
-	sbn_double_digit r = (a >= b) ?
-		((*_borrow = 0), (a - b)):
-		((*_borrow = 1), (b - a));
-
-	return sbn_double_digit_lower_half(r);
+	if (*_borrow) {
+		sbn_digit r = a - b - 1;
+		*_borrow = r >= a;
+		return r;
+	} else {
+		sbn_digit r = a - b;
+		*_borrow = r > a;
+		return r;
+	}
 }
 
 /**
@@ -815,21 +815,25 @@ bool sbn_sub_u (struct sbn * r, const struct sbn * a, const struct sbn * b)
 	bool succ = true;
 	size_t minndigs = sbn_min(andigs, bndigs);
 	sbn_digit borrow = 0;
-	for (size_t i = 0; succ && i < minndigs; i++) {
+	size_t i = 0;
+	for (; succ && i < minndigs; i++) {
 		sbn_digit adig = sbn_nth_digit(a, i);
 		sbn_digit bdig = sbn_nth_digit(b, i);
 		succ = _sbn_push_digit(r, _sbn_sub_digits(adig, bdig, &borrow));
 	}
-	if (!succ) return _sbn_flush_digits(r), false;
 
 	/*
 	 * If `a` and `b` have a different number of digits, `a` is still
 	 * iterating, propagate borrow
 	 */
-	for (size_t i = minndigs; succ && i < maxndigs; i++) {
+	for (i = minndigs; succ && borrow && i < maxndigs; i++) {
 		sbn_digit adig = sbn_nth_digit(a, i);
 		succ = _sbn_push_digit(r, _sbn_sub_digits(adig, 0, &borrow));
 	}
+
+	for (; succ && i < maxndigs; i++)
+		succ = _sbn_push_digit(r, sbn_nth_digit(a, i));
+
 	if (!succ) return _sbn_flush_digits(r), false;
 
 	sbn_set_sign(r, is_negative);
