@@ -1,4 +1,4 @@
-/* sbn - v2023.04.10-10
+/* sbn - v2023.04.10-11
  *
  * A bignum type inspired by
  *  * Scheme
@@ -307,19 +307,11 @@ static bool _sbn_digit_from_str_16 (size_t nchars, const char str[nchars], sbn_d
  * @brief Calculate the number significant quartets, i.e., the number of
  *        quartets in a digit, excluding zeros to the left
  */
-static size_t _sbn_digit_left_non_0_quartets (sbn_digit dig)
+static size_t _sbn_digit_significant_nquartets (sbn_digit dig)
 {
-	if (dig == 0) return 0; /* Shouldn't happen, but... */
-	const sbn_digit mod16 = 0xf;
 	size_t ret = 0;
-	/* Scan left to right for the first zero quartet (MSB are to the left) */
-	for (; ret < sbn_digit_nquartets; ret++) {
-		size_t shift = (sbn_digit_nquartets - ret - 1) << 2;
-		size_t quart = (dig >> shift) & mod16;
-		if (quart != 0)
-			break;
-	}
-	return sbn_digit_nquartets - ret;
+	for (; dig; dig >>= 4) ret++;
+	return ret;
 }
 
 /**
@@ -346,7 +338,7 @@ static char * _sbn_not_0_to_str_16 (const struct sbn * a)
 {
 	const size_t ndigs = sbn_ndigits(a);
 	const sbn_digit last_dig = sbn_nth_digit(a, ndigs - 1);
-	const size_t last_dig_nquarts = _sbn_digit_left_non_0_quartets(last_dig);
+	const size_t last_dig_nquarts = _sbn_digit_significant_nquartets(last_dig);
 	const size_t minus_i = sbn_is_negative(a) ? 1 : 0;
 	const size_t nchars = (ndigs - 1) * sbn_digit_nquartets + last_dig_nquarts + minus_i;
 
