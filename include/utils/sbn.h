@@ -1,4 +1,4 @@
-/* sbn - v2023.04.10-16
+/* sbn - v2023.04.10-17
  *
  * A bignum type inspired by
  *  * Scheme
@@ -398,15 +398,15 @@ static sbn_digit _sbn_add_digits (sbn_digit _a, sbn_digit _b, sbn_digit * _carry
 /**
  * @brief Calculate the result and borrow of subtracting two digits
  */
-static sbn_digit _sbn_sub_digits (sbn_digit a, sbn_digit b, sbn_digit * _borrow)
+static sbn_digit _sbn_sub_digits (sbn_digit a, sbn_digit b, bool * borrow)
 {
-	if (*_borrow) {
+	if (*borrow) {
 		sbn_digit r = a - b - 1;
-		*_borrow = r >= a;
+		*borrow = r >= a;
 		return r;
 	} else {
 		sbn_digit r = a - b;
-		*_borrow = r > a;
+		*borrow = r > a;
 		return r;
 	}
 }
@@ -814,7 +814,7 @@ bool sbn_sub_u (struct sbn * r, const struct sbn * a, const struct sbn * b)
 
 	bool succ = true;
 	size_t minndigs = sbn_min(andigs, bndigs);
-	sbn_digit borrow = 0;
+	bool borrow = false;
 	size_t i = 0;
 	for (; succ && i < minndigs; i++) {
 		sbn_digit adig = sbn_nth_digit(a, i);
