@@ -1,0 +1,21 @@
+# Testing results
+
+## Addition
+
+Ignoring sign, all tests pass.
+
+Not ignoring sign but with positive arguments only, all tests pass.
+
+## Subtraction
+
+There's something wrong maybe in `sbn_sub_u`. (- 1 2) results in the digits #(1 1) -- the first digit is the result of 1-2 and the second is the carry.
+
+## Multiplication
+
+Ignoring sign, all tests pass.
+
+Not ignoring sign but with positive arguments only, all tests pass.
+
+## Division
+
+Unimplemented.
