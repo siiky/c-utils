@@ -1,4 +1,4 @@
-/* sbn - v2023.04.09-4
+/* sbn - v2023.04.10-0
  *
  * A bignum type inspired by
  *  * Scheme
@@ -319,10 +319,7 @@ static void _sbn_digit_to_str_16 (size_t nchars, char str[nchars], sbn_digit dig
 	for (size_t qi = 0; qi < nquarts; qi++) {
 		const size_t shift = qi << 2;
 		const unsigned char c = (dig >> shift) & mod16;
-
-		str[nquarts - qi - 1] = (c <= 0xf) ?
-			map[c]:
-			'!'; /* Shouldn't happen */
+		str[nquarts - qi - 1] = (c <= 0xf) ? map[c] : '!'; /* Shouldn't happen */
 	}
 }
 
