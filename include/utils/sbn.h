@@ -1,4 +1,4 @@
-/* sbn - v2023.04.10-8
+/* sbn - v2023.04.10-9
  *
  * A bignum type inspired by
  *  * Scheme
@@ -113,6 +113,7 @@ bool         sbn_shl_d        (struct sbn * a, size_t n);
 bool         sbn_shr          (struct sbn * r, const struct sbn * a, size_t n);
 bool         sbn_shr_d        (struct sbn * a, size_t n);
 bool         sbn_sub          (struct sbn * r, const struct sbn * a, const struct sbn * b);
+bool         sbn_sub_digit_ud (struct sbn * a, const sbn_digit d);
 bool         sbn_sub_u        (struct sbn * r, const struct sbn * a, const struct sbn * b);
 char *       sbn_to_str       (const struct sbn * a, unsigned base);
 char *       sbn_to_str_16    (const struct sbn * a);
@@ -766,9 +767,7 @@ bool sbn_add_digit (struct sbn * r, const struct sbn * a, const sbn_digit d)
 
 bool sbn_add_digit_d (struct sbn * a, const sbn_digit d)
 {
-	(void) a;
-	(void) d;
-	return false; /* TODO */
+	return sbn_is_negative(a) ? sbn_sub_digit_ud(a, d) : sbn_add_digit_ud(a, d);
 }
 
 /**
@@ -789,6 +788,13 @@ bool sbn_add_ud (struct sbn * a, const struct sbn * b)
 		return true;
 	}
 	return false;
+}
+
+bool sbn_sub_digit_ud (struct sbn * a, const sbn_digit d)
+{
+	(void) a;
+	(void) d;
+	return false; /* TODO */
 }
 
 /**
