@@ -1,4 +1,4 @@
-/* sbn - v2023.04.11-6
+/* sbn - v2023.04.11-7
  *
  * A bignum type inspired by
  *  * Scheme
@@ -368,7 +368,7 @@ static bool _sbn_set_nth_digit (struct sbn * a, size_t i, sbn_digit dig)
 /**
  * @brief Calculate the result and carry of adding two digits
  */
-static sbn_digit _sbn_add_digits (sbn_digit a, sbn_digit b, sbn_digit * carry)
+static sbn_digit _sbn_digit_add (sbn_digit a, sbn_digit b, sbn_digit * carry)
 {
 	sbn_digit c = *carry;
 	sbn_digit r = a + b + c;
@@ -379,7 +379,7 @@ static sbn_digit _sbn_add_digits (sbn_digit a, sbn_digit b, sbn_digit * carry)
 /**
  * @brief Calculate the result and borrow of subtracting two digits
  */
-static sbn_digit _sbn_sub_digits (sbn_digit a, sbn_digit b, sbn_digit * borrow)
+static sbn_digit _sbn_digit_sub (sbn_digit a, sbn_digit b, sbn_digit * borrow)
 {
 	sbn_digit c = *borrow;
 	sbn_digit r = a - b - c;
@@ -390,7 +390,7 @@ static sbn_digit _sbn_sub_digits (sbn_digit a, sbn_digit b, sbn_digit * borrow)
 /**
  * @brief Calculate the result and carry of multiplying two digits
  */
-static sbn_digit _sbn_mul_digits (sbn_digit a, sbn_digit b, sbn_digit * carry)
+static sbn_digit _sbn_digit_mul (sbn_digit a, sbn_digit b, sbn_digit * carry)
 {
 	sbn_digit c = *carry;
 
@@ -403,12 +403,12 @@ static sbn_digit _sbn_mul_digits (sbn_digit a, sbn_digit b, sbn_digit * carry)
 	sbn_digit p2 = al * bh;
 
 	sbn_digit r = al * bl;
-	r = _sbn_add_digits(r, sbn_digit_lower_half(p1) << sbn_digit_half_nbits, &c);
-	r = _sbn_add_digits(r, sbn_digit_lower_half(p2) << sbn_digit_half_nbits, &c);
+	r = _sbn_digit_add(r, sbn_digit_lower_half(p1) << sbn_digit_half_nbits, &c);
+	r = _sbn_digit_add(r, sbn_digit_lower_half(p2) << sbn_digit_half_nbits, &c);
 
 	sbn_digit cr = ah * bh;
-	cr = _sbn_add_digits(cr, sbn_digit_upper_half(p1), &c);
-	cr = _sbn_add_digits(cr, sbn_digit_upper_half(p2), &c);
+	cr = _sbn_digit_add(cr, sbn_digit_upper_half(p1), &c);
+	cr = _sbn_digit_add(cr, sbn_digit_upper_half(p2), &c);
 	assert(!c);
 
 	*carry = cr;
@@ -646,7 +646,7 @@ bool sbn_add_digit_ud (struct sbn * a, const sbn_digit dig)
 	sbn_digit carry = dig;
 	bool ret = true;
 	for (size_t i = 0; ret && carry && i < ndigs; i++)
-		ret = _sbn_set_nth_digit(a, i, _sbn_add_digits(sbn_nth_digit(a, i), 0, &carry));
+		ret = _sbn_set_nth_digit(a, i, _sbn_digit_add(sbn_nth_digit(a, i), 0, &carry));
 	return ret && (!carry || _sbn_push_digit(a, 1));
 }
 
@@ -684,7 +684,7 @@ bool sbn_add_u (struct sbn * r, const struct sbn * a, const struct sbn * b)
 	for (size_t i = 0; ret && i < minndigs; i++) {
 		sbn_digit adig = sbn_nth_digit(a, i);
 		sbn_digit bdig = sbn_nth_digit(b, i);
-		ret = _sbn_push_digit(r, _sbn_add_digits(adig, bdig, &carry));
+		ret = _sbn_push_digit(r, _sbn_digit_add(adig, bdig, &carry));
 	}
 	if (!ret) return _sbn_flush_digits(r), false;
 
@@ -694,7 +694,7 @@ bool sbn_add_u (struct sbn * r, const struct sbn * a, const struct sbn * b)
 	 */
 	for (size_t i = minndigs; ret && i < maxndigs; i++) {
 		sbn_digit adig = sbn_nth_digit(a, i);
-		ret = _sbn_push_digit(r, _sbn_add_digits(adig, 0, &carry));
+		ret = _sbn_push_digit(r, _sbn_digit_add(adig, 0, &carry));
 	}
 	if (!ret) return _sbn_flush_digits(r), false;
 
@@ -807,7 +807,7 @@ bool sbn_sub_u (struct sbn * r, const struct sbn * a, const struct sbn * b)
 	for (; succ && i < minndigs; i++) {
 		sbn_digit adig = sbn_nth_digit(a, i);
 		sbn_digit bdig = sbn_nth_digit(b, i);
-		succ = _sbn_push_digit(r, _sbn_sub_digits(adig, bdig, &borrow));
+		succ = _sbn_push_digit(r, _sbn_digit_sub(adig, bdig, &borrow));
 	}
 
 	/*
@@ -816,7 +816,7 @@ bool sbn_sub_u (struct sbn * r, const struct sbn * a, const struct sbn * b)
 	 */
 	for (i = minndigs; succ && borrow && i < maxndigs; i++) {
 		sbn_digit adig = sbn_nth_digit(a, i);
-		succ = _sbn_push_digit(r, _sbn_sub_digits(adig, 0, &borrow));
+		succ = _sbn_push_digit(r, _sbn_digit_sub(adig, 0, &borrow));
 	}
 
 	for (; succ && i < maxndigs; i++)
@@ -890,7 +890,7 @@ bool sbn_mul_digit_ud (struct sbn * a, const sbn_digit d)
 	sbn_digit carry = 0;
 	bool ret = true;
 	for (size_t i = 0; ret && i < ndigs; i++)
-		ret = _sbn_set_nth_digit(a, i, _sbn_mul_digits(sbn_nth_digit(a, i), d, &carry));
+		ret = _sbn_set_nth_digit(a, i, _sbn_digit_mul(sbn_nth_digit(a, i), d, &carry));
 
 	return ret && (!carry || _sbn_push_digit(a, carry));
 }
