@@ -1,4 +1,4 @@
-/* sbn - v2023.04.11-1
+/* sbn - v2023.04.11-2
  *
  * A bignum type inspired by
  *  * Scheme
@@ -158,6 +158,7 @@ struct sbn * sbn_set_sign     (struct sbn * a, bool is_negative);
 # define sbn_digit_nbytes                 (sbn_digit_nbits >> 3)
 # define sbn_digit_upper_half(dig)        ((sbn_digit) ((dig) >> sbn_digit_half_nbits))
 # define sbn_digit_lower_half(dig)        sbn_digit_upper_half((dig) << sbn_digit_half_nbits)
+# define sbn_digit_from_halves(hi, lo)    ((((sbn_digit) (hi)) << sbn_digit_half_nbits) | ((sbn_digit) (lo)))
 # define sbn_digit_twos_compl(dig)        (~(dig) + 1)
 # define sbn_min(a, b)                    (((a) < (b)) ? (a) : (b))
 # define sbn_max(a, b)                    (((a) > (b)) ? (a) : (b))
@@ -399,15 +400,29 @@ static sbn_digit _sbn_sub_digits (sbn_digit a, sbn_digit b, bool * borrow)
 /**
  * @brief Calculate the result and carry of multiplying two digits
  */
-static sbn_digit _sbn_mul_digits (sbn_digit _a, sbn_digit _b, sbn_digit * _carry)
+static sbn_digit _sbn_mul_digits (sbn_digit a, sbn_digit b, sbn_digit * carry)
 {
-	sbn_double_digit a = _a;
-	sbn_double_digit b = _b;
-	sbn_double_digit carry = *_carry;
+	sbn_digit c = *carry;
 
-	sbn_double_digit r = a * b + carry;
-	*_carry = sbn_double_digit_upper_half(r);
-	return sbn_double_digit_lower_half(r);
+	/* TODO: https://cs.stackexchange.com/a/140950 */
+	sbn_digit al = sbn_digit_lower_half(a);
+	sbn_digit ah = sbn_digit_upper_half(a);
+	sbn_digit bl = sbn_digit_lower_half(b);
+	sbn_digit bh = sbn_digit_upper_half(b);
+
+	sbn_digit p0 = al * bl;
+	sbn_digit p1 = ah * bl;
+	sbn_digit p2 = al * bh;
+	sbn_digit p3 = ah * bh;
+
+	sbn_digit rl = al * bl + c;
+	c = sbn_digit_upper_half(rl);
+
+	sbn_digit rh = ah * bh + c;
+	c = sbn_digit_upper_half(rh);
+
+	*carry = c;
+	return sbn_digit_from_halves(sbn_digit_lower_half(rh), sbn_digit_lower_half(rl));
 }
 
 /************************
