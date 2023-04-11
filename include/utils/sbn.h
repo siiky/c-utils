@@ -1,4 +1,4 @@
-/* sbn - v2023.04.11-3
+/* sbn - v2023.04.11-4
  *
  * A bignum type inspired by
  *  * Scheme
@@ -368,17 +368,12 @@ static bool _sbn_set_nth_digit (struct sbn * a, size_t i, sbn_digit dig)
 /**
  * @brief Calculate the result and carry of adding two digits
  */
-static sbn_digit _sbn_add_digits (sbn_digit a, sbn_digit b, bool * carry)
+static sbn_digit _sbn_add_digits (sbn_digit a, sbn_digit b, sbn_digit * carry)
 {
-	if (*carry) {
-		sbn_digit r = a + b + 1;
-		*carry = r <= a;
-		return r;
-	} else {
-		sbn_digit r = a + b;
-		*carry = r < a;
-		return r;
-	}
+	sbn_digit c = *carry;
+	sbn_digit r = a + b + c;
+	*carry = (c ? (r <= a) : (r < a)) ? 1 : 0;
+	return r;
 }
 
 /**
@@ -652,10 +647,10 @@ bool sbn_add_digit_ud (struct sbn * a, const sbn_digit dig)
 	if (dig == 0) return true;
 	if (sbn_is_zero(a)) return _sbn_push_digit(a, dig);
 
-	bool carry = false;
 	size_t ndigs = sbn_ndigits(a);
-	bool ret = _sbn_set_nth_digit(a, 0, _sbn_add_digits(sbn_nth_digit(a, 0), dig, &carry));
-	for (size_t i = 1; ret && carry && i < ndigs; i++)
+	sbn_digit carry = dig;
+	bool ret = true;
+	for (size_t i = 0; ret && carry && i < ndigs; i++)
 		ret = _sbn_set_nth_digit(a, i, _sbn_add_digits(sbn_nth_digit(a, i), 0, &carry));
 	return ret && (!carry || _sbn_push_digit(a, 1));
 }
@@ -687,7 +682,7 @@ bool sbn_add_u (struct sbn * r, const struct sbn * a, const struct sbn * b)
 
 	size_t minndigs = bndigs;
 	size_t maxndigs = andigs;
-	bool carry = false;
+	sbn_digit carry = 0;
 	bool ret = true;
 
 	/* Add common digits */
