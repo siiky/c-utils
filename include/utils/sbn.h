@@ -1,4 +1,4 @@
-/* sbn - v2023.04.11-4
+/* sbn - v2023.04.11-5
  *
  * A bignum type inspired by
  *  * Scheme
@@ -399,25 +399,25 @@ static sbn_digit _sbn_mul_digits (sbn_digit a, sbn_digit b, sbn_digit * carry)
 {
 	sbn_digit c = *carry;
 
-	/* TODO: https://cs.stackexchange.com/a/140950 */
 	sbn_digit al = sbn_digit_lower_half(a);
 	sbn_digit ah = sbn_digit_upper_half(a);
 	sbn_digit bl = sbn_digit_lower_half(b);
 	sbn_digit bh = sbn_digit_upper_half(b);
 
-	sbn_digit p0 = al * bl;
 	sbn_digit p1 = ah * bl;
 	sbn_digit p2 = al * bh;
-	sbn_digit p3 = ah * bh;
 
-	sbn_digit rl = al * bl + c;
-	c = sbn_digit_upper_half(rl);
+	sbn_digit r = al * bl;
+	r = _sbn_add_digits(r, sbn_digit_lower_half(p1) << sbn_digit_half_nbits, &c);
+	r = _sbn_add_digits(r, sbn_digit_lower_half(p2) << sbn_digit_half_nbits, &c);
 
-	sbn_digit rh = ah * bh + c;
-	c = sbn_digit_upper_half(rh);
+	sbn_digit cr = ah * bh;
+	cr = _sbn_add_digits(cr, sbn_digit_upper_half(p1), &c);
+	cr = _sbn_add_digits(cr, sbn_digit_upper_half(p2), &c);
+	assert(!c);
 
-	*carry = c;
-	return sbn_digit_from_halves(sbn_digit_lower_half(rh), sbn_digit_lower_half(rl));
+	*carry = cr;
+	return r;
 }
 
 /************************
