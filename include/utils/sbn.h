@@ -1,4 +1,4 @@
-/* sbn - v2023.04.11-2
+/* sbn - v2023.04.11-3
  *
  * A bignum type inspired by
  *  * Scheme
@@ -153,15 +153,15 @@ struct sbn * sbn_set_sign     (struct sbn * a, bool is_negative);
 
 # endif /* SBN_CFG_NO_STDINT */
 
-# define sbn_digit_half_nbits             (sbn_digit_nbits >> 1)
-# define sbn_digit_nquartets              (sbn_digit_nbits >> 2)
-# define sbn_digit_nbytes                 (sbn_digit_nbits >> 3)
-# define sbn_digit_upper_half(dig)        ((sbn_digit) ((dig) >> sbn_digit_half_nbits))
-# define sbn_digit_lower_half(dig)        sbn_digit_upper_half((dig) << sbn_digit_half_nbits)
-# define sbn_digit_from_halves(hi, lo)    ((((sbn_digit) (hi)) << sbn_digit_half_nbits) | ((sbn_digit) (lo)))
-# define sbn_digit_twos_compl(dig)        (~(dig) + 1)
-# define sbn_min(a, b)                    (((a) < (b)) ? (a) : (b))
-# define sbn_max(a, b)                    (((a) > (b)) ? (a) : (b))
+# define sbn_digit_half_nbits          (sbn_digit_nbits >> 1)
+# define sbn_digit_nquartets           (sbn_digit_nbits >> 2)
+# define sbn_digit_nbytes              (sbn_digit_nbits >> 3)
+# define sbn_digit_upper_half(dig)     ((sbn_digit) ((dig) >> sbn_digit_half_nbits))
+# define sbn_digit_lower_half(dig)     ((sbn_digit) ((dig) & ((((sbn_digit) 0x1) << sbn_digit_half_nbits) - 1)))
+# define sbn_digit_from_halves(hi, lo) ((((sbn_digit) (hi)) << sbn_digit_half_nbits) | ((sbn_digit) (lo)))
+# define sbn_digit_twos_compl(dig)     (~(dig) + 1)
+# define sbn_min(a, b)                 (((a) < (b)) ? (a) : (b))
+# define sbn_max(a, b)                 (((a) > (b)) ? (a) : (b))
 
 /*************************
  *************************
