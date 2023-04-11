@@ -13,7 +13,7 @@ void print_digs (const struct sbn * a)
 {
 	size_t ndigs = sbn_ndigits(a);
 	for (size_t i = 0; i < ndigs; i++)
-		debug_log("digit_%zu=%u", i, sbn_nth_digit(a, i));
+		debug_log("digit_%zu=%lu", i, sbn_nth_digit(a, i));
 }
 
 /* Adding digits to an SBN, adding SBNs, and sbn->string */
@@ -24,8 +24,8 @@ void consecutive_adds_and_double (void)
 	struct sbn * b = sbns + 1;
 	struct sbn * c = sbns + 2;
 
-	sbn_digit elem = ~0U;
-	debug_log("elem=%u", elem);
+	sbn_digit elem = ~0UL;
+	debug_log("elem=%lu", elem);
 	for (size_t i = 0; i < 10; i++)
 		assert(sbn_add_digit_ud(a, elem));
 
