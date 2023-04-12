@@ -1,4 +1,4 @@
-/* sbn - v2023.04.12-4
+/* sbn - v2023.04.12-5
  *
  * A bignum type inspired by
  *  * Scheme
@@ -18,24 +18,14 @@
  * https://members.loria.fr/PZimmermann/mca/pub226.html
  */
 
-# ifdef SBN_CFG_NO_STDINT
-
-#  ifndef sbn_digit
-#   error "Must define sbn_digit when using SBN_CFG_NO_STDINT"
-#  endif /* sbn_digit */
-
-# else /* SBN_CFG_NO_STDINT */
-
-#  ifndef sbn_digit
+# ifndef sbn_digit
 /*
  * <stdint.h>
  *  uint64_t
  */
-#   include <stdint.h>
-#   define sbn_digit uint64_t
-#  endif /* sbn_digit */
-
-# endif /* SBN_CFG_NO_STDINT */
+#  include <stdint.h>
+#  define sbn_digit uint64_t
+# endif /* sbn_digit */
 
 /*
  * <stdbool.h>
