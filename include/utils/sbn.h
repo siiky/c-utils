@@ -1,4 +1,4 @@
-/* sbn - v2023.04.11-7
+/* sbn - v2023.04.12-0
  *
  * A bignum type inspired by
  *  * Scheme
@@ -29,7 +29,7 @@
 #  ifndef sbn_digit
 /*
  * <stdint.h>
- *  uint32_t
+ *  uint64_t
  */
 #   include <stdint.h>
 #   define sbn_digit uint64_t
@@ -45,15 +45,9 @@
  *
  *  <stddef.h>
  *   size_t
- *
- *  <string.h>
- *   memcpy()
- *   memmove()
- *   strlen()
  */
 #include <stdbool.h>
 #include <stddef.h>
-#include <string.h>
 
 #define VEC_CFG_COPIABLE_DATA_TYPE
 #define VEC_CFG_DATA_TYPE sbn_digit
@@ -141,13 +135,6 @@ struct sbn * sbn_set_sign     (struct sbn * a, bool is_negative);
 #  endif /* sbn_digit_nbits */
 
 # else /* SBN_CFG_NO_STDINT */
-
-/*
- * <stdint.h>
- *  uint32_t
- *  uint64_t
- */
-#  include <stdint.h>
 
 #  define sbn_digit_nbits        64U
 
