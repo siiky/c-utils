@@ -1,4 +1,4 @@
-/* sbn - v2023.04.12-1
+/* sbn - v2023.04.12-2
  *
  * A bignum type inspired by
  *  * Scheme
@@ -128,17 +128,14 @@ struct sbn * sbn_set_sign     (struct sbn * a, bool is_negative);
 #define VEC_CFG_VEC _sbn_digits_vec
 #include <utils/vec.h>
 
-# ifdef SBN_CFG_NO_STDINT
-
-#  ifndef sbn_digit_nbits
-#   error "Must define sbn_digit_nbits when using SBN_CFG_NO_STDINT"
-#  endif /* sbn_digit_nbits */
-
-# else /* SBN_CFG_NO_STDINT */
-
-#  define sbn_digit_nbits        64U
-
-# endif /* SBN_CFG_NO_STDINT */
+# ifndef sbn_digit_nbits
+/*
+ * <limits.h>
+ *  CHAR_BIT
+ */
+#  include <limits.h>
+#  define sbn_digit_nbits (CHAR_BIT * sizeof(sbn_digit))
+# endif /* sbn_digit_nbits */
 
 # define sbn_digit_half_nbits          (sbn_digit_nbits >> 1)
 # define sbn_digit_nquartets           (sbn_digit_nbits >> 2)
