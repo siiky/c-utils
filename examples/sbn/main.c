@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define sbn_digit_PRI "%lu"
+
 #define debug_log(msg, ...) fprintf(stderr, "%s:%s():%u: " msg "\n", __FILE__, __func__, __LINE__, __VA_ARGS__)
 #define bool2str(b) ((b) ? "true" : "false")
 #define streq(s1, s2) (strcmp((s1), (s2)) == 0)
@@ -13,7 +15,7 @@ void print_digs (const struct sbn * a)
 {
 	size_t ndigs = sbn_ndigits(a);
 	for (size_t i = 0; i < ndigs; i++)
-		debug_log("digit_%zu=%lu", i, sbn_nth_digit(a, i));
+		debug_log("digit_%zu=" sbn_digit_PRI, i, sbn_nth_digit(a, i));
 }
 
 /* Adding digits to an SBN, adding SBNs, and sbn->string */
@@ -24,8 +26,8 @@ void consecutive_adds_and_double (void)
 	struct sbn * b = sbns + 1;
 	struct sbn * c = sbns + 2;
 
-	sbn_digit elem = ~0UL;
-	debug_log("elem=%lu", elem);
+	sbn_digit elem = (sbn_digit) ~0UL;
+	debug_log("elem=" sbn_digit_PRI, elem);
 	for (size_t i = 0; i < 10; i++)
 		assert(sbn_add_digit_ud(a, elem));
 
