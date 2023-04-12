@@ -1,4 +1,4 @@
-/* sbn - v2023.04.12-0
+/* sbn - v2023.04.12-1
  *
  * A bignum type inspired by
  *  * Scheme
@@ -840,7 +840,7 @@ bool sbn_shl_d (struct sbn * a, size_t n)
 {
 	if (!a) return false;
 	size_t ndigs = sbn_ndigits(a);
-	if (ndigs == 0) return true;
+	if (n == 0 || ndigs == 0) return true;
 	bool ret = _sbn_digits_vec_reserve(a->digits, ndigs + n);
 	/* TODO: Optimize this */
 	/* if reserve succeeds inserts shouldn't fail -- just sanity check */
@@ -857,6 +857,7 @@ bool sbn_shl (struct sbn * r, const struct sbn * a, size_t n)
 bool sbn_shr_d (struct sbn * a, size_t n)
 {
 	if (!a) return false;
+	if (n == 0) return true;
 	size_t ndigs = sbn_ndigits(a);
 	if (ndigs <= n) return _sbn_flush_digits(a), true;
 	/* TODO: Optimize this */
