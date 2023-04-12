@@ -1,4 +1,4 @@
-/* sbn - v2023.04.12-2
+/* sbn - v2023.04.12-3
  *
  * A bignum type inspired by
  *  * Scheme
@@ -355,7 +355,7 @@ static bool _sbn_set_nth_digit (struct sbn * a, size_t i, sbn_digit dig)
 static sbn_digit _sbn_digit_add (sbn_digit a, sbn_digit b, sbn_digit * carry)
 {
 	sbn_digit c = *carry;
-	sbn_digit r = a + b + c;
+	sbn_digit r = a; r += b; r += c;
 	*carry = (c ? (r <= a) : (r < a)) ? 1 : 0;
 	return r;
 }
@@ -366,7 +366,7 @@ static sbn_digit _sbn_digit_add (sbn_digit a, sbn_digit b, sbn_digit * carry)
 static sbn_digit _sbn_digit_sub (sbn_digit a, sbn_digit b, sbn_digit * borrow)
 {
 	sbn_digit c = *borrow;
-	sbn_digit r = a - b - c;
+	sbn_digit r = a; r -= b; r -= c;
 	*borrow = (c ? (r >= a) : (r > a)) ? 1 : 0;
 	return r;
 }
