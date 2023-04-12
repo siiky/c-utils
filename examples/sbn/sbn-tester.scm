@@ -71,4 +71,10 @@
                    (print "EXITED W/ SIGNAL " exit-status/signal)
                    (exit 1)))))))))))
 
+(define ((cond-run runner wop) x)
+  (match x
+    ((tc-number (op a b) '-> expected)
+     (when (eq? op wop)
+       (runner x)))))
+
 (load "arithmetic-test.64.expected" run-test-case/abs)

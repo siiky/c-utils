@@ -60,6 +60,7 @@ int main (int argc, char ** argv)
 
     char * rstr = sbn_to_str_16(r);
     assert(rstr != NULL);
+    //fprintf(stderr, "result: '%s'\n", rstr);
 
     return streq(rstr, expected) ? EXIT_OK : EXIT_BADRESULT;
 }
