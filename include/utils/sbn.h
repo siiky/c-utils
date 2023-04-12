@@ -1,4 +1,4 @@
-/* sbn - v2023.04.12-3
+/* sbn - v2023.04.12-4
  *
  * A bignum type inspired by
  *  * Scheme
@@ -905,21 +905,19 @@ bool sbn_mul_u (struct sbn * r, const struct sbn * a, const struct sbn * b)
 
 	if (!_sbn_flush_digits(r) || !_sbn_reserve(r, andigs+bndigs-1)) return false;
 
-	/* MCA§1.3.1 Algorithm 1.2 BasecaseMultiply */
-	if (!sbn_mul_digit_u(r, a, sbn_nth_digit(b, 0))) /* c <- a*b0 */
-		return false;
-
 	struct sbn c[1] = {0};
 	struct sbn d[1] = {0};
-	bool ret = true;
-	for (size_t i = 1; ret && i < bndigs; i++) {
+
+	/* MCA§1.3.1 Algorithm 1.2 BasecaseMultiply */
+	bool ret = sbn_mul_digit_u(r, a, sbn_nth_digit(b, 0)); /* r <- a*b0 */
+
+	for (size_t i = 1; ret && i < bndigs; i++)
 		ret = sbn_mul_digit_u(c, a, sbn_nth_digit(b, i)) /* a*bi */
 			/* TODO: avoid shift -- specialized add starting at index? */
 			&& sbn_shl_d(c, i) /* B^i*(a*bi) */
 			/* TODO: optimize sbn_add_ud to modify r in-place */
-			&& sbn_add_u(d, r, c) /* c + B^i*(a*bi) */
-			&& sbn_clone_to(r, d); /* c <- c + B^i*(a*bi) */
-	}
+			&& sbn_add_u(d, r, c) /* r + B^i*(a*bi) */
+			&& sbn_clone_to(r, d); /* r <- r + B^i*(a*bi) */
 
 	sbn_destroy(c);
 	sbn_destroy(d);
