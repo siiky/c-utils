@@ -1,4 +1,4 @@
-/* sbn - v2023.04.12-5
+/* sbn - v2023.04.12-6
  *
  * A bignum type inspired by
  *  * Scheme
@@ -171,52 +171,6 @@ static bool _sbn_flush_digits (struct sbn * a)
 /******************
  * Misc Functions *
  ******************/
-
-#if 0
-/**
- * @brief Reverse a string
- */
-static bool _sbn_str_reverse (size_t nchars, char str[nchars])
-{
-	if (!str) return false;
-
-	size_t mid = nchars >> 1;
-	for (size_t i = 0; i < mid; i++) {
-		char tmp = str[i];
-		str[i] = str[nchars - i - 1];
-		str[nchars - i - 1] = tmp;
-	}
-
-	return true;
-}
-
-/**
- * @brief Find the index of the first occurrence of a char that's not @a c
- */
-static size_t _sbn_strnchr_idx (size_t nchars, char str[nchars], char c)
-{
-	if (!str) return 0;
-	size_t ret = 0;
-	for (ret = 0; ret < nchars && str[ret] == c; ret++);
-	return ret;
-}
-
-/**
- * @brief Strip occurrences of @a c to the left of @a str
- */
-static size_t _sbn_str_strip_left_chr (size_t nchars, char str[nchars], char c)
-{
-	if (!str) return 0;
-
-	size_t nni = _sbn_strnchr_idx(nchars, str, c);
-	if (nni == nchars + 1) return nchars; /* No occurrence, nothing to change */
-
-	size_t newlen = nchars - nni;
-	memmove(str, str + nni, nchars - nni);
-	str[newlen] = '\0';
-	return newlen;
-}
-#endif
 
 static bool _sbn_drop_left_zeros (struct sbn * a)
 {
