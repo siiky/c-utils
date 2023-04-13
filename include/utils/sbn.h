@@ -1,4 +1,4 @@
-/* sbn - v2023.04.13-0
+/* sbn - v2023.04.13-1
  *
  * A bignum type inspired by
  *  * Scheme
@@ -317,6 +317,21 @@ static sbn_digit _sbn_digit_sub (sbn_digit a, sbn_digit b, sbn_digit * borrow)
 
 /**
  * @brief Calculate the result and carry of multiplying two digits
+ *
+ * A = AH|AL
+ * B = BH|BL
+ * C = CH|CL  (input carry)
+ *
+ *          CH|CL
+ *  +       AL*BL  <- T0
+ *  +    AL*BH     <- T1
+ *  +    AH*BL     <- T2
+ *  + AH*BH        <- T3
+ *   -------------
+ *     CR  |  RR
+ *
+ * RR = C + T0 + lo(T1) + lo(T2)  (carry saved in C again for the following)
+ * CR = C + hi(T1) + hi(T2) + T3  (carry should be 0 afterwards)
  */
 static sbn_digit _sbn_digit_mul (sbn_digit a, sbn_digit b, sbn_digit * carry)
 {
