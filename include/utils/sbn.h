@@ -1,4 +1,4 @@
-/* sbn - v2023.04.12-6
+/* sbn - v2023.04.13-0
  *
  * A bignum type inspired by
  *  * Scheme
@@ -331,8 +331,8 @@ static sbn_digit _sbn_digit_mul (sbn_digit a, sbn_digit b, sbn_digit * carry)
 	sbn_digit p2 = al * bh;
 
 	sbn_digit r = al * bl;
-	r = _sbn_digit_add(r, sbn_digit_lower_half(p1) << sbn_digit_half_nbits, &c);
-	r = _sbn_digit_add(r, sbn_digit_lower_half(p2) << sbn_digit_half_nbits, &c);
+	r = _sbn_digit_add(r, p1 << sbn_digit_half_nbits, &c);
+	r = _sbn_digit_add(r, p2 << sbn_digit_half_nbits, &c);
 
 	sbn_digit cr = ah * bh;
 	cr = _sbn_digit_add(cr, sbn_digit_upper_half(p1), &c);
