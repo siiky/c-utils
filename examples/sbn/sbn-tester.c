@@ -1,3 +1,6 @@
+#include <stdint.h>
+
+#define sbn_digit uint8_t
 #define SBN_CFG_IMPLEMENTATION
 #include <utils/sbn.h>
 
@@ -60,7 +63,7 @@ int main (int argc, char ** argv)
 
     char * rstr = sbn_to_str_16(r);
     assert(rstr != NULL);
-    //fprintf(stderr, "result: '%s'\n", rstr);
+    fprintf(stderr, "result: '%s'\n", rstr);
 
     return streq(rstr, expected) ? EXIT_OK : EXIT_BADRESULT;
 }

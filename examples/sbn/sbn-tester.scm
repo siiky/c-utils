@@ -8,6 +8,14 @@
 
   matchable)
 
+(define (decompose-digits n b)
+  (let loop ((n n)
+             (r '()))
+    (if (< n b)
+      (cons n r)
+      (receive (q m) (quotient&remainder n b)
+        (loop q (cons m r))))))
+
 (define exit-codes
   `((0 . OK)
     (1 . UNIMPLEMENTED)
@@ -77,4 +85,4 @@
      (when (eq? op wop)
        (runner x)))))
 
-(load "arithmetic-test.64.expected" run-test-case/abs)
+(load "arithmetic-test.64.expected" (cond-run run-test-case/abs '*))

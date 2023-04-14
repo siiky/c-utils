@@ -315,6 +315,31 @@ static sbn_digit _sbn_digit_sub (sbn_digit a, sbn_digit b, sbn_digit * borrow)
 	return r;
 }
 
+static sbn_digit _sbn_digit_add_halves (sbn_digit a, sbn_digit b, sbn_digit * carry)
+{
+	sbn_digit cin = *carry;
+
+	sbn_digit cl = sbn_digit_lower_half(cin);
+	sbn_digit ch = sbn_digit_upper_half(cin);
+	sbn_digit al = sbn_digit_lower_half(a);
+	sbn_digit ah = sbn_digit_upper_half(a);
+	sbn_digit bl = sbn_digit_lower_half(b);
+	sbn_digit bh = sbn_digit_upper_half(b);
+
+	sbn_digit t0 = cl; t0 += al; t0 += bl;
+	sbn_digit rl = sbn_digit_lower_half(t0);
+	sbn_digit c0 = sbn_digit_upper_half(t0);
+
+	sbn_digit t1 = c0; t1 += ch; t1 += ah; t1 += bh;
+	sbn_digit rh = t1 << sbn_digit_half_nbits;
+	sbn_digit cr = sbn_digit_upper_half(t1);
+
+	assert(!(rl & rh));
+
+	*carry = cr;
+	return rl | rh;
+}
+
 /**
  * @brief Calculate the result and carry of multiplying two digits
  *
@@ -346,12 +371,13 @@ static sbn_digit _sbn_digit_mul (sbn_digit a, sbn_digit b, sbn_digit * carry)
 	sbn_digit p2 = al * bh;
 
 	sbn_digit r = al * bl;
-	r = _sbn_digit_add(r, p1 << sbn_digit_half_nbits, &c);
-	r = _sbn_digit_add(r, p2 << sbn_digit_half_nbits, &c);
+	r = _sbn_digit_add_halves(r, *carry, &c);
+	r = _sbn_digit_add_halves(r, p1 << sbn_digit_half_nbits, &c);
+	r = _sbn_digit_add_halves(r, p2 << sbn_digit_half_nbits, &c);
 
 	sbn_digit cr = ah * bh;
-	cr = _sbn_digit_add(cr, sbn_digit_upper_half(p1), &c);
-	cr = _sbn_digit_add(cr, sbn_digit_upper_half(p2), &c);
+	cr = _sbn_digit_add_halves(cr, sbn_digit_upper_half(p1), &c);
+	cr = _sbn_digit_add_halves(cr, sbn_digit_upper_half(p2), &c);
 	assert(!c);
 
 	*carry = cr;
